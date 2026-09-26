@@ -1,0 +1,296 @@
+/* ==========================================================================
+   Device Icons — modern SaaS redesign
+   Scoped to .ec-page so the frontend icon picker is untouched.
+   Palette: #2563EB blue | #172033 dark | #64748B muted | #E2E8F0 border
+   ========================================================================== */
+
+/* the admin main area is overflow:hidden by default — let it scroll instead */
+body.admin-layout .page__main {
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #C7D7E3 transparent;
+}
+
+body.admin-layout .page__main::-webkit-scrollbar {
+    width: 8px;
+}
+
+body.admin-layout .page__main::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    background: #C7D7E3;
+}
+
+.ec-page {
+    background: #F5F7FB;
+    padding: 26px 24px 44px;
+    min-height: 100%;
+}
+
+/* ---------------------------------------------------------------- header */
+.ec-page__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.ec-page__title-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.ec-page__title-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    background: #EFF6FF;
+    color: #2563EB;
+    font-size: 19px;
+    flex-shrink: 0;
+}
+
+.ec-page__title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #172033;
+}
+
+.ec-page__subtitle {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: #64748B;
+}
+
+.ec-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 18px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    background: #2563EB;
+    border: 1px solid #2563EB;
+    border-radius: 8px;
+    text-decoration: none;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, .28);
+    transition: background .15s;
+}
+
+.ec-add:hover,
+.ec-add:focus {
+    background: #1D4ED8;
+    border-color: #1D4ED8;
+    color: #fff;
+    text-decoration: none;
+}
+
+/* ------------------------------------------------------------------ card */
+.ec-card {
+    background: #fff;
+    border: 1px solid #E8EDF3;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(23, 32, 51, .05);
+}
+
+.ec-card > .panel-body {
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.ec-card .table_error {
+    padding: 12px 16px 0;
+}
+
+.ec-card .table_error .alert {
+    margin: 0;
+    font-size: 13px;
+    border-radius: 8px;
+}
+
+/* ------------------------------------------------------------------ grid */
+.ec-page .table-icon {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+    gap: 10px;
+    padding: 16px;
+}
+
+.ec-page .table-icon .item {
+    position: relative;
+    float: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: auto;
+    margin: 0;
+    padding: 12px 8px 9px;
+    background: #fff;
+    border: 1px solid #E8EDF3;
+    border-radius: 10px;
+    text-align: center;
+    transition: border-color .15s, box-shadow .15s, transform .15s;
+}
+
+.ec-page .table-icon .item:hover,
+.ec-page .table-icon .item:focus-within {
+    border-color: #93B4F7;
+    box-shadow: 0 6px 18px rgba(23, 32, 51, .10);
+    transform: translateY(-2px);
+}
+
+.ec-thumb {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 76px;
+}
+
+.ec-thumb img {
+    max-width: 46px;
+    max-height: 64px;
+    width: auto;
+    height: auto;
+    image-rendering: auto;
+}
+
+.ec-type {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    border-radius: 999px;
+    background: #F1F5F9;
+    color: #64748B;
+    text-transform: uppercase;
+}
+
+.ec-type--rotating {
+    background: #EFF6FF;
+    color: #2563EB;
+}
+
+/* --------------------------------------------------------------- actions */
+/* row actions stay visible so it is obvious what can be done with a tile */
+.ec-page .table-icon .item .controls {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: flex;
+    gap: 4px;
+    opacity: 1;
+}
+
+.ec-page .table-icon .item .controls a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    font-size: 11px;
+    color: #475569;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 7px;
+    box-shadow: 0 1px 3px rgba(23, 32, 51, .10);
+    text-decoration: none;
+    opacity: .8;
+    transition: opacity .15s, color .15s, border-color .15s, background-color .15s;
+}
+
+.ec-page .table-icon .item:hover .controls a,
+.ec-page .table-icon .item:focus-within .controls a {
+    opacity: 1;
+}
+
+.ec-page .table-icon .item .controls a:hover {
+    color: #2563EB;
+    border-color: #93B4F7;
+    background: #F8FAFC;
+    text-decoration: none;
+}
+
+.ec-page .table-icon .item .controls a.ec-act--del:hover {
+    color: #DC2626;
+    border-color: #FCA5A5;
+    background: #FEF2F2;
+}
+
+
+/* -------------------------------------------------------------- empty/pag */
+.ec-empty {
+    padding: 48px 16px;
+    text-align: center;
+    color: #94A3B8;
+    font-size: 13px;
+}
+
+.ec-card .nav-pagination {
+    margin: 0;
+    padding: 12px 16px;
+    border-top: 1px solid #EEF2F7;
+}
+
+.ec-card .pagination > li > a,
+.ec-card .pagination > li > span {
+    border-radius: 7px;
+    margin: 0 2px;
+    border-color: #E2E8F0;
+    color: #334155;
+    font-size: 12.5px;
+}
+
+.ec-card .pagination > .active > a,
+.ec-card .pagination > .active > span {
+    background: #2563EB;
+    border-color: #2563EB;
+    color: #fff;
+}
+
+/* -------------------------------------------------------------- responsive */
+@media (max-width: 991px) {
+    .ec-page {
+        padding: 20px 16px 36px;
+    }
+}
+
+@media (max-width: 767px) {
+    .ec-page .table-icon {
+        grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+        gap: 8px;
+        padding: 12px;
+    }
+
+    .ec-page .table-icon .item .controls {
+        opacity: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .ec-page__title {
+        font-size: 19px;
+    }
+
+    .ec-add {
+        width: 100%;
+        justify-content: center;
+    }
+}

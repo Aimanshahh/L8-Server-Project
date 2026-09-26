@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<!--[if IE 8]> <html lang="en" class="ie8 no-js"> <![endif]-->
+<!--[if IE 9]> <html lang="en" class="ie9 no-js"> <![endif]-->
+<!--[if !IE]><!-->
+<html lang="en" class="no-js">
+<!--<![endif]-->
+
+<head>
+    <meta charset="utf-8"/>
+    <title>GPS Server</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="app-version" content="3.7.8">
+    <meta name="app-build" content="202406260854178174">
+    <meta name="csrf-token" content="">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <link rel="shortcut icon" href="http://DESKTOP-MA911PD\images/favicon.ico"/>
+    <link rel="stylesheet" type="text/css" href="http://127.0.0.1:8000/assets/css/light-blue.css?t=1788947884" />
+    <link rel="stylesheet" href="http://127.0.0.1:8000/assets/css/style.css?t=1788770523">
+    <link rel="stylesheet" href="http://127.0.0.1:8000/assets/css/sidebar-overrides.css?t=1789800957">
+    <link rel="stylesheet" href="http://127.0.0.1:8000/assets/css/modal-overrides.css?t=1789718438?v=20260918-1">
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'>
+ <script src="http://127.0.0.1:8000/assets/js/custom.js?t=1721817876" 
+    type="text/javascript"></script>     <link rel="stylesheet" href="http://127.0.0.1:8000/assets/css/admin-list-overrides.css?t=1789972918">
+</head>
+
+<body class="page admin-layout">
+<nav class="nave page__nav">
+            <div class="hidee logo nav__logo">
+                    
+                    <a class="nav__link" href="/" title="GPS Server"><img class="nav__link-logo" src="http://127.0.0.1:8000/assets/images/logo.svg?t=1685950650"></a>
+                                </div>
+        <div class="logo nav__logo">
+        <a class="nav__link" href="/" title="GPS Server"><img class="nav__link-favicon" src="http://DESKTOP-MA911PD\images/favicon.ico"><span class="nav__link-txt"><img class="nav__link-logo" src="http://127.0.0.1:8000/assets/images/logo.svg?t=1685950650"></span></a>
+        </div>
+    <ul class="nav__list navigation-accordion">
+    <li class=" nav__item"><a class="nav__link" href="http://127.0.0.1:8000/objects"><i class="icon map"></i> <span class="nav__link-txt">Map</span></a><li class=" nav__item"><a class="nav__link" href="http://127.0.0.1:8000/admin/users/clients"><i class="icon users"></i> <span class="nav__link-txt">Users (6)</span></a><li class=" nav__item"><a class="nav__link" href="http://127.0.0.1:8000/admin/users/objects"><i class="icon device"></i> <span class="nav__link-txt">Objects (0/23)</span></a><li class=" nav__item"><a class="nav__link sub-btn" data-hover="dropdown" data-toggle="dropdown" href="javascript:;"><i class="icon content"></i> <span class="nav__link-txt">Content</span><i class="fas fa-angle-right dropdown"></i></a><div class="sub-menu" data-title="Content"><ul><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/email_templates"><span class="icon mail"></span><span class="nav__link-txt">Email templates</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/sms_templates"><span class="icon message"></span><span class="nav__link-txt">SMS templates</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/map_icons/index"><span class="icon map"></span><span class="nav__link-txt">Map icons</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/device_icons/index"><span class="icon device"></span><span class="nav__link-txt">Device icons</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/sensor_icons/index"><span class="icon sensor"></span><span class="nav__link-txt">Sensor icons</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/device_expenses_types"><span class="icon money"></span><span class="nav__link-txt">Device expenses types</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/pages"><span class="icon document-text"></span><span class="nav__link-txt">Pages</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/device_config/index"><span class="icon device"></span><span class="nav__link-txt">GPS device activation</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/apn_config/index"><span class="icon address"></span><span class="nav__link-txt">APN configuration</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/diem_rates"><span class="icon money"></span><span class="nav__link-txt">Diem rates</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/companies"><span class="icon company"></span><span class="nav__link-txt">Companies</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/command_templates"><span class="icon task"></span><span class="nav__link-txt">Command templates</span></a></ul></div></li><li class=" nav__item"><a class="nav__link" href="http://127.0.0.1:8000/admin/events/index"><i class="icon events"></i> <span class="nav__link-txt">Events</span></a><li class=" active nav__item"><a class="nav__link sub-btn" data-hover="dropdown" data-toggle="dropdown" href="javascript:;"><span class="icon setup"></span><span class="nav__link-txt">Setup</span><i class="fas fa-angle-right dropdown"></i><i class="selected"></i></a><div class="sub-menu" data-title="Setup"><ul><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/email_settings/index"><span class="icon email"></span><span class="nav__link-txt">Email</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/main_server_settings/index"><span class="icon server"></span><span class="nav__link-txt">Main server settings</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/report_types"><span class="icon document-text"></span><span class="nav__link-txt">Report types</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/billing/index"><span class="icon membership"></span><span class="nav__link-txt">User</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/billing/gateways"><span class="icon membership"></span><span class="nav__link-txt">Billing gateway</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/ports/index"><span class="icon port"></span><span class="nav__link-txt">Tracking ports</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/languages"><span class="icon language"></span><span class="nav__link-txt">Languages</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/blocked_ips/index"><span class="icon warning"></span><span class="nav__link-txt">Blocked IP&#39;s</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/tools/index"><span class="icon tool"></span><span class="nav__link-txt">Tools</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/plugins/index"><span class="icon puzzle"></span><span class="nav__link-txt">Plugins</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/sensor_groups/index"><span class="icon sensor"></span><span class="nav__link-txt">Sensor groups</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/sms_gateway/index"><span class="icon message"></span><span class="nav__link-txt">SMS gateway</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/device_plan/index"><span class="icon device-plan"></span><span class="nav__link-txt">Device plans</span></a></ul></div></li><li class=" nav__item"><a class="nav__link sub-btn" data-hover="dropdown" data-toggle="dropdown" href="javascript:;"><span class="icon logs"></span><span class="nav__link-txt">Logs</span><i class="fas fa-angle-right dropdown"></i></a><div class="sub-menu" data-title="Logs"><ul><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/logs/index"><span class="icon log"></span><span class="nav__link-txt">Tracker server logs</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/unregistered_devices_log/index"><span class="icon log"></span><span class="nav__link-txt">Unregistered devices</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/model_change_logs/index"><span class="icon log"></span><span class="nav__link-txt">Activity logs</span></a><li class=" nav__item"><a class="nav__link sub-item" href="http://127.0.0.1:8000/admin/report_logs/index"><span class="icon log"></span><span class="nav__link-txt">Scheduled report log</span></a></ul></div></li><li class=" nav__item"><a class="nav__link" href="http://127.0.0.1:8000/admin/restart_tracker" class="js-confirm-link" data-confirm="Are you sure you want to restart tracker service?"><span class="icon restart"></span> <span class="nav__link-txt">Restart tracking service</span></a><li class=" nav__item"><a class="nav__link" href="javascript:;"><span class="icon membership"></span> <span class="nav__link-txt">admin@server.com (Admin) </span></a>
+
+        <ul class="nav__list nav__list_bottom">
+        <li class="nav__item"><a class="nav__link" href="javascript:" data-url="http://127.0.0.1:8000/membership" data-modal="subscriptions_edit"><span class="icon account"></span><span class="nav__link-txt">Profile</span></a></li>
+        <li class="nav__item"><a class="nav__link" href="javascript:" data-url="http://127.0.0.1:8000/language" data-modal="language-selection"><span class="icon language"></span><span class="nav__link-txt">Language</span></a></li>
+        <li class="nav__item"><a class="nav__link" href="http://127.0.0.1:8000/logout" ><span class="icon logout"></span><span class="nav__link-txt">Logout</span></a></li>
+        </ul>
+            </ul>
+  </nav>
+<main class="main page__main">
+
+
+<div class="content">
+    <div class="container-fluid">
+                
+        <div class="al-page">
+
+    <div class="al-page__header">
+        <div class="al-page__title-group">
+            <div class="al-page__title-icon"><i class="fas fa-globe"></i></div>
+            <div>
+                <h1 class="al-page__title">Languages</h1>
+                <p class="al-page__subtitle">Turn a language on to let customers pick it, and choose the flag shown beside it.</p>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="al-card al-card--scroll" id="table_languages">
+
+        <div class="al-toolbar">
+            <div class="al-search">
+                <i class="fas fa-search"></i>
+                <input type="text" id="languages-search" placeholder="Search languages..." autocomplete="off">
+            </div>
+
+            <div class="al-filters" role="group">
+                <button type="button" class="al-filter is-active" data-state="all">
+                    All <span class="al-filter__count"></span>
+                </button>
+                <button type="button" class="al-filter" data-state="1">
+                    Active <span class="al-filter__count"></span>
+                </button>
+                <button type="button" class="al-filter" data-state="0">
+                    Inactive <span class="al-filter__count"></span>
+                </button>
+            </div>
+
+            <div class="al-toolbar__count" id="languages-count"></div>
+        </div>
+
+        <div class="panel-body" data-table>
+            <div class="table_error"></div>
+
+<div class="table-responsive">
+    <table class="table table-list">
+        <thead>
+        <tr>
+            <th class="sorting_disabled" style="width: 1px;">
+                Active
+            </th>
+            <th class="sorting_disabled" >
+                Language
+            </th>
+            <th class="sorting_disabled" style="text-align: right;">
+                Actions
+            </th>
+        </tr>
+        </thead>
+
+        <tbody>
+                    <tr data-language="al"
+                data-state="0"
+                data-search="albanian al">
+                <td>
+                    <span class="al-pill al-pill--off">
+                        Inactive
+                    </span>
+                </td>
+                <td>
+                    <img class="al-flag" src="http://127.0.0.1:8000/assets/images/header/al.png" alt="">
+                    Albanian
+                </td>
+                <td class="actions">
+                    <div class="btn-group dropdown droparrow" data-position="fixed">
+                        <i class="btn icon edit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                           title="Edit" aria-label="Edit"></i>
+                        <ul class="dropdown-menu">
+                            <li><a href="javascript:" data-modal="languages_edit" data-url="http://127.0.0.1:8000/admin/languages/al/edit">Edit</a></li>
+                            <li><a href="http://127.0.0.1:8000/admin/translations/al">Translate</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+                    <tr data-language="ar"
+                data-state="1"
+                data-search="arabic ar">
+                <td>
+                    <span class="al-pill al-pill--on">
+                        Active
+                    </span>
+                </td>
+                <td>
+                    <img class="al-flag" src="http://127.0.0.1:8000/assets/images/header/ar.png" alt="">
+                    Arabic
+                </td>
+                <td class="actions">
+                    <div class="btn-group dropdown droparrow" data-position="fixed">
+                        <i class="btn icon edit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                           title="Edit" aria-label="Edit"></i>
+                        <ul class="dropdown-menu">
+                            <li><a href="javascript:" data-modal="languages_edit" data-url="http://127.0.0.1:8000/admin/languages/ar/edit">Edit</a></li>
+                            <li><a href="http://127.0.0.1:8000/admin/translations/ar">Translate</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+                    <tr data-language="au"
+                data-state="1"
+                data-search="australian au">
+                <td>
+                    <span class="al-pill al-pill--on">
+                        Active
+                    </span>
+                </td>
+                <td>
+                    <img class="al-flag" src="http://127.0.0.1:8000/assets/images/header/au.png" alt="">
+                    Australian
+                </td>
+                <td class="actions">
+                    <div class="btn-group dropdown droparrow" data-position="fixed">
+                        <i class="btn icon edit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                           title="Edit" aria-label="Edit"></i>
+                        <ul class="dropdown-menu">
+                            <li><a href="javascript:" data-modal="languages_edit" data-url="http://127.0.0.1:8000/admin/languages/au/edit">Edit</a></li>
+                            <li><a href="http://127.0.0.1:8000/admin/translations/au">Translate</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+                    <tr data-language="az"
+                data-state="0"
+                data-search="azerbaijan az">
+                <td>
+                    <span class="al-pill al-pill--off">
+                        Inactive
+                    </span>
+                </td>
+                <td>
+                    <img class="al-flag" src="http://127.0.0.1:8000/assets/images/header/az.png" alt="">
+                    Azerbaijan
+                </td>
+                <td class="actions">
+                    <div class="btn-group dropdown droparrow" data-position="fixed">
+                        <i class="btn icon edit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                           title="Edit" aria-label="Edit"></i>
+                        <ul class="dropdown-menu">
+                            <li><a href="javascript:" data-modal="languages_edit" data-url="http://127.0.0.1:8000/admin/languages/az/edit">Edit</a></li>
+                            <li><a href="http://127.0.0.1:8000/admin/translations/az">Translate</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+                    <tr data-language="bn"
+                data-state="1"
+                data-search="bengali bn">
+                <td>
+                    <span class="al-pill al-pill--on">
+                        Active
+                    </span>
+                </td>
+                <td>
+                    <img class="al-flag" src="http://127.0.0.1:8000/assets/images/header/bd.png" alt="">
+                    Bengali
+                </td>
+                <td class="actions">
+                    <div class="btn-group dropdown droparrow" data-position="fixed">
+                        <i class="btn icon edit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                           title="Edit" aria-label="Edit"></i>
+                        <ul class="dropdown-menu">
+                            <li><a href="javascript:" data-modal="languages_edit" data-url="http://127.0.0.1:8000/admin/languages/bn/edit">Edit</a></li>
+                            <li><a href="http://127.0.0.1:8000/admin/translations/bn">Translate</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+                    <tr data-language="br"
+                data-state="1"
+                data-search="brazilian br">
+                <td>
+                    <span class="al-pill al-pill--on">
+                        Active
+                    </span>
+                </td>
+                <td>
+                    <img class="al-flag" src="http://127.0.0.1:8000/assets/images/header/br.png" alt="">
+                    Brazilian
+                </td>
+                <td class="actions">
+                    <div class="btn-group dropdown droparrow" data-position="fixed">
+                        <i class="btn icon edit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                           title="Edit" aria-label="Edit"></i>
+                        <ul class="dropdown-menu">
+                            <li><a href="javascript:" data-modal="languages_edit" data-url="http://127.0.0.1:8000/admin/languages/br/edit">Edit</a></li>
+                            <li><a href="http://127.0.0.1:8000/admin/translations/br">Translate</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+                    <tr data-language="bg"
+                data-state="0"
+                data-search="bulgarian bg">
+                <td>
+                    <span class="al-pill al-pill--off">
+                        Inactive
+                    </span>
+                </td>
+                <td>
+                    <img class="al-flag" src="http://127.0.0.1:8000/assets/images/header/bg.png" alt="">
+                    Bulgarian
+                </td>
+                <td class="actions">
+                    <div class="btn-group dropdown droparrow" data-position="fixed">
+                        <i class="btn icon edit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                           title="Edit" aria-label="Edit"></i>
+                        <ul class="dropdown-menu">
+                            <li><a href="javascript:" data-modal="languages_edit" data-url="http://127.0.0.1:8000/admin/languages/bg/edit">Edit</a></li>
+                            <li><a href="http://127.0.0.1:8000/admin/translations/bg">Translate</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+                    <tr data-language="my"
+                data-state="1"
+                data-search="burmese my">
+                <td>
+                    <span class="al-pill al-pill--on">
+                        Active
+                    </span>
+                </td>
+                <td>
+                    <img class="al-flag" src="http://127.0.0.1:8000/assets/images/header/my.png" alt="">
+                    Burmese
+                </td>
+                <td class="actions">
+                    <div class="btn-group dropdown droparrow" data-position="fixed">
+                        <i class="btn icon edit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                           title="Edit" aria-label="Edit"></i>
+                        <ul class="dropdown-menu">
+                            <li><a href="javascript:" data-modal="languages_edit" data-url="http://127.0.0.1:8000/admin/languages/my/edit">Edit</a></li>
+                            <li><a href="http://127.0.0.1:8000/admin/translations/my">Translate</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+                    <tr data-language="ca"
+                data-state="1"
+                data-search="catalan ca">
+                <td>
+                    <span class="al-pill al-pill--on">
+                        Active
+                    </span>
+                </td>
+                <td>
+                    <img class="al-flag" src="http://127.0.0.1:8000/assets/images/header/catalonia.png" alt="">
+                    Catalan
+                </td>
+                <td class="actions">
+                    <div class="btn-group dropdown droparrow" data-position="fixed">
+                        <i class="btn icon edit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                           title="Edit" aria-label="Edit"></i>
+                        <ul class="dropdown-menu">
+                            <li><a href="javascript:" data-modal="languages_edit" data-url="http://127.0.0.1:8000/admin/languages/ca/edit">Edit</a></li>
+                            <li><a href="http://127.0.0.1:8000/admin/translations/ca">Translate</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+                    <tr data-language="ch"
+                data-state="0"
+                data-search="chile ch">
+                <td>
+                    <span class="al-pill al-pill--off">
+                        Inactive
+                    </span>
+                </td>
+                <td>
+                    <img class="al-flag" src="http://127.0.0.1:8000/assets/images/header/ch.png" alt="">
+                    Chile
+                </td>
+                <td class="actions">
+                    <div class="btn-group dropdown droparrow" data-position="fixed">
+                        <i class="btn icon edit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                           title="Edit" aria-label="Edit"></i>
+                        <ul class="dropdown-menu">
+                            <li><a href="javascript:" data-modal="languages_edit" data-url="http://127.0.0.1:8000/admin/languages/ch/edit">Edit</a></li>
+                            <li><a href="http://127.0.0.1:8000/admin/translations/ch">Translate</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+                    <tr data-language="cn"
+                data-state="1"
+                data-search="chinese cn">
+                <td>
+                    <span class="al-pill al-pill--on">
+                        Active
+                    </span>
+                </td>
+                <td>
+                    <img class="al-flag" src="http://127.0.0.1:8000/assets/images/header/cn.png" alt="">
+                    Chinese
+                </td>
+                <td class="actions">
+                    <div class="btn-group dropdown droparrow" data-position="fixed">
+                        <i class="btn icon edit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                           title="Edit" aria-label="Edit"></i>
+                        <ul class="dropdown-menu">
+                            <li><a href="javascript:" data-modal="languages_edit" data-url="http://127.0.0.1:8000/admin/languages/cn/edit">Edit</a></li>
+                            <li><a href="http://127.0.0.1:8000/admin/translations/cn">Translate</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+                    <tr data-language="hr"
+                data-state="1"
+                data-search="croatian hr">
+                <td>
+                    <span class="al-pill al-pill--on">
+                        Active
+                    </span>
+                </td>
+                <td>
+                    <img class="al-flag" src="http://127.0.0.1:8000/assets/images/header/hr.png" alt="">
+                    Croatian
+                </td>
+                <td class="actions">
+                    <div class="btn-group dropdown droparrow" data-position="fixed">
+                        <i class="btn icon edit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                           title="Edit" aria-label="Edit"></i>
+                        <ul class="dropdown-menu">
+                            <li><a href="javascript:" data-modal="languages_edit" data-url="http://127.0.0.1:8000/admin/languages/hr/edit">Edit</a></li>
+                            <li><a href="http://127.0.0.1:8000/admin/translations/hr">Translate</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+                    <tr data-language="cz"
+                data-state="0"
+                data-search="czech cz">
+                <td>
+                    <span class="al-pill al-pill--off">
+                        Inactive
+                    </span>
+                </td>
+                <td>
+                    <img class="al-flag" src="http://127.0.0.1:8000/assets/images/header/cz.png" alt="">
+                    Czech
+                </td>
+                <td class="actions">
+                    <div class="btn-group dropdown droparrow" data-position="fixed">
+                        <i class="btn icon edit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                           title="Edit" aria-label="Edit"></i>
+                        <ul class="dropdown-menu">
+                            <li><a href="javascript:" data-modal="languages_edit" data-url="http://127.0.0.1:8000/admin/languages/cz/edit">Edit</a></li>
+                            <li><a href="http://127.0.0.1:8000/admin/translations/cz">Translate</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+                    <tr data-language="dk"
+                data-state="1"
+                data-search="danish dk">
+                <td>
+                    <span class="al-pill al-pill--on">
+                        Active
+                    </span>
+                </td>
+                <td>
+                    <img class="al-flag" src="http://127.0.0.1:8000/assets/images/header/dk.png" alt="">
+                    Danish
+                </td>
+                <td class="actions">
+                    <div class="btn-group dropdown droparrow" data-position="fixed">
+                        <i class="btn icon edit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                           title="Edit" aria-label="Edit"></i>
+                        <ul class="dropdown-menu">
+                            <li><a href="javascript:" data-modal="languages_edit" data-url="http://127.0.0.1:8000/admin/languages/dk/edit">Edit</a></li>
+                            <li><a href="http://127.0.0.1:8000/admin/translations/dk">Translate</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+        
+        <tr class="languages-none is-hidden">
+            <td class="no-data" colspan="3">
+                <div class="al-empty al-empty--inline">
+                    <div class="al-empty__icon"><i class="fas fa-magnifying-glass"></i></div>
+                    <p class="al-empty__text">No language matches your search.</p>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+        </div>
+    </div>
+</div>
+    </div>
+</div>
+
+<div id="footer">
+    <div class="container-fluid">
+        <p>
+            <span>2026 &copy; GPS Server
+            | 39.51.59.149
+            | v3.7.8
+                            
+                | Last update: 18-09-2026 05:17:22 PM
+
+                
+                                        </span>
+        </p>
+    </div>
+</div>
+
+<script>
+    window.lang = {
+        select_all: 'Select all',
+        deselect_all: 'Deselect All',
+        no_results_matched: 'No results matched',
+        close: 'Close',
+        device: 'Device',
+        address: 'Address',
+        position: 'Position',
+        altitude: 'Altitude',
+        speed: 'Speed',
+        angle: 'Angle',
+        time: 'Time',
+        model: 'Model',
+        plate: 'Plate',
+        protocol: 'Protocol',
+        alerts_maximum_date_range: 'Maximum date range is 90 days.',
+        successfully_created_alert: 'Successfully created alert',
+        successfully_updated_alert: 'Successfully updated alert',
+        geofence: 'Geofence',
+        event: 'Event',
+        successfully_created_geofence: 'Successfully created geofence',
+        successfully_updated_geofence: 'Successfully updated geofence',
+        came: 'Came',
+        left: 'Left',
+        duration: 'Duration',
+        route_length: 'Route length',
+        move_duration: 'Move Duration',
+        stop_duration: 'Stop duration',
+        top_speed: 'Top speed',
+        fuel_cons: 'Fuel cons.',
+        parameters: 'Parameters',
+        driver: 'Driver',
+        street_view: 'Street view',
+        preview: 'Preview',
+        route_start: 'Route start',
+        route_end: 'Route end',
+        sensors: 'Sensors',
+        successfully_created_route: 'Successfully created route',
+        successfully_updated_route: 'Successfully updated route',
+        gps: 'GPS',
+        lat: 'Latitude',
+        lng: 'Longitude',
+        all_parameters: 'Show more',
+        hide_parameters: 'Show less',
+        nothing_selected: 'Nothing selected',
+        color: 'Color',
+        from: 'From',
+        to: 'To',
+        add: 'Add',
+        follow: 'Follow',
+        on: 'On ',
+        off: 'Off',
+        streetview: 'Street view',
+        successfully_created_marker: 'Successfully created marker',
+        successfully_updated_marker: 'Successfully updated marker',
+        status_offline: 'Offline',
+        status_online: 'Online',
+        status_ack: 'ACK',
+        status_engine: 'Engine',
+        alert: 'Alert',
+        short_h: 'h',
+        short_m: 'min',
+        short_s: 's',
+        distance: 'Distance',
+        remove: 'Delete',
+        expiration_date: 'Expiration date'
+    };
+</script>
+<script src="http://127.0.0.1:8000/assets/js/core.js?t=1788947823"></script>
+<script src="http://127.0.0.1:8000/assets/js/app.js?t=1789805475"></script>
+
+<script type="text/javascript">
+    $.extend(true, app, {"debug":false,"user_id":1,"version":"3.7.8","firstLogin":false,"offlineTimeout":300,"checkFrequency":5,"checkChatFrequency":5,"checkChatUnreadFrequency":60,"lang":{"key":"en","iso":"en","iso3":"eng","title":"English(USA)","active":true,"dir":"ltr","flag":"en.png","locale":"en_US"},"object_listview":0,"channels":{"userChannel":"3f49044c1469c6990a665f46ec6c0a41"},"settings":{"units":{"speed":{"unit":"kph","radio":1},"distance":{"unit":"Km","radio":1},"altitude":{"unit":"m","radio":1},"capacity":{"unit":"L","radio":1}},"durationFormat":"standart","timeFormat":"hh:mm:ss A","dateFormat":"DD-MM-YYYY","weekStart":1,"shiftFrom_a":null,"shiftTo_a":null,"shiftFrom_b":null,"shiftTo_b":null,"shiftFrom_c":null,"shiftTo_c":null,"mapCenter":{"lat":51.505,"lng":-0.09},"mapZoom":"19","map_id":2,"availableMaps":["2"],"toggleSidebar":false,"showTraffic":false,"showTotalDistance":0,"animateDeviceMove":"1","showGeofenceSize":0,"showEventSectionAddress":0,"showDevice":1,"showGeofences":1,"showRoutes":true,"showPoi":true,"showTail":true,"showNames":1,"showHistoryRoute":true,"showHistoryArrow":true,"showHistoryStop":true,"showHistoryEvent":true,"keys":{"google_maps_key":"","here_map_id":null,"here_map_code":null,"here_api_key":"","mapbox_access_token":"","bing_maps_key":"","maptiler_key":"","tomtom_key":""},"googleQueryParam":{"key":"","language":"en"},"openmaptiles_url":"","showStreetView":false},"urls":{"asset":"http:\/\/127.0.0.1:8000\/","streetView":"http:\/\/127.0.0.1:8000\/streetview.jpg","geoAddress":"http:\/\/127.0.0.1:8000\/address","events":"http:\/\/127.0.0.1:8000\/events","eventDoDelete":"http:\/\/127.0.0.1:8000\/events\/do_destroy","history":"http:\/\/127.0.0.1:8000\/history","historyExport":"http:\/\/127.0.0.1:8000\/history\/export","historyPosition":"http:\/\/127.0.0.1:8000\/history\/position","historyPositions":"http:\/\/127.0.0.1:8000\/history\/positions","historyPositionsDelete":"http:\/\/127.0.0.1:8000\/history\/delete_positions","check":"http:\/\/127.0.0.1:8000\/objects\/items_json","devicesMap":"http:\/\/127.0.0.1:8000\/objects\/items","devicesSidebar":"http:\/\/127.0.0.1:8000\/objects\/sidebar","deviceDelete":"http:\/\/127.0.0.1:8000\/objects\/destroy","deviceChangeActive":"http:\/\/127.0.0.1:8000\/devices\/change_active","deviceToggleGroup":"http:\/\/127.0.0.1:8000\/objects\/change_group_status","deviceStopTime":"http:\/\/127.0.0.1:8000\/objects\/stop_time\/","deviceFollow":"http:\/\/127.0.0.1:8000\/devices\/follow_map\/","devicesSensorCreate":"http:\/\/127.0.0.1:8000\/sensors\/create\/","devicesServiceCreate":"http:\/\/127.0.0.1:8000\/services\/create\/","devicesServices":"http:\/\/127.0.0.1:8000\/services\/index\/","devicesCommands":"http:\/\/127.0.0.1:8000\/devices\/commands","deviceImages":"http:\/\/127.0.0.1:8000\/device_media\/images\/","deviceImage":"http:\/\/127.0.0.1:8000\/device_media\/image\/","deleteImage":"http:\/\/127.0.0.1:8000\/device_media\/delete\/","deviceSendGprsCommand":"http:\/\/127.0.0.1:8000\/send_command\/gprs","deviceWidgetLocation":"http:\/\/127.0.0.1:8000\/device\/widgets\/location\/","deviceWidgetCameras":"http:\/\/127.0.0.1:8000\/device\/widgets\/cameras\/","deviceWidgetImage":"http:\/\/127.0.0.1:8000\/device\/widgets\/image\/","deviceWidgetUploadImage":"http:\/\/127.0.0.1:8000\/devices\/image\/upload\/","deviceWidgetFuelGraph":"http:\/\/127.0.0.1:8000\/device\/widgets\/fuel_graph\/","deviceWidgetGprsCommand":"http:\/\/127.0.0.1:8000\/device\/widgets\/gprs_command\/","deviceWidgetRecentEvents":"http:\/\/127.0.0.1:8000\/device\/widgets\/recent_events\/","deviceWidgetTemplateWebhook":"http:\/\/127.0.0.1:8000\/device\/widgets\/template_webhook\/","deviceWidgetSummary":"http:\/\/127.0.0.1:8000\/device\/widgets\/summary\/","geofencesMap":"http:\/\/127.0.0.1:8000\/geofences","geofencesSidebar":"http:\/\/127.0.0.1:8000\/geofences\/sidebar","geofenceCreate":"http:\/\/127.0.0.1:8000\/geofences\/create","geofenceEdit":"http:\/\/127.0.0.1:8000\/geofences\/edit","geofenceChangeActive":"http:\/\/127.0.0.1:8000\/geofences\/change_active","geofenceDelete":"http:\/\/127.0.0.1:8000\/geofences\/destroy?action=proceed","geofencesExportType":"http:\/\/127.0.0.1:8000\/geofences\/export_type","geofenceDevices":"http:\/\/127.0.0.1:8000\/geofences\/devices","geofencesImport":"http:\/\/127.0.0.1:8000\/geofences\/import","geofenceToggleGroup":"http:\/\/127.0.0.1:8000\/geofences_groups\/change_status","routesSidebar":"http:\/\/127.0.0.1:8000\/routes\/sidebar","routesMap":"http:\/\/127.0.0.1:8000\/route","routesCreate":"http:\/\/127.0.0.1:8000\/route\/create","routesEdit":"http:\/\/127.0.0.1:8000\/route\/edit","routeChangeActive":"http:\/\/127.0.0.1:8000\/route\/change_active","routeDelete":"http:\/\/127.0.0.1:8000\/route\/destroy?action=proceed","routesExportType":"http:\/\/127.0.0.1:8000\/routes\/export_type","routeToggleGroup":"http:\/\/127.0.0.1:8000\/route_groups\/change_status","alerts":"http:\/\/127.0.0.1:8000\/alerts","alertEdit":"http:\/\/127.0.0.1:8000\/alerts\/edit","alertChangeActive":"http:\/\/127.0.0.1:8000\/alerts\/change_active","alertDelete":"http:\/\/127.0.0.1:8000\/alerts\/destroy","alertGetEventsByDevice":"http:\/\/127.0.0.1:8000\/alerts\/custom_events","alertGetCommands":"http:\/\/127.0.0.1:8000\/alerts\/commands","poisMap":"http:\/\/127.0.0.1:8000\/pois","poisSidebar":"http:\/\/127.0.0.1:8000\/pois\/sidebar","poisCreate":"http:\/\/127.0.0.1:8000\/pois\/create","poisEdit":"http:\/\/127.0.0.1:8000\/pois\/edit","poisDelete":"http:\/\/127.0.0.1:8000\/pois\/destroy?action=proceed","poisChangeActive":"http:\/\/127.0.0.1:8000\/pois\/change_active","poisExportType":"http:\/\/127.0.0.1:8000\/pois\/export_type","poisToggleGroup":"http:\/\/127.0.0.1:8000\/pois_groups\/change_status","changeMap":"http:\/\/127.0.0.1:8000\/my_account\/change_map","changeMapSettings":"http:\/\/127.0.0.1:8000\/my_account_settings\/change_map_settings","clearQueue":"http:\/\/127.0.0.1:8000\/sms_gateway\/clear_queue","dashboard":"http:\/\/127.0.0.1:8000\/dashboard","dashboardBlockContent":"http:\/\/127.0.0.1:8000\/dashboard\/block_content","lockHistory":"http:\/\/127.0.0.1:8000\/lock_status\/history\/","lockStatus":"http:\/\/127.0.0.1:8000\/lock_status\/status\/","unlockLock":"http:\/\/127.0.0.1:8000\/lock_status\/unlock\/","checklistUpdateRowStatus":"http:\/\/127.0.0.1:8000\/checklists\/update_row_status\/","checklistUpdateRowOutcome":"http:\/\/127.0.0.1:8000\/checklists\/update_row_outcome\/","checklistUploadFile":"http:\/\/127.0.0.1:8000\/checklists\/upload_file\/","checklistSign":"http:\/\/127.0.0.1:8000\/checklists\/sign_checklist\/","checklistGetRow":"http:\/\/127.0.0.1:8000\/checklists\/get_row\/","deviceConfigApnData":"http:\/\/127.0.0.1:8000\/devices_config\/getApnData\/","importGetFields":"http:\/\/127.0.0.1:8000\/import\/get_fields","chatUnreadMsgTotalCount":"http:\/\/127.0.0.1:8000\/chat\/unread\/count"}});
+</script>
+
+<script>
+    tables.set_config('table_languages', {
+        url:'http://127.0.0.1:8000/admin/languages'
+    });
+
+    function languages_edit_modal_callback() {
+        tables.get('table_languages');
+    }
+
+    /* -------- search and status filter, applied to the rendered rows -------- */
+    var languagesFilter = (function () {
+        var $scope = $('#table_languages');
+
+        function rows() {
+            return $scope.find('table tbody tr[data-language]');
+        }
+
+        // the counts are written straight to the DOM: the chips live outside the
+        // table the plugin rewrites, so nothing else can touch them
+        function setCount(state, value) {
+            var chip = document.querySelector('#table_languages .al-filter[data-state="' + state + '"] .al-filter__count');
+
+            if (chip)
+                chip.textContent = String(value);
+        }
+
+        function apply() {
+            var query = $.trim($('#languages-search').val() || '').toLowerCase();
+            var state = ($scope.find('.al-filter.is-active').attr('data-state') || 'all') + '';
+            var all = rows();
+            var shown = 0;
+
+            all.each(function () {
+                var $row = $(this);
+                var matchesText = !query || ($row.attr('data-search') + '').indexOf(query) !== -1;
+                var matchesState = (state === 'all') || ($row.attr('data-state') + '' === state);
+                var hit = matchesText && matchesState;
+
+                $row.toggleClass('is-hidden', !hit);
+
+                if (hit)
+                    shown++;
+            });
+
+            $scope.find('.languages-none').toggleClass('is-hidden', shown !== 0 || all.length === 0);
+
+            var counter = $('#languages-count').get(0);
+
+            if (counter)
+                counter.textContent = shown + ' of ' + all.length + ' languages';
+        }
+
+        function counts() {
+            var all = rows();
+            var active = 0;
+
+            all.each(function () {
+                if (String($(this).attr('data-state')) === '1')
+                    active++;
+            });
+
+            setCount('all', all.length);
+            setCount('1', active);
+            setCount('0', all.length - active);
+        }
+
+        return {
+            init: function () {
+                $scope.on('input', '#languages-search', apply);
+
+                $scope.on('click', '.al-filter', function () {
+                    $(this).addClass('is-active').siblings().removeClass('is-active');
+                    apply();
+                });
+
+                // the table plugin swaps the card's contents after an edit, so keep
+                // the filter applied to whatever it renders
+                if (window.MutationObserver) {
+                    var target = $scope.find('[data-table]').get(0);
+
+                    if (target) {
+                        new MutationObserver(function () {
+                            counts();
+                            apply();
+                        }).observe(target, {childList: true, subtree: true});
+                    }
+                }
+
+                counts();
+                apply();
+            }
+        };
+    })();
+
+    $(function () {
+        languagesFilter.init();
+    });
+</script>
+<script type="text/javascript">
+   $(document).ready(function(){
+     // Expandable sidebar items open as flyouts on hover (same as frontend).
+     // On the admin layout this replaces the old inline slideToggle behavior.
+     var $nav = $('.page__nav.nave');
+     if ($nav.length) {
+       // Find every .sub-menu and attach it to its triggering <a> element.
+       // In the admin layout the sub-menu is a sibling of its <a> (both direct
+       // children of <ul>), so we locate the preceding <a class="sub-btn">.
+       $nav.find('.sub-menu').each(function(){
+         var $menu = $(this);
+         var $trigger = $menu.prevAll('a.nav__link.sub-btn').first();
+         if (!$trigger.length) return;
+
+         $menu.addClass('nave-flyout').appendTo('body');
+
+         var timer = null;
+         var show = function() { clearTimeout(timer); $menu.addClass('open'); };
+         var hide = function() { timer = setTimeout(function() { $menu.removeClass('open'); }, 120); };
+
+         $trigger.on('mouseenter', function(){
+           var pos = $trigger.offset();
+           $menu.css({
+             top: Math.min(pos.top, $(window).height() - $menu.outerHeight() - 8),
+             left: pos.left + $trigger.outerWidth() + 8
+           });
+           show();
+         });
+         $trigger.on('mouseleave', hide);
+         $menu.on('mouseenter', show).on('mouseleave', hide);
+       });
+     }
+   });
+   </script>
+<script>
+    $.ajaxSetup({cache: false});
+    window.lang = {
+        nothing_selected: 'Nothing selected',
+        color: 'Color',
+        from: 'From',
+        to: 'To',
+        add: 'Add'
+    };
+    app.lang = {"key":"en","iso":"en","iso3":"eng","title":"English(USA)","active":true,"dir":"ltr","flag":"en.png","locale":"en_US"};
+    app.initSocket();
+</script>
+
+<div class="modal" id="modalDeleteConfirm">
+    <div class="contents">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 class="modal-title thin" id="modalConfirmLabel">Delete</h3>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-main" onclick="modal_delete.del();">Yes</button>
+                    <button class="btn btn-side" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="js-confirm-link" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                loading
+            </div>
+            <div class="modal-footer" style="margin-top: 0">
+                <button type="button" value="confirm" class="btn btn-main submit js-confirm-link-yes">Confirm</button>
+                <button type="button" value="cancel" class="btn btn-side" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="modalError">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 class="modal-title thin" id="modalErrorLabel">Error occurred</h3>
+            </div>
+            <div class="modal-body">
+                <p class="alert alert-danger"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn default" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="modalSuccess">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 class="modal-title thin" id="modalSuccessLabel">Success</h3>
+            </div>
+            <div class="modal-body">
+                <p class="alert alert-success"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn default" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+</main>
+</body>
+</html>
+
+ 

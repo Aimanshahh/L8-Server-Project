@@ -1,0 +1,1109 @@
+/* ==========================================================================
+   Admin list pages — modern SaaS redesign
+   Shared by simple table screens: Device expenses types, Pages,
+   GPS device activation (device_config) and APN configuration (apn_config).
+   The .al- prefix is the shared "list page" block.
+   Palette: #2563EB blue | #172033 dark | #64748B muted | #E2E8F0 border
+   ========================================================================== */
+
+/* the admin main area scroll rules now live in sidebar-overrides.css (shared
+   by every admin page) so list pages and settings pages behave the same */
+
+.al-page {
+    background: #F5F7FB;
+    padding: 28px 28px 56px;
+    min-height: 100%;
+    font-family: inherit;
+    color: #172033;
+}
+
+/* ---------------------------------------------------------------- header */
+.al-page__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.al-page__title-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.al-page__title-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    background: #EFF6FF;
+    color: #2563EB;
+    font-size: 19px;
+    flex-shrink: 0;
+}
+
+.al-page__title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #172033;
+}
+
+.al-page__subtitle {
+    margin: 5px 0 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: #64748B;
+}
+
+.al-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 18px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    color: #fff;
+    background: #2563EB;
+    border: 1px solid #2563EB;
+    border-radius: 8px;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, .28);
+    transition: background .15s, border-color .15s;
+    white-space: nowrap;
+    overflow: visible;
+    min-width: 0;
+    text-overflow: clip;
+}
+
+.al-add:hover,
+.al-add:focus {
+    background: #1D4ED8;
+    border-color: #1D4ED8;
+    color: #fff;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: visible;
+}
+
+/* ------------------------------------------------------------- main card */
+.al-card {
+    background: #fff;
+    border: 1px solid #E8EDF3;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(23, 32, 51, .05);
+    /* keep visible so row action dropdowns are never clipped */
+    overflow: visible;
+}
+
+.al-card > .panel-body,
+.al-card .panel-body {
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.al-card .panel-heading,
+.al-card .panel-title {
+    border: 0;
+    background: transparent;
+    margin: 0;
+    padding: 0;
+}
+
+/* --------------------------------------------------------------- toolbar */
+.al-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    min-height: 68px;
+    padding: 14px 22px;
+    border-bottom: 1px solid #EEF2F7;
+}
+
+.al-card > .al-toolbar:last-child { border-bottom: 0; }
+
+.al-search {
+    position: relative;
+    flex: 1 1 280px;
+    min-width: 200px;
+    max-width: 420px;
+}
+
+.al-search > i.fas {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94A3B8;
+    font-size: 13px;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.al-search input[type="text"] {
+    width: 100%;
+    height: 40px;
+    box-sizing: border-box;
+    padding: 0 14px 0 38px;
+    font-size: 13px;
+    color: #172033;
+    background: #fff;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    box-shadow: none;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.al-search input[type="text"]::placeholder { color: #94A3B8; }
+
+.al-search input[type="text"]:focus {
+    border-color: #93B4F7;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+}
+
+.al-toolbar__count {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #475569;
+    background: #F1F5F9;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+/* ----------------------------------------------------------------- table */
+.al-card .table-responsive {
+    border: 0;
+    margin: 0;
+    overflow: visible;
+}
+
+.al-card table.table-list {
+    width: 100%;
+    margin: 0;
+    border: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: transparent;
+}
+
+.al-card table.table-list > thead > tr > th {
+    padding: 13px 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    text-align: left;
+    color: #64748B;
+    background: #F8FAFC;
+    border: 0;
+    border-bottom: 1px solid #EEF2F7;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.al-card table.table-list > tbody > tr > td {
+    padding: 16px 20px;
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: #172033;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid #F1F5F9;
+    vertical-align: middle;
+}
+
+.al-card table.table-list > tbody > tr:last-child > td { border-bottom: 0; }
+
+.al-card table.table-list > tbody > tr:hover > td { background: #F8FAFC; }
+
+/* the checkbox column stays narrow, the actions column is right aligned */
+.al-card table.table-list[data-toggle="multiCheckbox"] > thead > tr > th:first-child,
+.al-card table.table-list[data-toggle="multiCheckbox"] > tbody > tr > td:first-child {
+    width: 56px;
+    padding-right: 0;
+}
+
+.al-card table.table-list > thead > tr > th:last-child,
+.al-card table.table-list > tbody > tr > td:last-child {
+    width: 148px;
+    padding-left: 0;
+    text-align: right;
+}
+
+.al-card table.table-list > tbody > tr > td.actions { white-space: nowrap; }
+
+/* checkbox */
+.al-card table.table-list .checkbox {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    padding: 0;
+}
+
+.al-card table.table-list .checkbox input[type="checkbox"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 18px;
+    height: 18px;
+    box-sizing: border-box;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.al-card table.table-list .checkbox label {
+    position: relative;
+    display: block;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+    border: 1.5px solid #CBD5E1;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+}
+
+.al-card table.table-list .checkbox:hover label { border-color: #93B4F7; }
+
+.al-card table.table-list .checkbox input[type="checkbox"]:checked + label {
+    background: #2563EB;
+    border-color: #2563EB;
+}
+
+.al-card table.table-list .checkbox input[type="checkbox"]:checked + label::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    width: 5px;
+    height: 10px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* sortable header links keep the muted header look */
+.al-card table.table-list > thead > tr > th a,
+.al-card table.table-list > thead > tr > th span {
+    color: inherit;
+    text-decoration: none;
+}
+
+.al-card table.table-list > thead > tr > th a:hover { color: #2563EB; }
+
+/* --------------------------------------------------------------- helpers */
+.al-muted { color: #64748B; }
+
+.al-code {
+    display: inline-block;
+    padding: 3px 9px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #475569;
+    background: #F8FAFC;
+    border: 1px solid #EEF2F7;
+    border-radius: 6px;
+}
+
+/* small category chips (e.g. command template type) */
+.al-chip {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 10px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    color: #1D4ED8;
+    background: #EFF6FF;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.al-chip--violet {
+    color: #6D28D9;
+    background: #F5F3FF;
+}
+
+.al-chip--neutral {
+    color: #475569;
+    background: #F1F5F9;
+}
+
+.al-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 24px;
+    padding: 0 11px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.al-pill::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+}
+
+.al-pill--on {
+    background: #DCFCE7;
+    color: #15803D;
+}
+
+.al-pill--off {
+    background: #F1F5F9;
+    color: #64748B;
+}
+
+/* ------------------------------------------------- row action dropdown */
+.al-card table.table-list td.actions .dropdown { display: inline-block; }
+
+.al-card table.table-list td.actions .btn.icon.edit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    font-size: 13px;
+    color: #475569;
+    background: #fff;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    box-shadow: none;
+    cursor: pointer;
+    transition: color .15s, border-color .15s, background .15s;
+}
+
+.al-card table.table-list td.actions .btn.icon.edit:hover,
+.al-card table.table-list td.actions .dropdown.open > .btn.icon.edit {
+    color: #2563EB;
+    border-color: #93B4F7;
+    background: #F8FAFC;
+}
+
+.al-card table.table-list td.actions .dropdown-menu {
+    min-width: 176px;
+    margin-top: 8px;
+    padding: 6px;
+    background: #fff;
+    border: 1px solid #E8EDF3;
+    border-radius: 10px;
+    box-shadow: 0 12px 28px rgba(23, 32, 51, .14);
+}
+
+.al-card table.table-list td.actions .dropdown-menu > li + li { margin-top: 2px; }
+
+.al-card table.table-list td.actions .dropdown-menu > li > a {
+    display: block;
+    padding: 9px 12px;
+    font-size: 13px;
+    line-height: 1.35;
+    color: #334155;
+    border-radius: 7px;
+    text-decoration: none;
+}
+
+.al-card table.table-list td.actions .dropdown-menu > li > a:hover,
+.al-card table.table-list td.actions .dropdown-menu > li > a:focus {
+    background: #F1F5F9;
+    color: #172033;
+    text-decoration: none;
+}
+
+.al-card table.table-list td.actions .dropdown-menu > li > a.al-danger { color: #DC2626; }
+
+.al-card table.table-list td.actions .dropdown-menu > li > a.al-danger:hover,
+.al-card table.table-list td.actions .dropdown-menu > li > a.al-danger:focus {
+    background: #FEF2F2;
+    color: #B91C1C;
+}
+
+/* ------------------------------------------------------------ empty state */
+.al-card table.table-list > tbody > tr > td.no-data {
+    width: auto;
+    padding: 0;
+    border: 0;
+    text-align: center;
+}
+
+.al-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 72px 24px;
+    text-align: center;
+}
+
+.al-empty__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: #F1F5F9;
+    color: #94A3B8;
+    font-size: 18px;
+}
+
+.al-empty__text {
+    margin: 0;
+    font-size: 13.5px;
+    color: #64748B;
+}
+
+/* ------------------------------------------------------------- pagination */
+.al-card .nav-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0;
+    padding: 14px 22px 16px;
+    border-top: 1px solid #EEF2F7;
+}
+
+.al-card .nav-pagination > .pagination { margin: 0 0 0 auto; }
+
+.al-card .pagination {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.al-card .pagination > li { list-style: none; }
+
+.al-card .pagination > li > a,
+.al-card .pagination > li > span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    margin: 0;
+    font-size: 12.5px;
+    color: #334155;
+    background: #fff;
+    border: 1px solid #E2E8F0;
+    border-radius: 7px;
+}
+
+.al-card .pagination > li > a:hover { background: #F8FAFC; }
+
+.al-card .pagination > .active > a,
+.al-card .pagination > .active > span {
+    background: #2563EB;
+    border-color: #2563EB;
+    color: #fff;
+}
+
+.al-card .pagination > .disabled > a,
+.al-card .pagination > .disabled > span { color: #CBD5E1; background: #fff; }
+
+.al-card .table_error {
+    padding: 14px 22px 0;
+}
+
+.al-card .table_error .alert {
+    margin: 0;
+    font-size: 13px;
+    border-radius: 8px;
+}
+
+/* ------------------------------------------------ secondary header actions */
+.al-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 16px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    color: #334155;
+    background: #fff;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color .15s, background-color .15s, border-color .15s;
+}
+
+.al-ghost > i {
+    font-size: 14px;
+    color: #64748B;
+    transition: color .15s;
+}
+
+.al-ghost:hover,
+.al-ghost:focus {
+    color: #1D4ED8;
+    background: #F8FAFC;
+    border-color: #BFD4F7;
+    text-decoration: none;
+}
+
+.al-ghost:hover > i,
+.al-ghost:focus > i { color: #1D4ED8; }
+
+/* several actions in the page header, which is a flex row */
+.al-page__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ------------------------------------------------- status filter chips */
+.al-filters {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px;
+    background: #F1F5F9;
+    border-radius: 9px;
+}
+
+.al-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 13px;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1;
+    color: #475569;
+    background: transparent;
+    border: 0;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: color .15s, background-color .15s;
+}
+
+.al-filter:hover { color: #1D4ED8; }
+
+.al-filter.is-active {
+    color: #172033;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(23, 32, 51, .10);
+}
+
+.al-filter__count {
+    min-width: 20px;
+    padding: 1px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748B;
+    background: #E2E8F0;
+    border-radius: 999px;
+    text-align: center;
+}
+
+.al-filter.is-active .al-filter__count {
+    color: #1D4ED8;
+    background: #EFF6FF;
+}
+
+/* --------------------------------------------- long list stays contained */
+/* for lists that can run long the table scrolls inside its card and the column
+   headings stay put while the rows move under them */
+.al-card--scroll .table-responsive {
+    max-height: calc(100vh - 350px);
+    min-height: 220px;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #C7D7E3 transparent;
+}
+
+.al-card--scroll .table-responsive::-webkit-scrollbar { width: 9px; height: 9px; }
+.al-card--scroll .table-responsive::-webkit-scrollbar-track { background: transparent; }
+.al-card--scroll .table-responsive::-webkit-scrollbar-thumb {
+    border-radius: 9px;
+    background: #C7D7E3;
+}
+
+.al-card--scroll table.table-list > thead > tr > th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: #F8FAFC;
+    box-shadow: inset 0 -1px 0 #EEF2F7;
+}
+
+/* rows removed by the search / status filter */
+.al-card table.table-list > tbody > tr.is-hidden { display: none; }
+
+/* the "nothing matches" row keeps the table height steady while filtering */
+.al-card table.table-list > tbody > tr td .al-empty--inline {
+    padding: 44px 24px;
+}
+
+/* country flag in a language row */
+.al-flag {
+    width: 21px;
+    height: 15px;
+    margin-right: 9px;
+    object-fit: cover;
+    vertical-align: -2px;
+    border-radius: 2px;
+}
+
+/* ------------------------------------------------- backups helpers */
+.al-progress {
+    width: 140px;
+    height: 18px;
+    background: #EEF2F7;
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid #E2E8F0;
+}
+
+.al-progress__bar {
+    height: 100%;
+    background: #2563EB;
+    border-radius: 999px;
+    font-size: 11px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    transition: width .2s ease;
+    white-space: nowrap;
+    font-weight: 600;
+    padding: 0 4px;
+}
+
+.al-message {
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ------------------------------------------------------------ responsive */
+@media (max-width: 991px) {
+    .al-page { padding: 20px 18px 44px; }
+}
+
+@media (max-width: 767px) {
+    .al-toolbar { padding: 14px 16px; }
+    .al-search { max-width: none; }
+
+    /* the table scrolls inside its card instead of pushing the page wider.
+       Safe for the row menu: those dropdowns use data-position="fixed". */
+    .al-card .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* let the header labels wrap so narrow screens stay overflow-free */
+    .al-card table.table-list > thead > tr > th { white-space: normal; }
+
+    .al-card table.table-list > thead > tr > th,
+    .al-card table.table-list > tbody > tr > td { padding: 13px 14px; }
+
+    .al-card table.table-list > thead > tr > th:last-child,
+    .al-card table.table-list > tbody > tr > td:last-child { width: auto; }
+
+    .al-card table.table-list[data-toggle="multiCheckbox"] > thead > tr > th:first-child,
+    .al-card table.table-list[data-toggle="multiCheckbox"] > tbody > tr > td:first-child {
+        width: 46px;
+    }
+
+    .al-card .nav-pagination { justify-content: center; padding: 14px 16px; }
+    .al-card .nav-pagination > .pagination { margin: 0; }
+}
+
+@media (max-width: 900px) {
+    .al-page__actions { width: 100%; }
+    .al-page__actions .al-ghost { flex: 1 1 auto; justify-content: center; }
+    .al-card--scroll .table-responsive { max-height: none; overflow: visible; }
+}
+
+@media (max-width: 480px) {
+    .al-page__title { font-size: 19px; }
+    .al-add {
+        width: 100%;
+        justify-content: center;
+    }
+    .al-empty { padding: 52px 16px; }
+}
+
+/* ==========================================================================
+   Admin form pages — shared fields, switches and notes.
+   A settings screen opts in with class="al-page al-formpage" on its wrapper,
+   so nothing in this block can reach a list page, the sidebar or a dialog.
+   ========================================================================== */
+
+/* margins are used instead of flex gaps for the blocks a page shows and hides
+   with jQuery, because .show() writes display:block back onto them */
+.al-formpage .al-card__body {
+    padding: 22px;
+}
+
+.al-formpage .al-card__body > * + * { margin-top: 20px; }
+
+.al-formpage .request-method > * + * { margin-top: 20px; }
+
+/* a row of labelled fields that wraps down to one column on narrow screens */
+.al-form-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 16px 22px;
+}
+
+/* fields stay readable instead of stretching across a wide card */
+.al-form-field {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 240px;
+    max-width: 340px;
+    min-width: 0;
+}
+
+/* long values (URLs, headers, free text) use the whole row */
+.al-form-field--wide {
+    flex: 1 1 100%;
+    max-width: none;
+}
+
+.al-form-field > label {
+    margin: 0 0 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #64748B;
+}
+
+/* the theme's list pages style their own toolbar input, this covers forms */
+.al-formpage .form-control {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: #172033;
+    background: #fff;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    box-shadow: none;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.al-formpage textarea.form-control {
+    height: auto;
+    min-height: 76px;
+    padding: 10px 12px;
+    line-height: 1.55;
+    resize: vertical;
+}
+
+.al-formpage .form-control::placeholder { color: #94A3B8; }
+
+.al-formpage .form-control:focus {
+    border-color: #93B4F7;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+}
+
+/* native select: draw our own chevron so it matches the enhanced ones */
+.al-formpage select.form-control {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 38px;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 14px 14px;
+}
+
+.al-formpage select.form-control[multiple],
+.al-formpage select.form-control[size] {
+    height: auto;
+    min-height: 96px;
+    padding: 8px 12px;
+    background-image: none;
+}
+
+/* bootstrap-select swaps every select.form-control for its own markup, which
+   also carries the .form-control class — skin the wrapper and its button */
+.al-formpage .bootstrap-select.form-control {
+    width: 100% !important;
+    height: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.al-formpage .bootstrap-select > .dropdown-toggle,
+.al-formpage .bootstrap-select > .dropdown-toggle.btn,
+.al-formpage .bootstrap-select > .dropdown-toggle.btn-default {
+    height: 40px;
+    padding: 0 34px 0 12px;
+    font-family: inherit;
+    font-size: 13.5px;
+    line-height: 38px;
+    text-align: left;
+    color: #172033;
+    background-color: #fff;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 13px center;
+    background-size: 14px 14px;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    box-shadow: none;
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.al-formpage .bootstrap-select > .dropdown-toggle:focus,
+.al-formpage .bootstrap-select > .dropdown-toggle:active {
+    color: #172033;
+    background-color: #fff;
+    border-color: #93B4F7;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+}
+
+/* the chevron above replaces the plugin's legacy filled triangle */
+.al-formpage .bootstrap-select > .dropdown-toggle .bs-caret,
+.al-formpage .bootstrap-select > .dropdown-toggle .caret {
+    display: none !important;
+}
+
+.al-formpage .bootstrap-select > .dropdown-toggle .filter-option {
+    line-height: 38px;
+    padding-right: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* the wrapped list keeps its own scroll box */
+.al-formpage .bootstrap-select .dropdown-menu.inner {
+    border: 0;
+    box-shadow: none;
+    background: transparent;
+}
+
+.al-formpage .bootstrap-select .dropdown-menu {
+    margin-top: 6px;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    box-shadow: 0 10px 24px rgba(23, 32, 51, .12);
+}
+
+.al-formpage .bootstrap-select .dropdown-menu a {
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #172033;
+}
+
+.al-formpage .bootstrap-select .dropdown-menu a:hover,
+.al-formpage .bootstrap-select .dropdown-menu > li.selected > a {
+    background: #EFF6FF;
+    color: #1D4ED8;
+}
+
+/* small grey line under a field */
+.al-hint {
+    font-size: 12px;
+    line-height: 1.45;
+    color: #94A3B8;
+}
+
+/* live validation message under a field */
+.al-url-check.is-ok { color: #15803D; }
+.al-url-check.is-error { color: #DC2626; }
+
+/* a field with a button sitting inside its right edge (password reveal) */
+.al-input-reveal { position: relative; }
+
+.al-input-reveal .form-control { padding-right: 44px; }
+
+.al-input-reveal__toggle {
+    position: absolute;
+    top: 50%;
+    right: 5px;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    font-size: 13px;
+    color: #94A3B8;
+    background: none;
+    border: 0;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: color .15s, background-color .15s;
+}
+
+.al-input-reveal__toggle:hover,
+.al-input-reveal__toggle:focus {
+    color: #2563EB;
+    background: #F1F5F9;
+    outline: none;
+}
+
+/* informational note — variables, examples, placeholders */
+.al-callout {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #1E40AF;
+    background: #EFF6FF;
+    border: 1px solid #DBEAFE;
+    border-radius: 10px;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.al-callout > i {
+    margin-top: 3px;
+    font-size: 14px;
+    color: #2563EB;
+    flex-shrink: 0;
+}
+
+.al-callout > span { min-width: 0; }
+
+/* a row of on/off switches, separated from the fields below */
+.al-switch-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #EEF2F7;
+}
+
+.al-toolbar__switches {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 26px;
+}
+
+/* ------------------------------------------------------------- switch */
+.al-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.al-switch > input[type="checkbox"] {
+    position: absolute;
+    top: 2px;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    opacity: 0;
+}
+
+.al-switch__track {
+    position: relative;
+    flex: 0 0 38px;
+    width: 38px;
+    height: 22px;
+    background: #CBD5E1;
+    border-radius: 999px;
+    transition: background .18s;
+}
+
+.al-switch__track::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(23, 32, 51, .3);
+    transition: transform .18s;
+}
+
+.al-switch > input[type="checkbox"]:checked + .al-switch__track { background: #2563EB; }
+
+.al-switch > input[type="checkbox"]:checked + .al-switch__track::after {
+    transform: translateX(16px);
+}
+
+.al-switch > input[type="checkbox"]:focus-visible + .al-switch__track {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .25);
+}
+
+.al-switch > input[type="checkbox"][disabled] + .al-switch__track {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.al-switch__label {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.35;
+    color: #172033;
+}
+
+.al-switch__hint {
+    display: block;
+    margin-top: 2px;
+    font-size: 12px;
+    font-weight: 400;
+    color: #94A3B8;
+}
+
+@media (max-width: 767px) {
+    .al-formpage .al-card__body { padding: 18px 16px; }
+    .al-form-field { flex-basis: 100%; }
+}

@@ -1,0 +1,71 @@
+.status-filters {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 0 12px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.status-chip {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 4px 7px;
+  border: 1px solid $color-border-200;
+  border-radius: 8px;
+  background: $color-bg-000;
+  cursor: pointer;
+  transition: box-shadow .15s ease, border-color .15s ease;
+
+  &:hover {
+    border-color: $color-border-100;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  }
+
+  &.active {
+    border-color: $brand-primary;
+    box-shadow: 0 0 0 1px $brand-primary;
+  }
+
+  .chip-icon {
+    font-size: 15px;
+    line-height: 1;
+    color: $brand-primary;
+  }
+
+  .chip-label {
+    font-size: 10px;
+    line-height: 1.2;
+    color: $color-text-500;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+  }
+
+  .chip-count {
+    font-weight: 700;
+    font-size: 17px;
+    line-height: 1.1;
+    color: $brand-primary;
+  }
+
+  &--running {
+    .chip-icon, .chip-count { color: #22c55e; }
+  }
+
+  &--idle {
+    .chip-icon, .chip-count { color: #f59e0b; }
+  }
+
+  &--stopped {
+    .chip-icon, .chip-count { color: #ef4444; }
+  }
+
+  &--nodata {
+    .chip-icon, .chip-count { color: $color-text-700; }
+  }
+}

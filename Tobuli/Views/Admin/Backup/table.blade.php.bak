@@ -1,0 +1,92 @@
+<table class="st-table">
+    <thead>
+    <tr>
+        {!! tableHeaderSort($items->sorting, 'name') !!}
+        {!! tableHeaderSort($items->sorting, 'launcher') !!}
+        {!! tableHeaderSort($items->sorting, 'created_at') !!}
+        {!! tableHeader('front.progress') !!}
+        {!! tableHeader('front.completed') !!}
+        {!! tableHeader('validation.attributes.message') !!}
+        {!! tableHeader('admin.actions', 'style="width:70px;text-align:right"') !!}
+    </tr>
+    </thead>
+    <tbody>
+    @php /** @var \Tobuli\Entities\Backup $item */ @endphp
+    @forelse ($items->getCollection() as $item)
+        <tr>
+            <td class="st-table__name">
+                <div class="st-table__name-cell">
+                    <span class="st-table__name-text">{{ $item->name }}</span>
+                </div>
+            </td>
+            <td>
+                <span class="st-table__tag st-table__tag--muted">{{ $item->launcher }}</span>
+            </td>
+            <td class="st-table__muted">{{ Formatter::time()->human($item->created_at) }}</td>
+            <td>
+                @php
+                    $done = $item->progressDone();
+                    $total = $item->progressTotal();
+                    $percentage = $total ? (int)($done / $total * 100) : 100;
+                @endphp
+
+                <div class="st-table__progress">
+                    <div class="st-table__progress-bar"
+                         role="progressbar"
+                         aria-valuenow="{{ $done }}"
+                         aria-valuemin="0"
+                         aria-valuemax="{{ $total }}"
+                         style="width: {{ $percentage }}%;">
+                        {{ $done }} / {{ $total }}
+                    </div>
+                </div>
+            </td>
+            <td>
+                <span class="st-table__pill {{ $item->isCompleted() ? 'st-table__pill--on' : 'st-table__pill--off' }}">
+                    {{ $item->isCompleted() ? trans('global.yes') : trans('global.no') }}
+                </span>
+            </td>
+            <td class="st-table__muted st-table__message">{{ $item->message ?: '&mdash;' }}</td>
+            <td class="text-right">
+                <div class="st-table__row-menu">
+                    <button type="button"
+                            class="st-table__row-menu-btn"
+                            data-toggle="dropdown"
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                            title="{{ trans('admin.view_details') }}">
+                        <svg class="st-table__row-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                    <ul class="st-table__row-menu-dropdown dropdown-menu">
+                        <li>
+                            <a class="st-table__row-menu-item st-table__row-menu-item--icon"
+                               href="javascript:"
+                               data-url="{{ route('admin.backup.processes', $item->id) }}"
+                               data-toggle="collapse"
+                               data-target="#backup-processes-{{ $item->id }}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="st-table__row-menu-item-icon">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                                {{ trans('admin.view_details') }}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </td>
+        </tr>
+        <tr class="row-table-inner">
+            <td colspan="7" id="backup-processes-{{ $item->id }}" aria-expanded="false" class="collapse"></td>
+        </tr>
+    @empty
+        <tr>
+            <td colspan="7" class="st-table__empty">
+                {{ trans('admin.no_data') }}
+            </td>
+        </tr>
+    @endforelse
+    </tbody>
+</table>
+
+@include('Admin.Layouts.partials.pagination')

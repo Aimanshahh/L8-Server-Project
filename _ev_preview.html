@@ -1,0 +1,931 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><style>body{background:#EEF2F7;margin:0;padding:24px;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}/* ==========================================================================
+   Admin list pages — modern SaaS redesign
+   Shared by simple table screens: Device expenses types, Pages,
+   GPS device activation (device_config) and APN configuration (apn_config).
+   The .al- prefix is the shared "list page" block.
+   Palette: #2563EB blue | #172033 dark | #64748B muted | #E2E8F0 border
+   ========================================================================== */
+
+/* the admin main area is overflow:hidden by default — let it scroll instead */
+body.admin-layout .page__main {
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #C7D7E3 transparent;
+}
+
+body.admin-layout .page__main::-webkit-scrollbar { width: 8px; }
+body.admin-layout .page__main::-webkit-scrollbar-track { background: transparent; }
+body.admin-layout .page__main::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    background: #C7D7E3;
+}
+body.admin-layout .page__main::-webkit-scrollbar-thumb:hover { background: #A9C2D4; }
+
+.al-page {
+    background: #F5F7FB;
+    padding: 28px 28px 56px;
+    min-height: 100%;
+    font-family: inherit;
+    color: #172033;
+}
+
+/* ---------------------------------------------------------------- header */
+.al-page__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.al-page__title-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.al-page__title-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    background: #EFF6FF;
+    color: #2563EB;
+    font-size: 19px;
+    flex-shrink: 0;
+}
+
+.al-page__title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #172033;
+}
+
+.al-page__subtitle {
+    margin: 5px 0 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: #64748B;
+}
+
+.al-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 18px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    color: #fff;
+    background: #2563EB;
+    border: 1px solid #2563EB;
+    border-radius: 8px;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, .28);
+    transition: background .15s, border-color .15s;
+}
+
+.al-add:hover,
+.al-add:focus {
+    background: #1D4ED8;
+    border-color: #1D4ED8;
+    color: #fff;
+    text-decoration: none;
+}
+
+/* ------------------------------------------------------------- main card */
+.al-card {
+    background: #fff;
+    border: 1px solid #E8EDF3;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(23, 32, 51, .05);
+    /* keep visible so row action dropdowns are never clipped */
+    overflow: visible;
+}
+
+.al-card > .panel-body,
+.al-card .panel-body {
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.al-card .panel-heading,
+.al-card .panel-title {
+    border: 0;
+    background: transparent;
+    margin: 0;
+    padding: 0;
+}
+
+/* --------------------------------------------------------------- toolbar */
+.al-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    min-height: 68px;
+    padding: 14px 22px;
+    border-bottom: 1px solid #EEF2F7;
+}
+
+.al-card > .al-toolbar:last-child { border-bottom: 0; }
+
+.al-search {
+    position: relative;
+    flex: 1 1 280px;
+    min-width: 200px;
+    max-width: 420px;
+}
+
+.al-search > i.fas {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94A3B8;
+    font-size: 13px;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.al-search input[type="text"] {
+    width: 100%;
+    height: 40px;
+    box-sizing: border-box;
+    padding: 0 14px 0 38px;
+    font-size: 13px;
+    color: #172033;
+    background: #fff;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    box-shadow: none;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.al-search input[type="text"]::placeholder { color: #94A3B8; }
+
+.al-search input[type="text"]:focus {
+    border-color: #93B4F7;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+}
+
+.al-toolbar__count {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #475569;
+    background: #F1F5F9;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+/* ----------------------------------------------------------------- table */
+.al-card .table-responsive {
+    border: 0;
+    margin: 0;
+    overflow: visible;
+}
+
+.al-card table.table-list {
+    width: 100%;
+    margin: 0;
+    border: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: transparent;
+}
+
+.al-card table.table-list > thead > tr > th {
+    padding: 13px 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    text-align: left;
+    color: #64748B;
+    background: #F8FAFC;
+    border: 0;
+    border-bottom: 1px solid #EEF2F7;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.al-card table.table-list > tbody > tr > td {
+    padding: 16px 20px;
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: #172033;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid #F1F5F9;
+    vertical-align: middle;
+}
+
+.al-card table.table-list > tbody > tr:last-child > td { border-bottom: 0; }
+
+.al-card table.table-list > tbody > tr:hover > td { background: #F8FAFC; }
+
+/* the checkbox column stays narrow, the actions column is right aligned */
+.al-card table.table-list[data-toggle="multiCheckbox"] > thead > tr > th:first-child,
+.al-card table.table-list[data-toggle="multiCheckbox"] > tbody > tr > td:first-child {
+    width: 56px;
+    padding-right: 0;
+}
+
+.al-card table.table-list > thead > tr > th:last-child,
+.al-card table.table-list > tbody > tr > td:last-child {
+    width: 148px;
+    padding-left: 0;
+    text-align: right;
+}
+
+.al-card table.table-list > tbody > tr > td.actions { white-space: nowrap; }
+
+/* checkbox */
+.al-card table.table-list .checkbox {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    padding: 0;
+}
+
+.al-card table.table-list .checkbox input[type="checkbox"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 18px;
+    height: 18px;
+    box-sizing: border-box;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.al-card table.table-list .checkbox label {
+    position: relative;
+    display: block;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+    border: 1.5px solid #CBD5E1;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+}
+
+.al-card table.table-list .checkbox:hover label { border-color: #93B4F7; }
+
+.al-card table.table-list .checkbox input[type="checkbox"]:checked + label {
+    background: #2563EB;
+    border-color: #2563EB;
+}
+
+.al-card table.table-list .checkbox input[type="checkbox"]:checked + label::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    width: 5px;
+    height: 10px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* sortable header links keep the muted header look */
+.al-card table.table-list > thead > tr > th a,
+.al-card table.table-list > thead > tr > th span {
+    color: inherit;
+    text-decoration: none;
+}
+
+.al-card table.table-list > thead > tr > th a:hover { color: #2563EB; }
+
+/* --------------------------------------------------------------- helpers */
+.al-muted { color: #64748B; }
+
+.al-code {
+    display: inline-block;
+    padding: 3px 9px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #475569;
+    background: #F8FAFC;
+    border: 1px solid #EEF2F7;
+    border-radius: 6px;
+}
+
+/* small category chips (e.g. command template type) */
+.al-chip {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 10px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    color: #1D4ED8;
+    background: #EFF6FF;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.al-chip--violet {
+    color: #6D28D9;
+    background: #F5F3FF;
+}
+
+.al-chip--neutral {
+    color: #475569;
+    background: #F1F5F9;
+}
+
+.al-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 24px;
+    padding: 0 11px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.al-pill::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+}
+
+.al-pill--on {
+    background: #DCFCE7;
+    color: #15803D;
+}
+
+.al-pill--off {
+    background: #F1F5F9;
+    color: #64748B;
+}
+
+/* ------------------------------------------------- row action dropdown */
+.al-card table.table-list td.actions .dropdown { display: inline-block; }
+
+.al-card table.table-list td.actions .btn.icon.edit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    font-size: 13px;
+    color: #475569;
+    background: #fff;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    box-shadow: none;
+    cursor: pointer;
+    transition: color .15s, border-color .15s, background .15s;
+}
+
+.al-card table.table-list td.actions .btn.icon.edit:hover,
+.al-card table.table-list td.actions .dropdown.open > .btn.icon.edit {
+    color: #2563EB;
+    border-color: #93B4F7;
+    background: #F8FAFC;
+}
+
+.al-card table.table-list td.actions .dropdown-menu {
+    min-width: 176px;
+    margin-top: 8px;
+    padding: 6px;
+    background: #fff;
+    border: 1px solid #E8EDF3;
+    border-radius: 10px;
+    box-shadow: 0 12px 28px rgba(23, 32, 51, .14);
+}
+
+.al-card table.table-list td.actions .dropdown-menu > li + li { margin-top: 2px; }
+
+.al-card table.table-list td.actions .dropdown-menu > li > a {
+    display: block;
+    padding: 9px 12px;
+    font-size: 13px;
+    line-height: 1.35;
+    color: #334155;
+    border-radius: 7px;
+    text-decoration: none;
+}
+
+.al-card table.table-list td.actions .dropdown-menu > li > a:hover,
+.al-card table.table-list td.actions .dropdown-menu > li > a:focus {
+    background: #F1F5F9;
+    color: #172033;
+    text-decoration: none;
+}
+
+.al-card table.table-list td.actions .dropdown-menu > li > a.al-danger { color: #DC2626; }
+
+.al-card table.table-list td.actions .dropdown-menu > li > a.al-danger:hover,
+.al-card table.table-list td.actions .dropdown-menu > li > a.al-danger:focus {
+    background: #FEF2F2;
+    color: #B91C1C;
+}
+
+/* ------------------------------------------------------------ empty state */
+.al-card table.table-list > tbody > tr > td.no-data {
+    width: auto;
+    padding: 0;
+    border: 0;
+    text-align: center;
+}
+
+.al-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 72px 24px;
+    text-align: center;
+}
+
+.al-empty__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: #F1F5F9;
+    color: #94A3B8;
+    font-size: 18px;
+}
+
+.al-empty__text {
+    margin: 0;
+    font-size: 13.5px;
+    color: #64748B;
+}
+
+/* ------------------------------------------------------------- pagination */
+.al-card .nav-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0;
+    padding: 14px 22px 16px;
+    border-top: 1px solid #EEF2F7;
+}
+
+.al-card .nav-pagination > .pagination { margin: 0 0 0 auto; }
+
+.al-card .pagination {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.al-card .pagination > li { list-style: none; }
+
+.al-card .pagination > li > a,
+.al-card .pagination > li > span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    margin: 0;
+    font-size: 12.5px;
+    color: #334155;
+    background: #fff;
+    border: 1px solid #E2E8F0;
+    border-radius: 7px;
+}
+
+.al-card .pagination > li > a:hover { background: #F8FAFC; }
+
+.al-card .pagination > .active > a,
+.al-card .pagination > .active > span {
+    background: #2563EB;
+    border-color: #2563EB;
+    color: #fff;
+}
+
+.al-card .pagination > .disabled > a,
+.al-card .pagination > .disabled > span { color: #CBD5E1; background: #fff; }
+
+.al-card .table_error {
+    padding: 14px 22px 0;
+}
+
+.al-card .table_error .alert {
+    margin: 0;
+    font-size: 13px;
+    border-radius: 8px;
+}
+
+/* ------------------------------------------------------------ responsive */
+@media (max-width: 991px) {
+    .al-page { padding: 20px 18px 44px; }
+}
+
+@media (max-width: 767px) {
+    .al-toolbar { padding: 14px 16px; }
+    .al-search { max-width: none; }
+
+    /* the table scrolls inside its card instead of pushing the page wider.
+       Safe for the row menu: those dropdowns use data-position="fixed". */
+    .al-card .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* let the header labels wrap so narrow screens stay overflow-free */
+    .al-card table.table-list > thead > tr > th { white-space: normal; }
+
+    .al-card table.table-list > thead > tr > th,
+    .al-card table.table-list > tbody > tr > td { padding: 13px 14px; }
+
+    .al-card table.table-list > thead > tr > th:last-child,
+    .al-card table.table-list > tbody > tr > td:last-child { width: auto; }
+
+    .al-card table.table-list[data-toggle="multiCheckbox"] > thead > tr > th:first-child,
+    .al-card table.table-list[data-toggle="multiCheckbox"] > tbody > tr > td:first-child {
+        width: 46px;
+    }
+
+    .al-card .nav-pagination { justify-content: center; padding: 14px 16px; }
+    .al-card .nav-pagination > .pagination { margin: 0; }
+}
+
+@media (max-width: 480px) {
+    .al-page__title { font-size: 19px; }
+    .al-add {
+        width: 100%;
+        justify-content: center;
+    }
+    .al-empty { padding: 52px 16px; }
+}
+</style></head><body><div class="al-page">
+
+    <div class="al-page__header">
+        <div class="al-page__title-group">
+            <div class="al-page__title-icon"><i class="fas fa-bell"></i></div>
+            <div>
+                <h1 class="al-page__title">Events</h1>
+                <p class="al-page__subtitle">Protocol events reported by devices and the parameters that trigger them</p>
+            </div>
+        </div>
+
+        <div class="al-page__actions">
+            <a href="javascript:" class="al-add"
+               data-modal="events_create"
+               data-url="http://localhost/admin/events/create">
+                <i class="fas fa-plus"></i> Add new
+            </a>
+        </div>
+    </div>
+
+    <div class="al-card" id="table_events">
+        <input type="hidden" name="sorting[sort_by]" value="message" data-filter>
+        <input type="hidden" name="sorting[sort]" value="asc" data-filter>
+
+        <div class="al-toolbar">
+            <div class="al-search">
+                <i class="fas fa-search"></i>
+                <input class="form-control" placeholder="Search" data-filter="true" autocomplete="off" name="search_phrase" type="text">
+            </div>
+
+            <div class="al-toolbar__count">
+                Total: 1
+            </div>
+        </div>
+
+        <div class="panel-body" data-table>
+            <div class="table_error"></div>
+<div class="table-responsive">
+    <table class="table table-list" data-toggle="multiCheckbox">
+        <thead>
+        <tr>
+            <th class="table-checkbox sorting_disabled" role="columnheader" rowspan="1" colspan="1"><div class="checkbox">
+                    <input type="checkbox" data-toggle="checkbox">
+                    <label></label>
+                </div><div class="btn-group dropdown">
+                    <i class="btn icon multi-edit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ></i>
+                    <ul class="dropdown-menu"><li><a href="javascript:" data-multi="delete_url">Delete selected</a></li></ul></div></th>
+            <th class="sorting" data-id="protocol" >
+                Device protocol
+            </th>
+            <th class="sorting_disabled" >
+                Parameters
+            </th>
+            <th class="sorting_asc" data-id="message" >
+                Message
+            </th>
+            <th class="sorting" data-id="always" >
+                Show always
+            </th>
+            <th class="sorting_disabled" style="text-align: right;">
+                Actions
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+                                    <tr>
+                    <td>
+                        <div class="checkbox">
+                            <input type="checkbox" value="1" >
+                            <label></label>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="al-code">6023 / gt06</span>
+                    </td>
+                    <td>
+                        ignition
+                    </td>
+                    <td>
+                        IGNITION
+                    </td>
+                    <td>
+                        <span class="al-pill al-pill--off">
+                            No
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <div class="btn-group dropdown droparrow" data-position="fixed">
+                            <i class="btn icon edit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"></i>
+                            <ul class="dropdown-menu">
+                                <li><a href="javascript:" data-modal="events_edit" data-url="http://localhost/admin/events/1/edit">Edit</a></li>
+                                                                    <li>
+                                        <a href="http://localhost/admin/events/destroy"
+                                           class="js-confirm-link al-danger"
+                                           data-confirm="Are you sure you want to delete?"
+                                           data-id="1"
+                                           data-method="DELETE">Delete</a>
+                                    </li>
+                                                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                            </tbody>
+    </table>
+</div>
+
+<div class="nav-pagination">
+    
+    
+</div>        </div>
+    </div>
+</div>
+    </div>
+</div>
+
+<div id="footer">
+    <div class="container-fluid">
+        <p>
+            <span>2026 &copy; GPS Server
+            | 39.51.59.149
+            | v3.7.8
+                            
+                | Last update: 26-06-2024 02:24:20 PM
+
+                
+                                        </span>
+        </p>
+    </div>
+</div>
+
+<script>
+    window.lang = {
+        select_all: 'Select all',
+        deselect_all: 'Deselect All',
+        no_results_matched: 'No results matched',
+        close: 'Close',
+        device: 'Device',
+        address: 'Address',
+        position: 'Position',
+        altitude: 'Altitude',
+        speed: 'Speed',
+        angle: 'Angle',
+        time: 'Time',
+        model: 'Model',
+        plate: 'Plate',
+        protocol: 'Protocol',
+        alerts_maximum_date_range: 'Maximum date range is 90 days.',
+        successfully_created_alert: 'Successfully created alert',
+        successfully_updated_alert: 'Successfully updated alert',
+        geofence: 'Geofence',
+        event: 'Event',
+        successfully_created_geofence: 'Successfully created geofence',
+        successfully_updated_geofence: 'Successfully updated geofence',
+        came: 'Came',
+        left: 'Left',
+        duration: 'Duration',
+        route_length: 'Route length',
+        move_duration: 'Move Duration',
+        stop_duration: 'Stop duration',
+        top_speed: 'Top speed',
+        fuel_cons: 'Fuel cons.',
+        parameters: 'Parameters',
+        driver: 'Driver',
+        street_view: 'Street view',
+        preview: 'Preview',
+        route_start: 'Route start',
+        route_end: 'Route end',
+        sensors: 'Sensors',
+        successfully_created_route: 'Successfully created route',
+        successfully_updated_route: 'Successfully updated route',
+        gps: 'GPS',
+        lat: 'Latitude',
+        lng: 'Longitude',
+        all_parameters: 'Show more',
+        hide_parameters: 'Show less',
+        nothing_selected: 'Nothing selected',
+        color: 'Color',
+        from: 'From',
+        to: 'To',
+        add: 'Add',
+        follow: 'Follow',
+        on: 'On ',
+        off: 'Off',
+        streetview: 'Street view',
+        successfully_created_marker: 'Successfully created marker',
+        successfully_updated_marker: 'Successfully updated marker',
+        status_offline: 'Offline',
+        status_online: 'Online',
+        status_ack: 'ACK',
+        status_engine: 'Engine',
+        alert: 'Alert',
+        short_h: 'h',
+        short_m: 'min',
+        short_s: 's',
+        distance: 'Distance',
+        remove: 'Delete',
+        expiration_date: 'Expiration date'
+    };
+</script>
+<script src="http://localhost/assets/js/core.js?t=1788947823"></script>
+<script src="http://localhost/assets/js/app.js?t=1788947823"></script>
+
+<script type="text/javascript">
+    $.extend(true, app, {"debug":false,"user_id":1,"version":"3.7.8","firstLogin":false,"offlineTimeout":300,"checkFrequency":5,"checkChatFrequency":5,"checkChatUnreadFrequency":60,"lang":{"key":"en","iso":"en","iso3":"eng","title":"English(USA)","active":true,"dir":"ltr","flag":"en.png","locale":"en_US"},"object_listview":0,"channels":{"userChannel":"3f49044c1469c6990a665f46ec6c0a41"},"settings":{"units":{"speed":{"unit":"kph","radio":1},"distance":{"unit":"Km","radio":1},"altitude":{"unit":"m","radio":1},"capacity":{"unit":"L","radio":1}},"durationFormat":"standart","timeFormat":"hh:mm:ss A","dateFormat":"DD-MM-YYYY","weekStart":1,"shiftFrom_a":null,"shiftTo_a":null,"shiftFrom_b":null,"shiftTo_b":null,"shiftFrom_c":null,"shiftTo_c":null,"mapCenter":{"lat":51.505,"lng":-0.09},"mapZoom":"19","map_id":2,"availableMaps":["2"],"toggleSidebar":false,"showTraffic":false,"showTotalDistance":0,"animateDeviceMove":"1","showGeofenceSize":0,"showEventSectionAddress":0,"showDevice":1,"showGeofences":1,"showRoutes":true,"showPoi":true,"showTail":true,"showNames":1,"showHistoryRoute":true,"showHistoryArrow":true,"showHistoryStop":true,"showHistoryEvent":true,"keys":{"google_maps_key":"","here_map_id":null,"here_map_code":null,"here_api_key":"","mapbox_access_token":"","bing_maps_key":"","maptiler_key":"","tomtom_key":""},"googleQueryParam":{"key":"","language":"en"},"openmaptiles_url":"","showStreetView":false},"urls":{"asset":"http:\/\/localhost\/","streetView":"http:\/\/localhost\/streetview.jpg","geoAddress":"http:\/\/localhost\/address","events":"http:\/\/localhost\/events","eventDoDelete":"http:\/\/localhost\/events\/do_destroy","history":"http:\/\/localhost\/history","historyExport":"http:\/\/localhost\/history\/export","historyPosition":"http:\/\/localhost\/history\/position","historyPositions":"http:\/\/localhost\/history\/positions","historyPositionsDelete":"http:\/\/localhost\/history\/delete_positions","check":"http:\/\/localhost\/objects\/items_json","devicesMap":"http:\/\/localhost\/objects\/items","devicesSidebar":"http:\/\/localhost\/objects\/sidebar","deviceDelete":"http:\/\/localhost\/objects\/destroy","deviceChangeActive":"http:\/\/localhost\/devices\/change_active","deviceToggleGroup":"http:\/\/localhost\/objects\/change_group_status","deviceStopTime":"http:\/\/localhost\/objects\/stop_time\/","deviceFollow":"http:\/\/localhost\/devices\/follow_map\/","devicesSensorCreate":"http:\/\/localhost\/sensors\/create\/","devicesServiceCreate":"http:\/\/localhost\/services\/create\/","devicesServices":"http:\/\/localhost\/services\/index\/","devicesCommands":"http:\/\/localhost\/devices\/commands","deviceImages":"http:\/\/localhost\/device_media\/images\/","deviceImage":"http:\/\/localhost\/device_media\/image\/","deleteImage":"http:\/\/localhost\/device_media\/delete\/","deviceSendGprsCommand":"http:\/\/localhost\/send_command\/gprs","deviceWidgetLocation":"http:\/\/localhost\/device\/widgets\/location\/","deviceWidgetCameras":"http:\/\/localhost\/device\/widgets\/cameras\/","deviceWidgetImage":"http:\/\/localhost\/device\/widgets\/image\/","deviceWidgetUploadImage":"http:\/\/localhost\/devices\/image\/upload\/","deviceWidgetFuelGraph":"http:\/\/localhost\/device\/widgets\/fuel_graph\/","deviceWidgetGprsCommand":"http:\/\/localhost\/device\/widgets\/gprs_command\/","deviceWidgetRecentEvents":"http:\/\/localhost\/device\/widgets\/recent_events\/","deviceWidgetTemplateWebhook":"http:\/\/localhost\/device\/widgets\/template_webhook\/","deviceWidgetSummary":"http:\/\/localhost\/device\/widgets\/summary\/","geofencesMap":"http:\/\/localhost\/geofences","geofencesSidebar":"http:\/\/localhost\/geofences\/sidebar","geofenceCreate":"http:\/\/localhost\/geofences\/create","geofenceEdit":"http:\/\/localhost\/geofences\/edit","geofenceChangeActive":"http:\/\/localhost\/geofences\/change_active","geofenceDelete":"http:\/\/localhost\/geofences\/destroy?action=proceed","geofencesExportType":"http:\/\/localhost\/geofences\/export_type","geofenceDevices":"http:\/\/localhost\/geofences\/devices","geofencesImport":"http:\/\/localhost\/geofences\/import","geofenceToggleGroup":"http:\/\/localhost\/geofences_groups\/change_status","routesSidebar":"http:\/\/localhost\/routes\/sidebar","routesMap":"http:\/\/localhost\/route","routesCreate":"http:\/\/localhost\/route\/create","routesEdit":"http:\/\/localhost\/route\/edit","routeChangeActive":"http:\/\/localhost\/route\/change_active","routeDelete":"http:\/\/localhost\/route\/destroy?action=proceed","routesExportType":"http:\/\/localhost\/routes\/export_type","routeToggleGroup":"http:\/\/localhost\/route_groups\/change_status","alerts":"http:\/\/localhost\/alerts","alertEdit":"http:\/\/localhost\/alerts\/edit","alertChangeActive":"http:\/\/localhost\/alerts\/change_active","alertDelete":"http:\/\/localhost\/alerts\/destroy","alertGetEventsByDevice":"http:\/\/localhost\/alerts\/custom_events","alertGetCommands":"http:\/\/localhost\/alerts\/commands","poisMap":"http:\/\/localhost\/pois","poisSidebar":"http:\/\/localhost\/pois\/sidebar","poisCreate":"http:\/\/localhost\/pois\/create","poisEdit":"http:\/\/localhost\/pois\/edit","poisDelete":"http:\/\/localhost\/pois\/destroy?action=proceed","poisChangeActive":"http:\/\/localhost\/pois\/change_active","poisExportType":"http:\/\/localhost\/pois\/export_type","poisToggleGroup":"http:\/\/localhost\/pois_groups\/change_status","changeMap":"http:\/\/localhost\/my_account\/change_map","changeMapSettings":"http:\/\/localhost\/my_account_settings\/change_map_settings","clearQueue":"http:\/\/localhost\/sms_gateway\/clear_queue","dashboard":"http:\/\/localhost\/dashboard","dashboardBlockContent":"http:\/\/localhost\/dashboard\/block_content","lockHistory":"http:\/\/localhost\/lock_status\/history\/","lockStatus":"http:\/\/localhost\/lock_status\/status\/","unlockLock":"http:\/\/localhost\/lock_status\/unlock\/","checklistUpdateRowStatus":"http:\/\/localhost\/checklists\/update_row_status\/","checklistUpdateRowOutcome":"http:\/\/localhost\/checklists\/update_row_outcome\/","checklistUploadFile":"http:\/\/localhost\/checklists\/upload_file\/","checklistSign":"http:\/\/localhost\/checklists\/sign_checklist\/","checklistGetRow":"http:\/\/localhost\/checklists\/get_row\/","deviceConfigApnData":"http:\/\/localhost\/devices_config\/getApnData\/","importGetFields":"http:\/\/localhost\/import\/get_fields","chatUnreadMsgTotalCount":"http:\/\/localhost\/chat\/unread\/count"}});
+</script>
+
+<script>
+    tables.set_config('table_events', {
+        url:'http://localhost/admin/events/index',
+        delete_url:'http://localhost/admin/events/destroy'
+    });
+
+    function events_edit_modal_callback() {
+        tables.get('table_events');
+    }
+
+    function events_create_modal_callback() {
+        tables.get('table_events');
+    }
+</script>
+<script type="text/javascript">
+   $(document).ready(function(){
+     // Expandable sidebar items open as flyouts on hover (same as frontend).
+     // On the admin layout this replaces the old inline slideToggle behavior.
+     var $nav = $('.page__nav.nave');
+     if ($nav.length) {
+       // Find every .sub-menu and attach it to its triggering <a> element.
+       // In the admin layout the sub-menu is a sibling of its <a> (both direct
+       // children of <ul>), so we locate the preceding <a class="sub-btn">.
+       $nav.find('.sub-menu').each(function(){
+         var $menu = $(this);
+         var $trigger = $menu.prevAll('a.nav__link.sub-btn').first();
+         if (!$trigger.length) return;
+
+         $menu.addClass('nave-flyout').appendTo('body');
+
+         var timer = null;
+         var show = function() { clearTimeout(timer); $menu.addClass('open'); };
+         var hide = function() { timer = setTimeout(function() { $menu.removeClass('open'); }, 120); };
+
+         $trigger.on('mouseenter', function(){
+           var pos = $trigger.offset();
+           $menu.css({
+             top: Math.min(pos.top, $(window).height() - $menu.outerHeight() - 8),
+             left: pos.left + $trigger.outerWidth() + 8
+           });
+           show();
+         });
+         $trigger.on('mouseleave', hide);
+         $menu.on('mouseenter', show).on('mouseleave', hide);
+       });
+     }
+   });
+   </script>
+<script>
+    $.ajaxSetup({cache: false});
+    window.lang = {
+        nothing_selected: 'Nothing selected',
+        color: 'Color',
+        from: 'From',
+        to: 'To',
+        add: 'Add'
+    };
+    app.lang = {"key":"en","iso":"en","iso3":"eng","title":"English(USA)","active":true,"dir":"ltr","flag":"en.png","locale":"en_US"};
+    app.initSocket();
+</script>
+
+<div class="modal" id="modalDeleteConfirm">
+    <div class="contents">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 class="modal-title thin" id="modalConfirmLabel">Delete</h3>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-main" onclick="modal_delete.del();">Yes</button>
+                    <button class="btn btn-side" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="js-confirm-link" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                loading
+            </div>
+            <div class="modal-footer" style="margin-top: 0">
+                <button type="button" value="confirm" class="btn btn-main submit js-confirm-link-yes">Confirm</button>
+                <button type="button" value="cancel" class="btn btn-side" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="modalError">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 class="modal-title thin" id="modalErrorLabel">Error occurred</h3>
+            </div>
+            <div class="modal-body">
+                <p class="alert alert-danger"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn default" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="modalSuccess">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 class="modal-title thin" id="modalSuccessLabel">Success</h3>
+            </div>
+            <div class="modal-body">
+                <p class="alert alert-success"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn default" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
+    </div>
+</div></body></html>

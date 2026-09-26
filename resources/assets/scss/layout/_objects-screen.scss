@@ -1,0 +1,115 @@
+// ============================================================
+// Objects screen — mockup-style left panel
+// ============================================================
+
+// The summary banner ("19 Devices ...") is replaced by the status cards
+#sidebar #block_over_view {
+  display: none;
+}
+
+// Sidebar tabs act as the panel heading (Objects / Events / History)
+#sidebar .nav-tabs {
+  margin: 0;
+  padding: 14px 14px 0;
+  border-bottom: 0;
+
+  > li {
+    margin: 0;
+
+    > a {
+      margin: 0 16px 0 0;
+      padding: 0 0 8px;
+      border: 0;
+      background: transparent;
+      font-size: 15px;
+      font-weight: 700;
+      color: $color-text-500;
+
+      &:hover,
+      &:focus {
+        background: transparent;
+        color: $color-text-100;
+      }
+    }
+
+    &.active > a {
+      color: $color-text-100;
+      border-bottom: 2px solid $brand-primary;
+    }
+  }
+}
+
+// Search + add button row (Objects tab only)
+#objects_tab .tab-pane-header {
+  padding: 10px 12px 0;
+
+  .form .input-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow: visible;
+  }
+
+  .form-group.search {
+    position: relative;
+    flex: 1 1 0%;
+    min-width: 0;
+    max-width: calc(100% - 86px);
+    margin-bottom: 0;
+
+    &:before {
+      left: auto;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: auto;
+      height: auto;
+      line-height: 1;
+      font-size: 14px;
+      opacity: 0.45;
+    }
+
+    .form-control {
+      height: 38px;
+      padding-left: 12px;
+      padding-right: 34px;
+      background: $color-bg-200;
+      border: 1px solid transparent;
+      border-radius: 19px;
+      box-shadow: none;
+
+      &::placeholder {
+        color: $color-text-500;
+      }
+
+      &:focus {
+        background: $color-bg-000;
+        border-color: $brand-primary;
+      }
+    }
+  }
+
+  .input-group-btn {
+    flex: 0 0 auto;
+    display: flex !important;
+    align-items: center;
+    gap: 4px;
+
+    .btn {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      padding: 0;
+      margin-left: 0;
+    }
+  }
+}
+
+// Device list area
+#objects_tab .tab-pane-body {
+  padding: 10px 12px 12px;
+}

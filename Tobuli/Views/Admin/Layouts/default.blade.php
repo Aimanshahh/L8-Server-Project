@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<!--[if IE 8]> <html lang="{{ Language::iso() }}" class="ie8 no-js"> <![endif]-->
+<!--[if IE 9]> <html lang="{{ Language::iso() }}" class="ie9 no-js"> <![endif]-->
+<!--[if !IE]><!-->
+<html lang="{{ Language::iso() }}" class="no-js" data-theme="{{ current_theme() }}">
+<!--<![endif]-->
+
+<head>
+    <meta charset="utf-8"/>
+    <title>{{ Appearance::getSetting('server_name') }}</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="app-version" content="{{ config('tobuli.version') }}">
+    <meta name="app-build" content="{{ config('app.build') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <link rel="shortcut icon" href="{{ Appearance::getAssetFileUrl('favicon') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ asset_resource(theme_base_css()) }}" />
+    <link rel="stylesheet" href="{{ asset_resource('assets/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset_resource('assets/css/sidebar-overrides.css') }}">
+    <link rel="stylesheet" href="{{ asset_resource('assets/css/modal-overrides.css') }}?v=20260918-1">
+    <link rel="stylesheet" href="{{ asset_resource('assets/css/admin-list-overrides.css') }}?v=20260921-1">
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'>
+ <script src="{{ asset_resource('assets/js/custom.js') }}" 
+    type="text/javascript"></script> @yield('styles')
+    {{-- loaded last so the dark scheme wins over every page stylesheet --}}
+    <link rel="stylesheet" href="{{ asset_resource('assets/css/theme-dark.css') }}?v=20260925-1">
+    @include('Frontend.Layouts.partials.theme-script')
+</head>
+
+<body class="page admin-layout">
+<nav class="nave page__nav">
+            <div class="hidee logo nav__logo">
+                @if ( Appearance::assetFileExists('logo') )
+    
+                    <a class="nav__link" href="/" title="{{ Appearance::getSetting('server_name') }}"><img class="nav__link-logo" src="{{ asset_resource('assets/images/logo.svg') }}"></a>
+                    @endif
+            </div>
+        <div class="logo nav__logo">
+        <a class="nav__link" href="/" title="{{ Appearance::getSetting('server_name') }}"><img class="nav__link-favicon" src="{{ Appearance::getAssetFileUrl('favicon') }}"><span class="nav__link-txt"><img class="nav__link-logo" src="{{ asset_resource('assets/images/logo.svg') }}"></span></a>
+        </div>
+    <ul class="nav__list navigation-accordion">
+    {!! getNavigation() !!}
+
+        <ul class="nav__list nav__list_bottom">
+        <li class="nav__item"><a class="nav__link" href="javascript:" data-url="{{ route('subscriptions.index') }}" data-modal="subscriptions_edit"><span class="icon account"></span><span class="nav__link-txt">Profile</span></a></li>
+        <li class="nav__item"><a class="nav__link" href="javascript:" data-url="{{ route('languages.index') }}" data-modal="language-selection"><span class="icon language"></span><span class="nav__link-txt">Language</span></a></li>
+        @include('Frontend.Layouts.partials.theme-toggle')
+        <li class="nav__item"><a class="nav__link" href="{!!route('logout')!!}" ><span class="icon logout"></span><span class="nav__link-txt">Logout</span></a></li>
+        </ul>
+            </ul>
+  </nav>
+<main class="main page__main">
+
+
+<div class="content">
+    <div class="container-fluid">
+        @if (Session::has('success'))
+            <div class="alert alert-success">
+                {!! Session::get('success') !!}
+            </div>
+        @endif
+        @if (Session::has('error'))
+            <div class="alert alert-danger">
+                {!! Session::get('error') !!}
+            </div>
+        @endif
+
+        @yield('content')
+    </div>
+</div>
+
+<div id="footer">
+    <div class="container-fluid">
+        <p>
+            <span>{{ date('Y') }} &copy; {{ Appearance::getSetting('server_name') }}
+            | {{ CustomFacades\Server::ip() }}
+            | v{{ config('tobuli.version') }}
+            @if (Auth::user() && Auth::user()->isAdmin())
+                @if ( $limit = CustomFacades\Server::getDeviceLimit())
+                     | {{ "1-$limit " . strtolower(trans('front.objects')) }}
+                @endif
+
+                | {{ trans('front.last_update') }}: {{ Formatter::time()->human(CustomFacades\Server::lastUpdate()) }}
+
+                @if (CustomFacades\Server::isSpacePercentageWarning())
+                    | <i style="color: red;">Server disk space is almost full</i>
+                @endif
+
+                @foreach(CustomFacades\Server::getMessages() as $message)
+                    | {!! $message !!}
+                @endforeach
+            @endif
+            </span>
+        </p>
+    </div>
+</div>
+
+@include('Frontend.Layouts.partials.trans')
+
+<script src="{{ asset_resource('assets/js/core.js') }}"></script>
+<script src="{{ asset_resource('assets/js/app.js') }}"></script>
+
+@include('Frontend.Layouts.partials.app')
+
+@yield('javascript')
+@stack('javascript')
+<script type="text/javascript">
+   $(document).ready(function(){
+     // Expandable sidebar items open as flyouts on hover (same as frontend).
+     // On the admin layout this replaces the old inline slideToggle behavior.
+     var $nav = $('.page__nav.nave');
+     if ($nav.length) {
+       // Find every .sub-menu and attach it to its triggering <a> element.
+       // In the admin layout the sub-menu is a sibling of its <a> (both direct
+       // children of <ul>), so we locate the preceding <a class="sub-btn">.
+       $nav.find('.sub-menu').each(function(){
+         var $menu = $(this);
+         var $trigger = $menu.prevAll('a.nav__link.sub-btn').first();
+         if (!$trigger.length) return;
+
+         $menu.addClass('nave-flyout').appendTo('body');
+
+         var timer = null;
+         var show = function() { clearTimeout(timer); $menu.addClass('open'); };
+         var hide = function() { timer = setTimeout(function() { $menu.removeClass('open'); }, 120); };
+
+         $trigger.on('mouseenter', function(){
+           var pos = $trigger.offset();
+           $menu.css({
+             top: Math.min(pos.top, $(window).height() - $menu.outerHeight() - 8),
+             left: pos.left + $trigger.outerWidth() + 8
+           });
+           show();
+         });
+         $trigger.on('mouseleave', hide);
+         $menu.on('mouseenter', show).on('mouseleave', hide);
+       });
+     }
+   });
+   </script>
+<script>
+    $.ajaxSetup({cache: false});
+    window.lang = {
+        nothing_selected: '{{ trans('front.nothing_selected') }}',
+        color: '{{ trans('validation.attributes.color') }}',
+        from: '{{ trans('front.from') }}',
+        to: '{{ trans('front.to') }}',
+        add: '{{ trans('global.add') }}'
+    };
+    app.lang = {!! json_encode(Language::get()) !!};
+    app.initSocket();
+</script>
+
+<div class="modal" id="modalDeleteConfirm">
+    <div class="contents">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 class="modal-title thin" id="modalConfirmLabel">{{ trans('global.delete') }}</h3>
+                </div>
+                <div class="modal-body">
+                    <p>{{ trans('admin.do_delete') }}</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-main" onclick="modal_delete.del();">{{ trans('admin.yes') }}</button>
+                    <button class="btn btn-side" data-dismiss="modal" aria-hidden="true">{{ trans('global.cancel') }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="js-confirm-link" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                loading
+            </div>
+            <div class="modal-footer" style="margin-top: 0">
+                <button type="button" value="confirm" class="btn btn-main submit js-confirm-link-yes">{{ trans('admin.confirm') }}</button>
+                <button type="button" value="cancel" class="btn btn-side" data-dismiss="modal">{{ trans('admin.cancel') }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="modalError">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 class="modal-title thin" id="modalErrorLabel">{{ trans('global.error_occurred') }}</h3>
+            </div>
+            <div class="modal-body">
+                <p class="alert alert-danger"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn default" data-dismiss="modal" aria-hidden="true">{{ trans('global.close') }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="modalSuccess">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 class="modal-title thin" id="modalSuccessLabel">{{ trans('global.success') }}</h3>
+            </div>
+            <div class="modal-body">
+                <p class="alert alert-success"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn default" data-dismiss="modal" aria-hidden="true">{{ trans('global.close') }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+</main>
+</body>
+</html>
+
+ 

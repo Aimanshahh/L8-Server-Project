@@ -1,0 +1,205 @@
+#dashboard {
+  min-height: calc(100vh - 20px);
+  padding: 20px 24px 32px;
+  background: $gray;
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0;
+  }
+
+  .container {
+    width: 90%;
+  }
+
+  .modal-content {
+    min-height: calc(100vh - 20px);
+    background: $gray;
+  }
+
+  .dashboard-block {
+    float: none;
+    width: auto;
+    min-width: 0;
+    padding: 0;
+
+    &.col-sm-4,
+    &.col-md-4,
+    &.col-lg-4 {
+      grid-column: span 4;
+    }
+
+    &.col-sm-6,
+    &.col-md-6,
+    &.col-lg-6 {
+      grid-column: span 6;
+    }
+
+    &.col-sm-3,
+    &.col-md-3,
+    &.col-lg-3 {
+      grid-column: span 3;
+    }
+
+    &.col-md-8,
+    &.col-lg-8 {
+      grid-column: span 8;
+    }
+
+    &.col-md-12,
+    &.col-lg-12 {
+      grid-column: span 12;
+    }
+
+    &.auto-height {
+      .panel.panel-default {
+        .panel-body {
+          height: auto;
+        }
+      }
+    }
+
+    .panel.panel-default {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      border: 1px solid #e2e6ea;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(31, 41, 55, .06);
+
+      .panel-heading {
+        min-height: 52px;
+        padding: 16px 18px 12px;
+        border: 0;
+        border-bottom: 1px solid #edf0f2;
+        background: #fff;
+
+        .panel-title {
+          float: none;
+          color: #263238;
+          font-size: 14px;
+          font-weight: 600;
+          line-height: 20px;
+        }
+      }
+
+      .panel-body {
+        height: 340px;
+        padding: 18px;
+        overflow: auto;
+        @extend .scrollbar;
+      }
+    }
+
+    table {
+      .legendColorBox {
+        padding: 5px;
+      }
+      .legendLabel {
+        padding: 5px;
+        font-size: 12px !important;
+        font-weight: bold;
+      }
+    }
+
+    .stat-box {
+      display: block;
+      min-height: 118px;
+      padding: 18px 12px 14px;
+      margin-bottom: 0;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      color: $text-color;
+      text-align: center;
+      transition: transform .18s ease, box-shadow .18s ease;
+
+      &:hover,
+      &:focus {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 12px rgba(31, 41, 55, .14);
+      }
+
+      .title { }
+
+      .count {
+        font-weight: bold;
+        font-size: 28px;
+        line-height: 34px;
+      }
+
+      .stat-btn {
+        margin-top: 12px;
+        padding: 5px 12px;
+        border: 0;
+        border-radius: 14px;
+        font-size: 11px;
+      }
+    }
+
+    .link {
+      text-decoration: underline;
+      cursor: pointer;
+
+      a {
+        color: $text-color;
+      }
+    }
+  }
+
+  .row-status {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+    margin: 0;
+
+    .statuss {
+      float: none !important;
+      width: auto;
+      width: auto !important;
+      min-height: 0;
+      padding: 0;
+    }
+  }
+}
+
+@media (max-width: $screen-md-min) {
+  #dashboard {
+    padding: 16px;
+
+    .dashboard-grid {
+      display: block;
+    }
+
+    .dashboard-block {
+      margin-bottom: 16px;
+    }
+  }
+}
+
+#block_device_overview {
+  .panel-transparent {
+    > .panel-body {
+      padding-top: 0;
+    }
+  }
+}
+
+#dashboard, #setup-form-dashboard {
+  .options-dropdown {
+    margin: 0 15px 0 15px;
+
+    hr {
+      margin-top: 0;
+    }
+  }
+}
+
+.dashboard-widget {
+  background: $gray-light;
+  padding: 10px 5px 8px 10px;
+  margin-bottom: 10px;
+  height: 38px;
+}

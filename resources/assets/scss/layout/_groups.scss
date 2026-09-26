@@ -1,0 +1,165 @@
+.group {
+  position: relative;
+
+  + .group {
+    margin-top: 3px;
+  }
+}
+
+.group-body {
+  position: relative;
+}
+
+.group-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.device-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: $color-bg-000;
+  border: 1px solid $color-border-200;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: box-shadow .15s ease, border-color .15s ease;
+
+  &:hover {
+    border-color: $color-border-100;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07);
+  }
+
+  &.active {
+    border-color: $brand-primary;
+    background: rgba($brand-primary, 0.04);
+    box-shadow: 0 0 0 1px $brand-primary;
+  }
+
+  &__icon {
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .icon.device,
+    i.fa-car {
+      font-size: 26px;
+      color: $color-text-500;
+    }
+  }
+
+  &__body {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  &__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  &__name {
+    font-weight: 600;
+    font-size: 13px;
+    color: $color-text-100;
+    @include text-overflow();
+  }
+
+  &__speed {
+    flex: 0 0 auto;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.7;
+    color: $color-text-000;
+    background: $brand-primary;
+    border-radius: 999px;
+    padding: 1px 10px;
+  }
+
+  &__time-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 11px;
+    color: $color-text-600;
+
+    .icon {
+      font-size: 11px;
+      color: $color-text-400;
+    }
+
+    .device-card__time {
+      @include text-overflow();
+    }
+  }
+
+  &__address {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 5px;
+    font-size: 11px;
+    color: $color-text-500;
+    @include text-overflow();
+
+    .icon {
+      font-size: 11px;
+      color: $color-text-400;
+    }
+  }
+
+  &__side {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    align-self: stretch;
+    padding-top: 2px;
+
+    .btn-group {
+      .icon.options {
+        font-size: 16px;
+        color: $color-text-500;
+        padding: 2px;
+        cursor: pointer;
+
+        &:hover {
+          color: $brand-primary;
+        }
+      }
+    }
+
+    .icon.ignitionn,
+    .icon.detect_engine {
+      font-size: 13px;
+    }
+  }
+
+  &__status-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid $color-bg-000;
+    box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.12);
+    margin-bottom: 2px;
+  }
+}

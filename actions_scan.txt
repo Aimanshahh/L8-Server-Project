@@ -1,0 +1,63 @@
+Tobuli\History\Actions\AppendAnonymized.php:18:        $position->anonymized = $this->sensor && $this->getSensorValue($this->sensor, $position);
+Tobuli\History\Actions\AppendDateUserZone.php:20:        $position->date = Formatter::time()->convert($position->time, 'Y-m-d');
+Tobuli\History\Actions\AppendDriveBusinessSensor.php:27:        $value = $this->getSensorValue($this->sensor, $position, null);
+Tobuli\History\Actions\AppendDrivePrivateSensor.php:27:        $value = $this->getSensorValue($this->sensor, $position, null);
+Tobuli\History\Actions\AppendDriver.php:35:        if ($this->next->timestamp <= $position->timestamp)
+Tobuli\History\Actions\AppendDriver.php:83:            $row->timestamp = strtotime($row->date);
+Tobuli\History\Actions\AppendDriveRouteType.php:37:        if (strtotime($this->current->started_at) > $position->timestamp) {
+Tobuli\History\Actions\AppendDriveRouteType.php:41:        if (strtotime($this->current->ended_at) < $position->timestamp) {
+Tobuli\History\Actions\AppendDuration.php:19:        $position->timestamp = strtotime($position->time);
+Tobuli\History\Actions\AppendDuration.php:24:            $position->duration = $position->timestamp - $previous->timestamp;
+Tobuli\History\Actions\AppendDurationDailySplit.php:28:            $position->time = Formatter::time()->reverse($position->date . " 00:00:00");
+Tobuli\History\Actions\AppendDurationDailySplit.php:29:            $position->timestamp = strtotime($position->time);
+Tobuli\History\Actions\AppendDurationDailySplit.php:49:        return strtotime(Formatter::time()->convert($position->time)) - strtotime($position->date);
+Tobuli\History\Actions\AppendDurationQuarterHour.php:43:        return strtotime(Formatter::time()->convert($position->time)) - strtotime($position->quarter);
+Tobuli\History\Actions\AppendEngineStatus.php:81:        return $this->getSensorValue($this->sensor, $position);
+Tobuli\History\Actions\AppendEngineStatus.php:101:            $position->engine = $this->engine_off_at ? $position->timestamp - $this->engine_off_at < $this->engine_off_offset : $engine;
+Tobuli\History\Actions\AppendEngineStatus.php:107:            $this->engine_off_at = $position->timestamp;
+Tobuli\History\Actions\AppendEngineStatus.php:110:        if ($position->timestamp - $this->engine_off_at > $this->engine_off_offset) {
+Tobuli\History\Actions\AppendFuelChange.php:65:            if ($change && ($position->moving || ($position->timestamp - $change['last']->timestamp) > self::DURATION_CHANGE))
+Tobuli\History\Actions\AppendFuelConsumptionSensors.php:44:        $value = $this->getSensorValue($sensor, $position);
+Tobuli\History\Actions\AppendFuelConsumptionSensors.php:59:        $value     = $this->getSensorValue($sensor, $position);
+Tobuli\History\Actions\AppendFuelConsumptionSensors.php:60:        $prevValue = $this->getSensorValue($sensor, $prevPosition);
+Tobuli\History\Actions\AppendFuelFillingChange.php:44:            $changeDuration = $change['end']->timestamp - $change['start']->timestamp;
+Tobuli\History\Actions\AppendFuelFillingChange.php:75:        $positionTime = strtotime($position->time);
+Tobuli\History\Actions\AppendFuelTanks.php:31:            $value = $this->getSensorValue($sensor, $position);
+Tobuli\History\Actions\AppendFuelTanksAvg.php:56:            if ($current->timestamp - $position->timestamp > $this->min_duration)
+Tobuli\History\Actions\AppendFuelTanksDiff.php:71:            if ($current->timestamp - $position->timestamp > self::DURATION_CHANGE)
+Tobuli\History\Actions\AppendFuelTheftChange.php:73:        $positionTime = strtotime($position->time);
+Tobuli\History\Actions\AppendGSMSensor.php:23:        $position->gsm = $this->getSensorValue($this->sensor, $position);
+Tobuli\History\Actions\AppendLastStopAt.php:21:            $this->lastStopAt = $position->time;
+Tobuli\History\Actions\AppendLoadChange.php:40:            $this->startedAt = $position->time;
+Tobuli\History\Actions\AppendLoadChange.php:41:            $this->startLoad = $this->getSensorValue($this->sensor, $position);
+Tobuli\History\Actions\AppendLoadChange.php:61:        $prevValue = $this->getSensorValue($this->sensor, $prevPosition);
+Tobuli\History\Actions\AppendLoadChange.php:93:        return (strtotime($position->time) - strtotime($this->startedAt)) >= $this->minLoadDuration;
+Tobuli\History\Actions\AppendLoadChange.php:105:            && $this->getSensorValue($this->sensor, $position) !== null;
+Tobuli\History\Actions\AppendLockStatus.php:29:        $status = parseTagValue($position->other, $this->parameter);
+Tobuli\History\Actions\AppendMoveStartAt.php:23:            $this->moveStartAt = $position->time;
+Tobuli\History\Actions\AppendMoveState.php:79:            return $position->timestamp;
+Tobuli\History\Actions\AppendMoveState.php:87:            return $position->timestamp;
+Tobuli\History\Actions\AppendMoveState.php:108:        if ($position->timestamp - $position->moved_at > $this->stop_seconds)
+Tobuli\History\Actions\AppendOdometer.php:28:        $position->odometer = $this->getSensorValue($this->sensor, $position);
+Tobuli\History\Actions\AppendOdometers.php:29:            $position->odometers[$sensor->id] = $this->getSensorValue($sensor, $position);
+Tobuli\History\Actions\AppendPosition.php:13:        $position->timestamp = strtotime($position->time);
+Tobuli\History\Actions\AppendQuarterHour.php:25:        $converted = Formatter::time()->timestamp($position->time);
+Tobuli\History\Actions\AppendRfid.php:17:            ? $this->getSensorValue($this->sensorRfid, $position)
+Tobuli\History\Actions\AppendRouteColor.php:64:        if ( ! $this->getSensorValue($this->route_color_sensor, $position, false))
+Tobuli\History\Actions\AppendRouteColor.php:72:        if ( ! $this->getSensorValue($this->route_color_sensor_2, $position, false))
+Tobuli\History\Actions\AppendRouteColor.php:80:        if ( ! $this->getSensorValue($this->route_color_sensor_3, $position, false))
+Tobuli\History\Actions\AppendRpm.php:19:            ? $this->getSensorValue($this->sensor, $position)
+Tobuli\History\Actions\AppendSeatbelt.php:22:        $position->seatbelt = $this->getSensorValue($this->sensor, $position, null);
+Tobuli\History\Actions\AppendShiftCheck.php:40:        $time = (new \DateTime($position->time))->format('H:i:s');
+Tobuli\History\Actions\AppendTachometerSensor.php:22:        $position->tachometer = $this->getSensorValue($this->sensor, $position);
+Tobuli\History\Actions\EngineHours.php:55:        $value = $this->getSensorValue($this->sensor, $position);
+Tobuli\History\Actions\EngineHours.php:62:        $previousValue = $this->getSensorValue($this->sensor, $previous);
+Tobuli\History\Actions\EngineHours.php:70:        $value = $this->getSensorValue($this->sensor, $position);
+Tobuli\History\Actions\EngineHours.php:77:        $previousValue = $this->getSensorValue($this->sensor, $previous);
+Tobuli\History\Actions\GroupEvent.php:45:        if ($position->timestamp < strtotime($this->lastEvent->time))
+Tobuli\History\Actions\GroupGeofenceShifts.php:70:        $loadTime = DateTime::createFromFormat('!H:i', (new DateTime($position->time))->format('H:i'));
+Tobuli\History\Actions\GroupShift.php:26:            $this->group = new Group($position->time);
+Tobuli\History\Actions\SensorsValues.php:37:            $this->history->sensors_data[$sensor->id]['values'][$position->timestamp] = [
+Tobuli\History\Actions\SensorsValues.php:39:                't' => $position->timestamp,
+Tobuli\History\Actions\SensorsValues.php:40:                'v' => $this->getSensorValue($sensor, $position),
+Tobuli\History\Actions\TemperaturesMinMax.php:37:            $temperature = $this->getSensorValue($sensor, $position);

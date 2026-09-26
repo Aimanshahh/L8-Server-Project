@@ -1,0 +1,1522 @@
+/* ==========================================================================
+   Admin settings pages — modern SaaS redesign
+   Shared by: Email settings, Main server settings
+   Palette: #2563EB blue | #172033 dark | #64748B muted | #E2E8F0 border
+   ========================================================================== */
+
+/* ------------------------------------------------------------ page shell */
+.st-page {
+    background: #F5F7FB;
+    padding: 28px 28px 56px;
+    min-height: 100%;
+    color: #172033;
+}
+
+/* ---------------------------------------------------------------- header */
+.st-page__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.st-page__title-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.st-page__title-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    background: #EFF6FF;
+    color: #2563EB;
+    font-size: 19px;
+    flex-shrink: 0;
+}
+
+.st-page__title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #172033;
+}
+
+.st-page__subtitle {
+    margin: 5px 0 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: #64748B;
+}
+
+/* ------------------------------------------------------ layout / cards */
+.st-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    align-items: start;
+}
+
+.st-card {
+    background: #fff;
+    border: 1px solid #E8EDF3;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(23, 32, 51, .05);
+    /* keep visible so select dropdowns are never clipped by the card */
+    overflow: visible;
+}
+
+.st-card__head {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 18px 22px;
+    border-bottom: 1px solid #EEF2F7;
+}
+
+.st-card__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #EFF6FF;
+    color: #2563EB;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.st-card__headtext {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.st-card__title {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.35;
+    color: #172033;
+}
+
+.st-card__sub {
+    margin-top: 3px;
+    font-size: 12.5px;
+    font-weight: 400;
+    line-height: 1.45;
+    color: #64748B;
+}
+
+.st-card__headactions {
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.st-card__body {
+    padding: 22px 22px 10px;
+}
+
+.st-card__foot {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 15px 22px;
+    border-top: 1px solid #EEF2F7;
+    background: #FBFCFE;
+    border-radius: 0 0 12px 12px;
+}
+
+/* the two settings partials render legacy panels — give them the card skin */
+.st-page .panel.panel-default {
+    margin-bottom: 0;
+    background: #fff;
+    border: 1px solid #E8EDF3;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(23, 32, 51, .05);
+    /* keep visible so select dropdowns are never clipped by the card */
+    overflow: visible;
+}
+
+.st-page .panel.panel-default > .panel-heading {
+    padding: 18px 22px;
+    background: transparent;
+    border-bottom: 1px solid #EEF2F7;
+    border-radius: 0;
+}
+
+.st-page .panel.panel-default > .panel-heading .panel-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #172033;
+}
+
+.st-page .panel.panel-default > .panel-heading .panel-title > i,
+.st-page .panel.panel-default > .panel-heading .panel-title > span.icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #EFF6FF;
+    color: #2563EB;
+    font-size: 15px;
+    flex-shrink: 0;
+    margin: 0;
+}
+
+.st-page .panel.panel-default > .panel-body {
+    padding: 22px 22px 10px;
+    background: transparent;
+}
+
+.st-page .panel.panel-default > .panel-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 15px 22px;
+    background: #FBFCFE;
+    border-top: 1px solid #EEF2F7;
+    border-radius: 0 0 12px 12px;
+}
+
+/* ------------------------------------------------------------ separator */
+.st-page hr {
+    margin: 22px 0;
+    border: 0;
+    border-top: 1px solid #EEF2F7;
+}
+
+/* --------------------------------------------------------- form controls */
+.st-page .form-group {
+    margin-bottom: 18px;
+}
+
+/* stacked label + field, whatever the legacy grid classes say */
+.st-page .form-horizontal .form-group,
+.st-page .st-form .form-group {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.st-page .form-group > label,
+.st-page .form-group > .control-label {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    float: none;
+    padding: 0;
+    margin: 0 0 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1.4;
+    text-align: left;
+    color: #334155;
+}
+
+.st-page .form-group > [class*="col-"] {
+    width: 100%;
+    max-width: 100%;
+    float: none;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.st-page .panel-body .row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.st-page .panel-body .row > [class*="col-"]:first-child {
+    padding-left: 0;
+}
+
+.st-page .panel-body .row > [class*="col-"]:last-child {
+    padding-right: 0;
+}
+
+.st-page .form-control {
+    display: block;
+    width: 100%;
+    height: 42px;
+    padding: 0 14px;
+    font-family: inherit;
+    font-size: 13.5px;
+    line-height: 1.4;
+    color: #172033;
+    background: #fff;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    box-shadow: none;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s, background-color .15s;
+}
+
+.st-page textarea.form-control {
+    height: auto;
+    padding: 12px 14px;
+    line-height: 1.55;
+    resize: vertical;
+}
+
+.st-page .form-control::placeholder {
+    color: #94A3B8;
+}
+
+.st-page .form-control:focus {
+    color: #172033;
+    background: #fff;
+    border-color: #93B4F7;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+}
+
+.st-page .form-control[disabled],
+.st-page .form-control[readonly],
+.st-page fieldset[disabled] .form-control {
+    color: #94A3B8;
+    background: #F1F5F9;
+    border-color: #EDF1F6;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+/* native select: draw our own chevron so it matches the mockup */
+.st-page select.form-control {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 38px;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+}
+
+.st-page select.form-control[multiple],
+.st-page select.form-control[size] {
+    height: auto;
+    padding: 8px 14px;
+    background-image: none;
+}
+
+/* bootstrap-select enhanced selects get the same skin */
+.st-page .bootstrap-select.form-control {
+    height: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    /* sections start collapsed, so the plugin may measure before the field is
+       visible — pin the width so an enhanced select is never 0px wide */
+    width: 100% !important;
+}
+
+.st-page .bootstrap-select > .dropdown-toggle,
+.st-page .bootstrap-select > .dropdown-toggle.btn,
+.st-page .bootstrap-select > .dropdown-toggle.btn-default {
+    height: 42px;
+    padding: 0 34px 0 14px;
+    font-family: inherit;
+    font-size: 13.5px;
+    line-height: 40px;
+    color: #172033;
+    background-color: #fff;
+    /* the same chevron the plain selects use, so both kinds look identical */
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 13px center;
+    background-size: 14px 14px;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    box-shadow: none;
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.st-page .bootstrap-select > .dropdown-toggle:focus,
+.st-page .bootstrap-select > .dropdown-toggle:active {
+    color: #172033;
+    background-color: #fff;
+    border-color: #93B4F7;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+}
+
+/* bootstrap-select injects its own legacy filled triangle — the chevron above
+   replaces it, so the plugin's marker must not draw as well */
+.st-page .bootstrap-select > .dropdown-toggle .bs-caret,
+.st-page .bootstrap-select > .dropdown-toggle .caret {
+    display: none !important;
+}
+
+.st-page .bootstrap-select > .dropdown-toggle .filter-option {
+    line-height: 40px;
+    padding-right: 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.st-page .bootstrap-select .dropdown-menu {
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    box-shadow: 0 10px 24px rgba(23, 32, 51, .12);
+}
+
+.st-page .bootstrap-select .dropdown-menu > li > a {
+    font-size: 13px;
+    color: #172033;
+    padding: 7px 14px;
+}
+
+.st-page .bootstrap-select .dropdown-menu > li > a:hover {
+    background: #EFF6FF;
+    color: #1D4ED8;
+}
+
+/* input groups (unit + button pairs) */
+.st-page .input-group {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
+}
+
+.st-page .input-group > .form-control,
+.st-page .input-group .bootstrap-select.form-control {
+    flex: 1 1 auto;
+    width: auto;
+    border-radius: 8px 0 0 8px;
+}
+
+.st-page .input-group > .input-group-btn,
+.st-page .input-group > .input-group-btn > .btn,
+.st-page .input-group > .btn {
+    height: 42px;
+    margin-left: -1px;
+    border-radius: 0 8px 8px 0;
+}
+
+.st-page .input-group > .input-group-btn:last-child > .btn,
+.st-page .input-group > .input-group-btn:last-child > .btn-group > .btn {
+    border-radius: 0 8px 8px 0;
+}
+
+.st-page .input-group > .input-group-btn > .btn {
+    padding: 0 14px;
+    line-height: 40px;
+}
+
+/* the on/off segment in front of "Devices limit" and "Expiration after days" */
+.st-page .input-group .checkbox.input-group-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    min-width: 46px;
+    height: 42px;
+    margin: 0;
+    padding: 0;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-right: 0;
+    border-radius: 8px 0 0 8px;
+    cursor: pointer;
+    transition: background-color .12s;
+}
+
+.st-page .input-group .checkbox.input-group-btn:hover {
+    background: #F1F5F9;
+}
+
+/* the field sits after the segment, so it must not keep the leading radius */
+.st-page .input-group > .checkbox.input-group-btn + .form-control,
+.st-page .input-group > .checkbox.input-group-btn + .bootstrap-select.form-control > .dropdown-toggle {
+    border-left: 0;
+    border-radius: 0 8px 8px 0;
+}
+
+/* the theme paints checkbox boxes with label pseudo elements and hides the real
+   input — inside this narrow segment that produced a stray square, so the segment
+   draws the real control and the label just covers the whole hit area */
+.st-page .input-group .checkbox.input-group-btn label {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    padding: 0;
+    margin: 0;
+    min-height: 0;
+    cursor: pointer;
+}
+
+.st-page .input-group .checkbox.input-group-btn label::before,
+.st-page .input-group .checkbox.input-group-btn label::after {
+    display: none;
+}
+
+.st-page .input-group .checkbox.input-group-btn input[type="checkbox"] {
+    position: static;
+    z-index: 1;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    opacity: 1;
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: #fff;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 11px 11px;
+    border: 1.5px solid #CBD5E1;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color .12s, border-color .12s;
+}
+
+.st-page .input-group .checkbox.input-group-btn input[type="checkbox"]:checked {
+    background-color: #2563EB;
+    border-color: #2563EB;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+}
+
+.st-page .input-group .checkbox.input-group-btn:hover input[type="checkbox"]:not(:checked) {
+    border-color: #94A3B8;
+}
+
+.st-page .input-group .checkbox.input-group-btn input[type="checkbox"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .16);
+}
+
+.st-page .input-group .checkbox.input-group-btn input[type="checkbox"]:disabled {
+    background-color: #F1F5F9;
+    border-color: #E2E8F0;
+    cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------- checkboxes */
+.st-page .checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 2px 0 0;
+}
+
+.st-page .checkboxes .checkbox {
+    width: 50%;
+    float: none;
+    margin: 0;
+    padding: 7px 0;
+    min-width: 220px;
+}
+
+.st-page .checkbox label {
+    font-size: 13px;
+    font-weight: 400;
+    color: #334155;
+    cursor: pointer;
+}
+
+.st-page .checkbox:hover label {
+    color: #1D4ED8;
+}
+
+.st-page .checkbox input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    margin-top: 2px;
+    accent-color: #2563EB;
+    cursor: pointer;
+}
+
+/* ---------------------------------------- toggle switch (gateway active / one-time, etc.) */
+.st-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 42px;
+    height: 24px;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+}
+
+.st-switch input[type="checkbox"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.st-switch__track {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 38px;
+    bottom: 0;
+    pointer-events: none;
+}
+
+.st-switch__track::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #CBD5E1;
+    transition: transform .18s, background .18s;
+}
+
+.st-switch input:checked ~ .st-switch__track::after {
+    transform: translateX(18px);
+    background: #2563EB;
+}
+
+.st-switch input:focus-visible ~ .st-switch__track::after {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .25);
+}
+
+.st-switch input:disabled ~ .st-switch__track::after {
+    background: #ECEFF3;
+}
+
+.st-switch__label {
+    position: static;
+    display: inline-block;
+    padding: 0;
+    margin-left: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #334155;
+    cursor: pointer;
+}
+
+/* ------------------------------------------ stacked form row (gateway fields) */
+.st-form__row {
+    margin-bottom: 18px;
+}
+
+.st-form__row:last-of-type {
+    margin-bottom: 0;
+}
+
+.st-form__label {
+    display: block;
+    margin: 0 0 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #334155;
+}
+
+.st-form__control {
+    width: 100%;
+    max-width: 100%;
+    float: none;
+    padding: 0;
+    margin: 0;
+}
+
+.st-form__control .form-control {
+    width: 100%;
+}
+
+/* ------------------------------------------- form footer (save + test config) */
+.st-form__foot {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #EEF2F7;
+}
+
+/* -------------------------------------------------- status pill */
+.st-pill {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 10px;
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 22px;
+    color: #64748B;
+    background: #F1F5F9;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.st-pill--ok {
+    color: #16A34A;
+    background: #F0FDF4;
+}
+
+/* --------------------------------------------------------------- buttons */
+.st-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 18px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .15s, border-color .15s, color .15s;
+}
+
+.st-btn--primary,
+.st-page .panel-footer .btn-action,
+.st-page .st-card__foot .btn-action {
+    height: 40px;
+    padding: 0 18px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    color: #fff;
+    background: #2563EB;
+    border: 1px solid #2563EB;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, .28);
+}
+
+.st-btn--primary:hover,
+.st-btn--primary:focus,
+.st-page .panel-footer .btn-action:hover,
+.st-page .st-card__foot .btn-action:hover {
+    color: #fff;
+    background: #1D4ED8;
+    border-color: #1D4ED8;
+}
+
+/* the head text takes the free space instead of overflowing it, so a long
+   subtitle can never run under the card's action button. The theme puts
+   white-space:nowrap on .panel-title and children inherit it, so it is reset. */
+.st-card__headtext,
+.st-page .panel.panel-default > .panel-heading .panel-title > .st-card__headtext {
+    flex: 1 1 auto;
+    min-width: 0;
+    white-space: normal;
+}
+
+/* the theme restates `.panel-title > a { color: inherit }`, which is more
+   specific than a single class, so buttons inside a card head lose their own
+   colour — re-assert it with a selector that outranks the theme */
+.st-page .st-btn--primary { color: #fff; }
+.st-page .st-btn--ghost { color: #334155; }
+.st-page .st-btn--danger { color: #DC2626; }
+
+.st-page .st-btn--primary:hover,
+.st-page .st-btn--primary:focus { color: #fff; }
+
+.st-btn--ghost {
+    color: #334155;
+    background: #fff;
+    border-color: #E2E8F0;
+}
+
+.st-btn--ghost:hover,
+.st-btn--ghost:focus {
+    color: #1D4ED8;
+    background: #F8FAFC;
+    border-color: #BFD4F7;
+}
+
+.st-btn--sm {
+    height: 34px;
+    padding: 0 13px;
+    font-size: 12.5px;
+    gap: 7px;
+}
+
+.st-btn--danger {
+    color: #DC2626;
+    background: #FEF2F2;
+    border-color: #FEE2E2;
+}
+
+.st-btn--danger:hover,
+.st-btn--danger:focus {
+    color: #fff;
+    background: #DC2626;
+    border-color: #DC2626;
+}
+
+/* in-row buttons (clear cache, download) stop shouting */
+.st-page .input-group .btn-danger {
+    color: #DC2626;
+    background: #FEF2F2;
+    border: 1px solid #FEE2E2;
+}
+
+.st-page .input-group .btn-danger:hover,
+.st-page .input-group .btn-danger:focus {
+    color: #fff;
+    background: #DC2626;
+    border-color: #DC2626;
+}
+
+/* legacy buttons used by these forms keep their height in line */
+.st-page .btn {
+    border-radius: 8px;
+}
+
+.st-page .btn-default {
+    height: 42px;
+    color: #334155;
+    background: #F1F5F9;
+    border: 1px solid #E2E8F0;
+    padding: 0 16px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.st-page .btn-default:hover,
+.st-page .btn-default:focus {
+    color: #1D4ED8;
+    background: #EFF6FF;
+    border-color: #BFD4F7;
+}
+
+/* --------------------------------------------------------------- notices */
+.st-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 20px;
+    padding: 16px 20px;
+    background: #F8FAFC;
+    border: 1px solid #E8EDF3;
+    border-radius: 12px;
+}
+
+.st-note__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #2563EB;
+    color: #fff;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.st-note__text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #64748B;
+}
+
+.st-note__text strong {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #172033;
+}
+
+/* ------------------------------------------------------------- save bar */
+.st-savebar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 15px 22px;
+    background: #fff;
+    border: 1px solid #E8EDF3;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(23, 32, 51, .05);
+}
+
+/* the alerts the controller may flash stay readable on the light surface */
+.st-page .alert {
+    border-radius: 10px;
+}
+
+/* --------------------------------------------------- stacked card column */
+.st-stack {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+}
+
+/* ------------------------------------------------------- collapsible blocks */
+.st-acc {
+    /* full-bleed inside the card body so the dividers span the whole card */
+    margin-left: -22px;
+    margin-right: -22px;
+    border-top: 1px solid #EEF2F7;
+}
+
+.st-acc:first-of-type {
+    border-top: 0;
+}
+
+.st-acc > summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 22px;
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+    transition: background .12s;
+}
+
+.st-acc > summary::-webkit-details-marker,
+.st-acc > summary::marker {
+    display: none;
+    content: "";
+}
+
+.st-acc > summary:hover {
+    background: #F8FAFC;
+}
+
+.st-acc[open] > summary {
+    background: #FBFCFE;
+}
+
+.st-acc > summary:focus-visible {
+    outline: 2px solid #93B4F7;
+    outline-offset: -2px;
+}
+
+.st-acc__chev {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: #F1F5F9;
+    color: #64748B;
+    font-size: 9px;
+    flex-shrink: 0;
+    transition: transform .18s, background .12s, color .12s;
+}
+
+.st-acc[open] .st-acc__chev {
+    transform: rotate(90deg);
+    background: #EFF6FF;
+    color: #2563EB;
+}
+
+.st-acc__text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.st-acc__title {
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.35;
+    color: #172033;
+}
+
+.st-acc__sub {
+    margin-top: 2px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #64748B;
+}
+
+.st-acc__body {
+    padding: 16px 22px 4px;
+}
+
+/* a counter or action sitting at the end of a summary / card title */
+.st-acc > summary .st-count,
+.st-page .panel-title > .st-btn,
+.st-acc__meta {
+    margin-left: auto;
+}
+
+.st-acc__meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* provider logo, both in a summary row and in a checkbox tile */
+.st-gwlogo {
+    width: 38px;
+    height: 24px;
+    object-fit: contain;
+    flex-shrink: 0;
+    background: #fff;
+    border-radius: 5px;
+}
+
+/* inline result of the "test config" request */
+.st-gwtest {
+    font-size: 12.5px;
+    font-weight: 600;
+}
+
+.st-gwtest.is-ok { color: #16A34A; }
+.st-gwtest.is-bad { color: #DC2626; }
+.st-gwtest.is-busy { color: #B45309; }
+
+/* expand / collapse everything in the card */
+.st-acc-toggle {
+    margin-left: auto;
+    height: 30px;
+    padding: 0 12px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: #2563EB;
+    background: #EFF6FF;
+    border: 1px solid #DBEAFE;
+    border-radius: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.st-acc-toggle:hover,
+.st-acc-toggle:focus {
+    background: #DBEAFE;
+}
+
+/* ------------------------------------------------------------ file field */
+.st-filefield {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    min-height: 48px;
+    padding: 6px 8px 6px 14px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+}
+
+.st-filefield__value {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    overflow-wrap: anywhere;
+}
+
+.st-filefield__value > i {
+    color: #64748B;
+    font-size: 13px;
+}
+
+.st-filefield__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    flex-wrap: wrap;
+}
+
+/* --------------------------------------------------------------- images */
+.st-page .form-image {
+    min-height: 168px;
+    background: #fff;
+    border: 1px dashed #D7E0EA;
+    border-radius: 10px;
+}
+
+.st-page .form-image .form-image-controls .btn {
+    height: 32px;
+    width: 32px;
+    padding: 0;
+    border-radius: 0 9px 0 10px;
+    font-size: 13px;
+}
+
+/* ------------------------------------------------- sticky card toolbar */
+.st-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 6;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 22px;
+    background: #fff;
+    border-bottom: 1px solid #EEF2F7;
+}
+
+.st-toolbar--plain {
+    position: static;
+    padding: 0 0 14px;
+    border-bottom: 0;
+}
+
+.st-search {
+    position: relative;
+    flex: 1 1 240px;
+    min-width: 180px;
+    max-width: 380px;
+}
+
+.st-search > i.fas {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94A3B8;
+    font-size: 12px;
+    pointer-events: none;
+}
+
+.st-search > input {
+    width: 100%;
+    height: 38px;
+    box-sizing: border-box;
+    padding: 0 12px 0 34px;
+    font-family: inherit;
+    font-size: 13px;
+    color: #172033;
+    background: #fff;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.st-search > input::placeholder { color: #94A3B8; }
+
+.st-search > input:focus {
+    border-color: #93B4F7;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+}
+
+.st-toolbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    flex-wrap: wrap;
+}
+
+.st-count {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #475569;
+    background: #F1F5F9;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.st-save-state {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #64748B;
+    min-width: 0;
+}
+
+.st-hint {
+    font-size: 12.5px;
+    color: #94A3B8;
+}
+
+.st-save-state.is-saving { color: #B45309; }
+.st-save-state.is-saved { color: #16A34A; }
+.st-save-state.is-failed { color: #DC2626; }
+
+/* --------------------------------------------------- checkbox tile grid */
+.st-checkgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 8px;
+    padding: 16px 22px 22px;
+}
+
+.st-checkitem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 10px 12px;
+    font-weight: 400;
+    background: #fff;
+    border: 1px solid #E8EDF3;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: border-color .12s, background-color .12s, opacity .12s;
+}
+
+.st-checkitem:hover {
+    border-color: #BFD4F7;
+    background: #F8FAFC;
+}
+
+.st-checkitem > input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    flex-shrink: 0;
+    accent-color: #2563EB;
+    cursor: pointer;
+}
+
+.st-checkitem__text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    font-size: 13px;
+    line-height: 1.35;
+    color: #334155;
+}
+
+.st-checkitem__sub {
+    margin-top: 1px;
+    font-size: 11.5px;
+    line-height: 1.3;
+    color: #94A3B8;
+}
+
+/* ------------------------------------------------------- inline radio row */
+.st-radios {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 8px 0 0;
+}
+
+.st-radio {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.4;
+    color: #334155;
+    cursor: pointer;
+}
+
+.st-radio:hover { color: #1D4ED8; }
+
+.st-radio input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    flex-shrink: 0;
+    accent-color: #2563EB;
+    cursor: pointer;
+}
+
+.st-checkitem.is-on {
+    background: #F7FAFF;
+    border-color: #BFD4F7;
+}
+
+.st-checkitem.is-on .st-checkitem__text {
+    font-weight: 600;
+    color: #172033;
+}
+
+.st-checkitem.is-locked {
+    background: #F8FAFC;
+    border-style: dashed;
+    cursor: not-allowed;
+}
+
+.st-checkitem.is-locked .st-checkitem__text { color: #94A3B8; }
+.st-checkitem.is-saving { opacity: .55; }
+.st-checkitem.is-hidden { display: none; }
+
+.st-checkitem__lock {
+    margin-left: auto;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #94A3B8;
+    background: #F1F5F9;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.st-empty {
+    padding: 26px 22px;
+    font-size: 13px;
+    color: #64748B;
+}
+
+.st-empty.is-hidden { display: none; }
+
+/* ----------------------------------------- scrollable table inside a card */
+.st-tablewrap {
+    max-height: 62vh;
+    overflow: auto;
+    border-top: 1px solid #EEF2F7;
+    scrollbar-width: thin;
+    scrollbar-color: #C7D7E3 transparent;
+}
+
+.st-tablewrap::-webkit-scrollbar { width: 8px; height: 8px; }
+.st-tablewrap::-webkit-scrollbar-thumb { border-radius: 8px; background: #C7D7E3; }
+
+.st-page .st-tablewrap table,
+.st-page .panel-body table.table-list {
+    margin-bottom: 0;
+}
+
+.st-page .st-tablewrap thead th,
+.st-page .panel-body table.table-list thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: 11px 12px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #64748B;
+    background: #F8FAFC;
+    border-bottom: 1px solid #E2E8F0;
+    white-space: nowrap;
+}
+
+.st-page .st-tablewrap tbody td,
+.st-page .panel-body table.table-list tbody td {
+    padding: 11px 12px;
+    font-size: 13px;
+    color: #172033;
+    vertical-align: middle;
+    border-top: 1px solid #F1F5F9;
+}
+
+.st-page .st-tablewrap tbody tr:hover > td,
+.st-page .panel-body table.table-list tbody tr:hover > td {
+    background: #F8FAFC;
+}
+
+.st-page .st-tablewrap .group-head,
+.st-page .st-tablewrap .group-head:hover th {
+    background: #FBFCFE;
+}
+
+.st-page .st-tablewrap .group-head th {
+    padding: 10px 12px;
+    border-bottom: 1px solid #EEF2F7;
+}
+
+.st-page .st-tablewrap .group-head a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #334155;
+    text-decoration: none;
+}
+
+.st-page .st-tablewrap .group-head a:hover { color: #1D4ED8; }
+
+.st-thcheck {
+    display: block;
+    margin: 6px auto 0;
+    width: 15px;
+    height: 15px;
+    padding: 0;
+    accent-color: #2563EB;
+    cursor: pointer;
+}
+
+.st-page .st-tablewrap tbody tr.is-hidden { display: none; }
+
+.st-page .st-tablewrap .checkbox { margin: 0; }
+
+/* the "select all + bulk actions" cell the table helper renders: the checkbox and
+   the actions trigger were colliding, which read as a stray floating icon */
+.st-page .panel-body table.table-list thead th.table-checkbox,
+.st-page .st-tablewrap thead th.table-checkbox {
+    width: 74px;
+    padding-top: 9px;
+    padding-bottom: 9px;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.st-page .panel-body table.table-list thead th.table-checkbox .checkbox,
+.st-page .st-tablewrap thead th.table-checkbox .checkbox {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 6px 0 0;
+    line-height: 1;
+}
+
+.st-page .panel-body table.table-list thead th.table-checkbox .checkbox label,
+.st-page .st-tablewrap thead th.table-checkbox .checkbox label {
+    cursor: pointer;
+}
+
+.st-page .panel-body table.table-list thead th.table-checkbox .btn-group,
+.st-page .st-tablewrap thead th.table-checkbox .btn-group {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.st-page .panel-body table.table-list thead th.table-checkbox .icon,
+.st-page .st-tablewrap thead th.table-checkbox .icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    margin: 0;
+    padding: 0;
+    font-size: 11px;
+    line-height: 1;
+    color: #64748B;
+    background-color: #fff;
+    border: 1px solid #E2E8F0;
+    border-radius: 7px;
+    box-shadow: none;
+    cursor: pointer;
+    transition: color .12s, background-color .12s, border-color .12s;
+}
+
+.st-page .panel-body table.table-list thead th.table-checkbox .icon:hover,
+.st-page .panel-body table.table-list thead th.table-checkbox .btn-group.open .icon,
+.st-page .st-tablewrap thead th.table-checkbox .icon:hover,
+.st-page .st-tablewrap thead th.table-checkbox .btn-group.open .icon {
+    color: #1D4ED8;
+    background-color: #EFF6FF;
+    border-color: #BFD4F7;
+}
+
+.st-page .st-tablewrap .no-data,
+.st-page .panel-body table.table-list .no-data {
+    padding: 46px 16px;
+    text-align: center;
+    font-size: 13px;
+    color: #64748B;
+}
+
+.st-page .st-tablewrap .no-data::before,
+.st-page .panel-body table.table-list .no-data::before {
+    content: "\f01c";
+    display: block;
+    margin-bottom: 10px;
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 22px;
+    color: #CBD5E1;
+}
+
+/* save button that stays reachable on long cards */
+.st-page .panel.panel-default > .panel-footer.is-sticky {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    box-shadow: 0 -6px 16px rgba(23, 32, 51, .06);
+}
+
+/* ---------------------------------------------------------- responsive */
+@media (max-width: 1100px) {
+    .st-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 700px) {
+    .st-page {
+        padding: 18px 14px 40px;
+    }
+
+    .st-acc {
+        margin-left: -16px;
+        margin-right: -16px;
+    }
+
+    .st-acc > summary {
+        padding: 14px 16px;
+    }
+
+    .st-acc__body {
+        padding: 14px 16px 4px;
+    }
+
+    .st-page__title {
+        font-size: 19px;
+    }
+
+    .st-page__title-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 11px;
+        font-size: 16px;
+    }
+
+    .st-card__head,
+    .st-page .panel.panel-default > .panel-heading,
+    .st-page .panel.panel-default > .panel-body,
+    .st-card__body {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .st-page .checkboxes .checkbox {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .st-savebar {
+        padding: 14px 16px;
+    }
+
+    .st-toolbar {
+        padding: 12px 16px;
+    }
+
+    .st-checkgrid {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 14px 16px 18px;
+    }
+
+    .st-tablewrap {
+        max-height: 70vh;
+    }
+}

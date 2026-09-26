@@ -1,0 +1,278 @@
+/* ==========================================================================
+   Sensor Icons — modern SaaS redesign
+   Scoped to .sic-page so nothing else in the admin/frontend is affected.
+   Palette: #2563EB blue | #172033 dark | #64748B muted | #E2E8F0 border
+   ========================================================================== */
+
+/* the admin main area ships with overflow:hidden + a fixed height by default */
+body.admin-layout .page__main {
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #C7D7E3 transparent;
+}
+
+body.admin-layout .page__main::-webkit-scrollbar { width: 8px; }
+body.admin-layout .page__main::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    background: #C7D7E3;
+}
+
+.sic-page {
+    background: #F5F7FB;
+    padding: 26px 24px 44px;
+    min-height: 100%;
+}
+
+/* ---------------------------------------------------------------- header */
+.sic-page__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.sic-page__title-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.sic-page__title-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    background: #EFF6FF;
+    color: #2563EB;
+    font-size: 19px;
+    flex-shrink: 0;
+}
+
+.sic-page__title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #172033;
+}
+
+.sic-page__subtitle {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: #64748B;
+}
+
+.sic-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 18px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    color: #fff;
+    background: #2563EB;
+    border: 1px solid #2563EB;
+    border-radius: 8px;
+    text-decoration: none;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, .28);
+    transition: background .15s;
+}
+
+.sic-add:hover,
+.sic-add:focus {
+    background: #1D4ED8;
+    border-color: #1D4ED8;
+    color: #fff;
+    text-decoration: none;
+}
+
+/* ------------------------------------------------------------------ card */
+.sic-card {
+    background: #fff;
+    border: 1px solid #E8EDF3;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(23, 32, 51, .05);
+}
+
+.sic-card .panel-heading {
+    background: #fff;
+    border: 0;
+    border-bottom: 1px solid #EEF2F7;
+    padding: 0;
+    margin: 0;
+}
+
+.sic-card .panel-title {
+    margin: 0;
+    padding: 16px 16px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+    letter-spacing: .02em;
+}
+
+.sic-card .panel-body {
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+/* ------------------------------------------------------------------ grid */
+.sic-page .table-icon {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 12px;
+    padding: 16px;
+}
+
+.sic-page .table-icon .item {
+    position: relative;
+    float: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: auto;
+    margin: 0;
+    padding: 14px 8px 12px;
+    background: #fff;
+    border: 1px solid #E8EDF3;
+    border-radius: 10px;
+    text-align: center;
+    transition: border-color .15s, box-shadow .15s, transform .15s;
+}
+
+.sic-page .table-icon .item:hover,
+.sic-page .table-icon .item:focus-within {
+    border-color: #93B4F7;
+    box-shadow: 0 6px 18px rgba(23, 32, 51, .10);
+    transform: translateY(-2px);
+}
+
+.sic-thumb {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 52px;
+}
+
+.sic-thumb img {
+    width: 48px;
+    height: 48px;
+    image-rendering: auto;
+}
+
+/* --------------------------------------------------------------- actions */
+/* visible by default so edit/delete are always discoverable */
+.sic-page .table-icon .item .controls {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: flex;
+    gap: 4px;
+    opacity: 1;
+}
+
+.sic-page .table-icon .item .controls a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    font-size: 11px;
+    color: #475569;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 7px;
+    box-shadow: 0 1px 3px rgba(23, 32, 51, .10);
+    text-decoration: none;
+    opacity: .8;
+    transition: opacity .15s, color .15s, border-color .15s, background-color .15s;
+}
+
+.sic-page .table-icon .item:hover .controls a,
+.sic-page .table-icon .item:focus-within .controls a {
+    opacity: 1;
+}
+
+.sic-page .table-icon .item .controls a:hover {
+    color: #2563EB;
+    border-color: #93B4F7;
+    background: #F8FAFC;
+    text-decoration: none;
+}
+
+.sic-page .table-icon .item .controls a.sic-act--del:hover {
+    color: #DC2626;
+    border-color: #FCA5A5;
+    background: #FEF2F2;
+}
+
+/* always visible on touch devices (no :hover) */
+@media (hover: none) {
+    .sic-page .table-icon .item .controls { opacity: 1; }
+}
+
+/* --------------------------------------------------------- empty / pag */
+.sic-empty {
+    padding: 48px 16px;
+    text-align: center;
+    color: #94A3B8;
+    font-size: 13px;
+}
+
+.sic-card .nav-pagination {
+    margin: 0;
+    padding: 12px 16px;
+    border-top: 1px solid #EEF2F7;
+}
+
+.sic-card .pagination > li > a,
+.sic-card .pagination > li > span {
+    border-radius: 7px;
+    margin: 0 2px;
+    border-color: #E2E8F0;
+    color: #334155;
+    font-size: 12.5px;
+}
+
+.sic-card .pagination > .active > a,
+.sic-card .pagination > .active > span {
+    background: #2563EB;
+    border-color: #2563EB;
+    color: #fff;
+}
+
+/* ------------------------------------------------------------ responsive */
+@media (max-width: 991px) {
+    .sic-page { padding: 20px 16px 36px; }
+}
+
+@media (max-width: 767px) {
+    .sic-page .table-icon {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 8px;
+        padding: 12px;
+    }
+    .sic-page .table-icon .item .controls { opacity: 1; }
+}
+
+@media (max-width: 480px) {
+    .sic-page__title { font-size: 19px; }
+    .sic-add {
+        width: 100%;
+        justify-content: center;
+    }
+}

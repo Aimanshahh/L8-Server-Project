@@ -1,0 +1,151 @@
+/* ==========================================================================
+   Tracking ports — admin page
+   Builds on the shared .al- list-page skin (admin-list-overrides.css).
+   Palette: #2563EB blue | #172033 dark | #64748B muted | #E2E8F0 border
+   ========================================================================== */
+
+/* ------------------------------------------ secondary header actions */
+.al-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 16px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    color: #334155;
+    background: #fff;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color .15s, background-color .15s, border-color .15s;
+}
+
+.al-ghost > i {
+    font-size: 14px;
+    color: #64748B;
+    transition: color .15s;
+}
+
+.al-ghost:hover,
+.al-ghost:focus {
+    color: #1D4ED8;
+    background: #F8FAFC;
+    border-color: #BFD4F7;
+    text-decoration: none;
+}
+
+.al-ghost:hover > i,
+.al-ghost:focus > i { color: #1D4ED8; }
+
+/* the ports page puts its two config actions in the page header, which is a
+   flex row — keep them together and let the row wrap on narrow screens */
+.al-page__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ------------------------------------------------- status filter chips */
+.al-filters {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px;
+    background: #F1F5F9;
+    border-radius: 9px;
+}
+
+.al-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 13px;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1;
+    color: #475569;
+    background: transparent;
+    border: 0;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: color .15s, background-color .15s;
+}
+
+.al-filter:hover { color: #1D4ED8; }
+
+.al-filter.is-active {
+    color: #172033;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(23, 32, 51, .10);
+}
+
+.al-filter__count {
+    min-width: 20px;
+    padding: 1px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748B;
+    background: #E2E8F0;
+    border-radius: 999px;
+    text-align: center;
+}
+
+.al-filter.is-active .al-filter__count {
+    color: #1D4ED8;
+    background: #EFF6FF;
+}
+
+/* --------------------------------------------- long list stays contained */
+/* the port list is long, so the table scrolls inside the card and the column
+   headings stay put while the rows move under them */
+.al-card--scroll .table-responsive {
+    max-height: calc(100vh - 350px);
+    min-height: 220px;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #C7D7E3 transparent;
+}
+
+.al-card--scroll .table-responsive::-webkit-scrollbar { width: 9px; height: 9px; }
+.al-card--scroll .table-responsive::-webkit-scrollbar-track { background: transparent; }
+.al-card--scroll .table-responsive::-webkit-scrollbar-thumb {
+    border-radius: 9px;
+    background: #C7D7E3;
+}
+
+.al-card--scroll table.table-list > thead > tr > th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: #F8FAFC;
+    box-shadow: inset 0 -1px 0 #EEF2F7;
+}
+
+/* rows removed by the search / status filter */
+.al-card table.table-list > tbody > tr.is-hidden { display: none; }
+
+/* the "nothing matches" row keeps the table height steady while filtering */
+.al-card table.table-list > tbody > tr td .al-empty--inline {
+    padding: 44px 24px;
+}
+
+/* the row action is icon only, so it gets the same quiet button treatment the
+   other list pages use, plus a real hover target */
+.al-card table.table-list td.actions .btn.icon.edit {
+    width: 32px;
+    height: 32px;
+}
+
+/* ---------------------------------------------------------- responsive */
+@media (max-width: 900px) {
+    .al-page__actions { width: 100%; }
+    .al-page__actions .al-ghost { flex: 1 1 auto; justify-content: center; }
+    .al-card--scroll .table-responsive { max-height: none; overflow: visible; }
+}

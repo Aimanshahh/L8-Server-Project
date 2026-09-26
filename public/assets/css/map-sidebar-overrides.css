@@ -1,0 +1,174 @@
+/* ============================================================
+   Left objects panel — fills the viewport height, flex layout
+   ============================================================ */
+
+#sidebar {
+  top: 0;
+  bottom: 0;
+  height: 100%;
+  max-height: none;
+  width: 330px;
+  overflow: visible;
+  transition: width .25s ease;
+}
+
+/* header + tabs stay fixed, only the list scrolls */
+#sidebar > .sidebar-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+#sidebar .nav-tabs {
+  flex: 0 0 auto;
+}
+
+#sidebar .tab-content {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+#sidebar .tab-content > .tab-pane.active {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+#sidebar .tab-pane-header {
+  flex: 0 0 auto;
+}
+
+#sidebar .tab-pane-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* --- collapse handle (expanded state) --- */
+#sidebar .btn-collapse {
+  width: 22px;
+  height: 52px;
+  line-height: 52px;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 1px solid #dfe8ef;
+  border-left: 0;
+  border-radius: 0 10px 10px 0;
+  background: #ffffff;
+  color: #1677c8;
+  font-size: 11px;
+  box-shadow: 2px 2px 8px rgba(16, 42, 67, .08);
+  z-index: 2;
+}
+
+#sidebar .btn-collapse:before,
+#sidebar .btn-collapse:after {
+  display: none;
+}
+
+#sidebar .btn-collapse i {
+  font-size: 11px;
+}
+
+#sidebar .btn-collapse:hover {
+  background: #f2f8ff;
+  color: #1677c8;
+}
+
+/* --- collapsed state --- */
+#sidebar.collapsed {
+  width: 0 !important;
+  overflow: visible;
+}
+
+#sidebar.collapsed > .sidebar-content {
+  width: 0;
+  min-width: 0;
+  overflow: hidden;
+  border-right: 0;
+}
+
+#sidebar.collapsed .btn-collapse {
+  display: none;
+}
+
+/* expand button — always accessible when the panel is collapsed */
+.btn-sidebar-expand {
+  display: none;
+  position: fixed;
+  left: 76px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1001;
+  width: 30px;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1px solid #dfe8ef;
+  border-radius: 0 10px 10px 0;
+  box-shadow: 2px 2px 10px rgba(16, 42, 67, .10);
+  color: #1677c8;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-sidebar-expand:hover {
+  background: #f2f8ff;
+  color: #1677c8;
+}
+
+#sidebar.collapsed + .btn-sidebar-expand {
+  display: flex;
+}
+
+/* ============================================================
+   Right device panel — flush to the top of the viewport
+   ============================================================ */
+
+#widgets {
+  top: 0;
+  right: 8px;
+  max-height: 100vh;
+}
+
+/* ============================================================
+   Map controls (the vertical toolbar) — keep it visible just
+   left of the right device panel instead of behind it
+   ============================================================ */
+
+#map-controls {
+  right: 336px;
+}
+
+/* ============================================================
+   FontAwesome alias — the theme's .icon glyphs that extend
+   fa-* set font-family: "FontAwesome" but no such font is
+   embedded, so icons like Logout/Dashboard render blank.
+   Point it at the FA6 webfont already loaded via CDN.
+   ============================================================ */
+
+@font-face {
+  font-family: "FontAwesome";
+  src: url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2") format("woff2"),
+       url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+@media (max-width: 767px) {
+  #sidebar {
+    width: min(330px, calc(100vw - 64px));
+  }
+}

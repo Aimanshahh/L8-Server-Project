@@ -1,0 +1,416 @@
+/* ==========================================================================
+   Position pipeline page — page only additions on top of admin-list-overrides.css.
+   Reuses the shared .al-* list-page block and adds the small set of blocks this
+   dashboard needs (stat cards, throughput chart, health panel, pills).
+   Palette: #2563EB blue | #172033 dark | #64748B muted | #E2E8F0 border
+   ========================================================================== */
+
+.pl-page--loading {
+    opacity: .6;
+    transition: opacity .15s;
+}
+
+/* ------------------------------------------------------------- stat cards */
+.pl-stats {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.pl-stat {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px;
+    background: #fff;
+    border: 1px solid #E8EDF3;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(23, 32, 51, .05);
+    min-width: 0;
+    transition: box-shadow .15s, transform .15s;
+}
+
+.pl-stat:hover {
+    box-shadow: 0 6px 18px rgba(23, 32, 51, .08);
+    transform: translateY(-1px);
+}
+
+.pl-stat__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    font-size: 17px;
+    flex-shrink: 0;
+}
+
+.pl-stat__icon--blue   { background: #EFF6FF; color: #2563EB; }
+.pl-stat__icon--violet { background: #F5F3FF; color: #7C3AED; }
+.pl-stat__icon--teal   { background: #F0FDFA; color: #0D9488; }
+.pl-stat__icon--green  { background: #ECFDF5; color: #16A34A; }
+.pl-stat__icon--orange { background: #FFF7ED; color: #EA580C; }
+
+.pl-stat__label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748B;
+    margin-bottom: 3px;
+    white-space: nowrap;
+}
+
+.pl-stat__value {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: #172033;
+}
+
+.pl-stat__unit {
+    font-size: 13px;
+    font-weight: 600;
+    color: #94A3B8;
+    margin-left: 2px;
+}
+
+.pl-stat__sub {
+    margin-top: 3px;
+    font-size: 11.5px;
+    color: #94A3B8;
+}
+
+/* ---------------------------------------------------------------- layout */
+.pl-grid {
+    display: grid;
+    align-items: start;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.pl-grid--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pl-card {
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+
+.pl-card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 15px 20px;
+    border-bottom: 1px solid #EEF2F7;
+}
+
+.pl-card__title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #172033;
+}
+
+.pl-card__title i {
+    margin-right: 7px;
+    color: #64748B;
+    font-size: 13px;
+}
+
+.pl-card__hint,
+.pl-card__link {
+    font-size: 12px;
+    color: #64748B;
+}
+
+.pl-card__link {
+    font-weight: 600;
+    color: #2563EB;
+    text-decoration: none;
+}
+
+.pl-card__link:hover {
+    color: #1D4ED8;
+    text-decoration: underline;
+}
+
+.pl-card__body {
+    padding: 18px 20px;
+}
+
+/* The shared list stylesheet zeroes panel-body padding inside .al-card, these
+   tables sit directly in the card so they inherit the .al-card table skin. */
+.pl-card > .table-responsive {
+    border: 0;
+}
+
+/* The last column is content here, not an actions menu. */
+.pl-card table.table-list > thead > tr > th:last-child,
+.pl-card table.table-list > tbody > tr > td:last-child {
+    width: auto;
+    text-align: left;
+}
+
+/* -------------------------------------------------------- throughput chart */
+.pl-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 150px;
+    padding-bottom: 2px;
+    border-bottom: 1px solid #E8EDF3;
+}
+
+.pl-bars__col {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: flex-end;
+    height: 100%;
+}
+
+.pl-bars__bar {
+    width: 100%;
+    min-height: 2px;
+    border-radius: 3px 3px 0 0;
+    background: linear-gradient(180deg, #60A5FA 0%, #2563EB 100%);
+    transition: height .25s ease;
+}
+
+.pl-bars__col:hover .pl-bars__bar {
+    background: linear-gradient(180deg, #93C5FD 0%, #1D4ED8 100%);
+}
+
+.pl-bars__axis {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 11px;
+    color: #94A3B8;
+}
+
+/* ---------------------------------------------------------- health panel */
+.pl-issues {
+    list-style: none;
+    margin: 0 0 16px;
+    padding: 0;
+}
+
+.pl-issues li {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 9px 12px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: #334155;
+    background: #F8FAFC;
+    border: 1px solid #EEF2F7;
+    border-radius: 8px;
+}
+
+.pl-issues li + li {
+    margin-top: 8px;
+}
+
+.pl-issues li i {
+    margin-top: 3px;
+    color: #64748B;
+    font-size: 12px;
+}
+
+.pl-issues__empty {
+    color: #16A34A !important;
+    background: #F0FDF4 !important;
+    border-color: #DCFCE7 !important;
+}
+
+.pl-issues__empty i {
+    color: #16A34A !important;
+}
+
+.pl-health-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 24px;
+    padding-top: 14px;
+    border-top: 1px dashed #E2E8F0;
+}
+
+.pl-health-meta > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.pl-health-meta__k {
+    font-size: 11px;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.pl-health-meta__v {
+    font-size: 15px;
+    font-weight: 700;
+    color: #172033;
+}
+
+/* ------------------------------------------------------------ status bits */
+.pl-health {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.pl-health--ok       { background: #ECFDF5; color: #16A34A; }
+.pl-health--warning  { background: #FFF7ED; color: #EA580C; }
+.pl-health--critical { background: #FEF2F2; color: #DC2626; }
+
+.pl-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0 16px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    background: #fff;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s;
+}
+
+.pl-btn:hover {
+    background: #F8FAFC;
+    border-color: #CBD5E1;
+    color: #172033;
+}
+
+.pl-chip {
+    display: inline-block;
+    padding: 3px 9px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #475569;
+    background: #F1F5F9;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+.pl-chip--bad {
+    color: #DC2626;
+    background: #FEF2F2;
+}
+
+.pl-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.pl-pill::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.pl-pill--on  { background: #ECFDF5; color: #16A34A; }
+.pl-pill--off { background: #FEF2F2; color: #DC2626; }
+
+/* ------------------------------------------------------------- table bits */
+.pl-code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: #475569;
+}
+
+.pl-strong {
+    font-weight: 600;
+    color: #1E293B;
+}
+
+.pl-muted {
+    color: #64748B;
+}
+
+.pl-num {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.pl-count {
+    display: inline-block;
+    min-width: 34px;
+    padding: 2px 9px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #1D4ED8;
+    background: #EFF6FF;
+    border-radius: 999px;
+    text-align: center;
+}
+
+.pl-address {
+    max-width: 260px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pl-empty {
+    padding: 30px 16px !important;
+    text-align: center;
+    color: #94A3B8;
+}
+
+/* ----------------------------------------------------------------- footer */
+.pl-foot {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    color: #94A3B8;
+}
+
+.pl-foot__sep {
+    margin: 0 2px;
+}
+
+/* -------------------------------------------------------------- responsive */
+@media (max-width: 1200px) {
+    .pl-stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .pl-grid,
+    .pl-grid--two {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 700px) {
+    .pl-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}

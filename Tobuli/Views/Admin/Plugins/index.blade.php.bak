@@ -1,0 +1,99 @@
+@extends('Admin.Layouts.default')
+
+@section('content')
+    <div class="st-page__head">
+        <div class="st-page__head-left">
+            <div class="st-page__icon">
+                <svg class="st-page__icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="st-page__title">{{ trans('admin.plugins') }}</h1>
+                <p class="st-page__subtitle">Enable or disable the application modules</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="st-card">
+        <div class="st-card__body" data-table-block>
+            {!! Form::open(array('route' => 'admin.plugins.save', 'method' => 'POST', 'class' => 'form form-horizontal', 'id' => 'plugin-form')) !!}
+            <div class="st-table__scroll">
+                <div class="st-table__toolbar">
+                    <div class="st-table__count">
+                        <svg class="st-table__count-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                        </svg>
+                        <span>{{ count($plugins) }} {{ str_plural('plugin', count($plugins)) }}</span>
+                    </div>
+                </div>
+
+                <div class="st-table__wrap" data-table>
+                    <table class="st-table">
+                <thead>
+                    <tr>
+                        <th class="st-table__col--checkbox" style="width:56px;padding-right:0"></th>
+                        {!! tableHeader('validation.attributes.name') !!}
+                        <th style="padding-left:0">{{ trans('admin.options') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach($plugins as $plugin)
+                    <tr>
+                        <td style="width:56px;padding-right:0">
+                            <div class="checkbox">
+                                {!! Form::checkbox('plugins['.$plugin->key.'][status]', 1, $plugin->status) !!}
+                                {!! Form::label(null) !!}
+                            </div>
+                        </td>
+                        <td>{{ $plugin->name }}</td>
+                        <td style="padding-left:0">
+                            @if(View::exists('Admin.Plugins.Partials.'.$plugin->key))
+                                @include('Admin.Plugins.Partials.'.$plugin->key)
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+                </div>
+            </div>
+            {!! Form::close() !!}
+        </div>
+
+        <div class="st-card__foot">
+            <button type="submit" class="st-btn st-btn--primary st-btn--sm" onClick="$('#plugin-form').submit();">
+                <svg class="st-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
+                </svg>
+                {{ trans('global.save') }}
+            </button>
+        </div>
+    </div>
+@stop
+
+@section('javascript')
+    <script>
+        $(function() {
+            var $form = $('#plugin-form');
+
+            function syncRowState() {
+                $form.find('tr').each(function() {
+                    var cb = $(this).find('.checkbox input[type=checkbox]');
+                    var checked = cb.length && cb[0].checked;
+                    $(this).toggleClass('is-disabled', !checked);
+                });
+            }
+
+            $form.on('change', '.checkbox input[type=checkbox]', syncRowState);
+            syncRowState();
+        });
+    </script>
+@stop
