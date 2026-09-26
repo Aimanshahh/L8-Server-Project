@@ -21,3 +21,16 @@ yarn-error.log
 /.vscode
 .DS_Store
 *.log
+# Junk files — cleanup
+*.zip
+*_preview.html
+scan*.txt
+*_scan.txt
+desktop.ini
+_bill_preview.html
+_blocked_preview.html
+_ev_preview.html
+_lang_preview.html
+_ports_preview.html
+_st_*.html
+_tools_preview.html
