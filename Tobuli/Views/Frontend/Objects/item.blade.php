@@ -3,8 +3,7 @@
 <li id="list-device-{{ $item->id }}"
     class="device-card"
     data-device-id="{{ $item->id }}"
-    data-device-status="{{ $item->getStatus() }}"
-    onClick="app.devices.select({{ $item->id }});">
+    data-device-status="{{ $item->getStatus() }}">
 
     <div class="device-card__icon">
         @if ($item->icon)
@@ -53,8 +52,7 @@
                data-toggle="dropdown"
                data-position="fixed"
                aria-haspopup="true"
-               aria-expanded="false"
-               onClick="event.stopPropagation();">
+               aria-expanded="false">
             </i>
 
             <ul class="dropdown-menu">

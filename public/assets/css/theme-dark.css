@@ -660,31 +660,303 @@ html[data-theme="dark"] .lg-filters .bootstrap-select .dropdown-menu > li.select
 html[data-theme="dark"] #search_subjects_clear { color: var(--d-faint); }
 html[data-theme="dark"] #search_subjects_clear:hover { color: var(--d-red); }
 
-/* Settings / users / templates / ports / backups / dashboard overrides all
-   build on white surfaces and the light palette, so catch the remaining
-   surface-ish class names in one pass. */
-html[data-theme="dark"] [class$="-page"],
-html[data-theme="dark"] [class*="-page "] { color: var(--d-text); }
+/* ==========================================================================
+   Settings / templates / ports / backups / dashboard pages
+   These pages build on white surfaces and the light palette, so they need the
+   same re-skin. Every rule names the class it is for - they used to be
+   [class*="-card"] / [class*="-toolbar"] / [class*="-title"] catch-alls, which
+   also matched pages they were never written for (and repainted those surfaces
+   dark while their text stayed dark).
+   ========================================================================== */
+html[data-theme="dark"] .dashboard-page,
+html[data-theme="dark"] .ec-page,
+html[data-theme="dark"] .et-page,
+html[data-theme="dark"] .mic-page,
+html[data-theme="dark"] .objects-page,
+html[data-theme="dark"] .sic-page,
+html[data-theme="dark"] .st-page,
+html[data-theme="dark"] .users-page { color: var(--d-text); }
 
-html[data-theme="dark"] [class*="-card"]:not(.al-card):not(.objects-card--blue):not(.objects-card--green):not(.objects-card--gray):not(.objects-card--teal) {
+html[data-theme="dark"] .dashboard-page__title,
+html[data-theme="dark"] .ec-page__title,
+html[data-theme="dark"] .et-page__title,
+html[data-theme="dark"] .mic-page__title,
+html[data-theme="dark"] .sic-page__title,
+html[data-theme="dark"] .st-page__title,
+html[data-theme="dark"] .users-page__title,
+html[data-theme="dark"] .dash-card__value,
+html[data-theme="dark"] .st-card__title { color: var(--d-text-strong); }
+
+html[data-theme="dark"] .dashboard-page__subtitle,
+html[data-theme="dark"] .ec-page__subtitle,
+html[data-theme="dark"] .et-page__subtitle,
+html[data-theme="dark"] .mic-page__subtitle,
+html[data-theme="dark"] .sic-page__subtitle,
+html[data-theme="dark"] .st-page__subtitle,
+html[data-theme="dark"] .users-page__subtitle,
+html[data-theme="dark"] .mo-subtitle,
+html[data-theme="dark"] .dash-card__label,
+html[data-theme="dark"] .dash-card__sub,
+html[data-theme="dark"] .dash-card__legend,
+html[data-theme="dark"] .dash-card__legend-item,
+html[data-theme="dark"] .st-card__sub,
+html[data-theme="dark"] .st-card__headtext { color: var(--d-muted); }
+
+html[data-theme="dark"] .ec-page__title-icon,
+html[data-theme="dark"] .et-page__title-icon,
+html[data-theme="dark"] .mic-page__title-icon,
+html[data-theme="dark"] .sic-page__title-icon,
+html[data-theme="dark"] .st-page__title-icon,
+html[data-theme="dark"] .mo-title-icon,
+html[data-theme="dark"] .st-card__icon { background: var(--d-accent-soft); color: #7EB0FF; }
+
+html[data-theme="dark"] .dash-card,
+html[data-theme="dark"] .dash-cards-row,
+html[data-theme="dark"] .ec-card,
+html[data-theme="dark"] .et-card,
+html[data-theme="dark"] .mic-card,
+html[data-theme="dark"] .objects-cards,
+html[data-theme="dark"] .sic-card,
+html[data-theme="dark"] .st-card {
     background-color: var(--d-surface);
     border-color: var(--d-border-soft);
 }
 
-html[data-theme="dark"] [class*="-card__label"],
-html[data-theme="dark"] [class*="-card__sub"],
-html[data-theme="dark"] [class*="-card__hint"],
-html[data-theme="dark"] [class*="-subtitle"] { color: var(--d-muted); }
+html[data-theme="dark"] .dash-card__bar { background: var(--d-surface-3); }
 
-html[data-theme="dark"] [class*="-card__title"],
-html[data-theme="dark"] [class*="-card__value"],
-html[data-theme="dark"] [class*="-title"] { color: var(--d-text-strong); }
-
-html[data-theme="dark"] [class*="-toolbar"],
-html[data-theme="dark"] [class*="-search-bar"],
-html[data-theme="dark"] [class*="-filter-bar"] {
+html[data-theme="dark"] .btn-toolbar,
+html[data-theme="dark"] .et-toolbar,
+html[data-theme="dark"] .leaflet-draw-toolbar,
+html[data-theme="dark"] .lg-toolbar,
+html[data-theme="dark"] .objects-search-bar,
+html[data-theme="dark"] .st-toolbar,
+html[data-theme="dark"] .st-toolbar--plain {
     background-color: var(--d-surface);
     border-color: var(--d-border-soft);
+}
+
+/* ----------------------------------------------------------------- frontend */
+/* Frontend objects list (.device-card from light-blue.css). It used to be
+   re-skinned by the [class*="-card"] catch-all, so it needs its own rules. */
+html[data-theme="dark"] .device-card {
+    background: var(--d-surface);
+    border-color: var(--d-border-soft);
+}
+html[data-theme="dark"] .device-card:hover {
+    border-color: #36445c;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .4);
+}
+html[data-theme="dark"] .device-card.active {
+    border-color: var(--d-accent);
+    background: var(--d-accent-soft);
+    box-shadow: 0 0 0 1px var(--d-accent);
+}
+html[data-theme="dark"] .device-card__name { color: var(--d-text-strong); }
+html[data-theme="dark"] .device-card__speed { background: var(--d-surface-3); color: var(--d-text); }
+html[data-theme="dark"] .device-card__time-row .device-card__time { color: var(--d-muted); }
+html[data-theme="dark"] .device-card__address { color: var(--d-muted); }
+html[data-theme="dark"] .device-card__time-row .icon,
+html[data-theme="dark"] .device-card__address .icon { color: var(--d-faint); }
+html[data-theme="dark"] .device-card__icon .icon.device,
+html[data-theme="dark"] .device-card__icon i.fa-car { color: var(--d-muted); }
+html[data-theme="dark"] .device-card__status-dot {
+    border-color: var(--d-surface);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, .18);
+}
+html[data-theme="dark"] .device-card__side .btn-group .icon.options { color: var(--d-muted); }
+html[data-theme="dark"] .device-card__side .btn-group .icon.options:hover { color: #7EB0FF; }
+
+/* ==========================================================================
+   Users / clients page (admin-users-overrides.css)
+   ========================================================================== */
+html[data-theme="dark"] .users-page { background: var(--d-bg); }
+
+/* header */
+html[data-theme="dark"] .users-page__title { color: var(--d-text-strong); }
+html[data-theme="dark"] .users-page__subtitle { color: var(--d-muted); }
+
+/* buttons */
+html[data-theme="dark"] .users-btn--ghost {
+    background: var(--d-surface-2);
+    border-color: var(--d-border);
+    color: var(--d-text);
+}
+html[data-theme="dark"] .users-btn--ghost:hover,
+html[data-theme="dark"] .users-btn--ghost:focus,
+html[data-theme="dark"] .users-btn--ghost:active {
+    background: var(--d-surface-3);
+    border-color: #36445c;
+    color: var(--d-text-strong);
+}
+html[data-theme="dark"] .users-btn--primary {
+    background: var(--d-accent-2);
+    border-color: var(--d-accent-2);
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, .35);
+}
+html[data-theme="dark"] .users-btn--primary:hover,
+html[data-theme="dark"] .users-btn--primary:focus,
+html[data-theme="dark"] .users-btn--primary:active { background: #1D4ED8; border-color: #1D4ED8; color: #fff; }
+html[data-theme="dark"] .users-btn--link { color: #7EB0FF; }
+html[data-theme="dark"] .users-btn--link:hover { background: var(--d-accent-soft); color: #A9C8FF; }
+html[data-theme="dark"] .users-import-dropdown.open .users-btn--ghost { background: var(--d-surface-3); border-color: #36445c; }
+
+/* dropdown menus (import + row actions) */
+html[data-theme="dark"] .users-import-menu.dropdown-menu,
+html[data-theme="dark"] .users-actions__menu.dropdown-menu {
+    background: var(--d-surface-2);
+    border-color: var(--d-border);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, .5);
+}
+html[data-theme="dark"] .users-import-menu.dropdown-menu > li > a,
+html[data-theme="dark"] .users-actions__menu.dropdown-menu > li > a { color: var(--d-text); }
+html[data-theme="dark"] .users-import-menu.dropdown-menu > li > a > i,
+html[data-theme="dark"] .users-actions__menu.dropdown-menu > li > a > i { color: var(--d-muted); }
+html[data-theme="dark"] .users-import-menu.dropdown-menu > li > a:hover,
+html[data-theme="dark"] .users-actions__menu.dropdown-menu > li > a:hover {
+    background: var(--d-accent-soft);
+    color: #A9C8FF;
+}
+html[data-theme="dark"] .users-actions__menu.dropdown-menu > li > a.users-actions__danger,
+html[data-theme="dark"] .users-actions__menu.dropdown-menu > li > a.users-actions__danger > i { color: var(--d-red); }
+html[data-theme="dark"] .users-actions__menu.dropdown-menu > li > a.users-actions__danger:hover,
+html[data-theme="dark"] .users-actions__menu.dropdown-menu > li > a.users-actions__danger:focus { background: var(--d-red-soft); color: #FCA5A5; }
+html[data-theme="dark"] .users-actions__menu.dropdown-menu > li > a.users-actions__danger:hover > i { color: #FCA5A5; }
+
+/* summary cards */
+html[data-theme="dark"] .users-card {
+    background: var(--d-surface);
+    border-color: var(--d-border-soft);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .35);
+}
+html[data-theme="dark"] .users-card:hover { box-shadow: 0 6px 18px rgba(0, 0, 0, .45); }
+html[data-theme="dark"] .users-card__label { color: var(--d-muted); }
+html[data-theme="dark"] .users-card__value { color: var(--d-text-strong); }
+html[data-theme="dark"] .users-card--blue .users-card__icon { background: var(--d-accent-soft); color: #7EB0FF; }
+html[data-theme="dark"] .users-card--green .users-card__icon { background: var(--d-green-soft); color: var(--d-green); }
+html[data-theme="dark"] .users-card--purple .users-card__icon { background: var(--d-violet-soft); color: var(--d-violet); }
+html[data-theme="dark"] .users-card--teal .users-card__icon { background: var(--d-teal-soft); color: var(--d-teal); }
+
+/* filter toolbar */
+html[data-theme="dark"] .users-toolbar {
+    background: var(--d-surface);
+    border-color: var(--d-border-soft);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .35);
+}
+html[data-theme="dark"] .users-search > .fa-search { color: var(--d-faint); }
+html[data-theme="dark"] .users-search__input {
+    background: #131A28;
+    border-color: var(--d-border);
+    color: var(--d-text);
+}
+html[data-theme="dark"] .users-search__input::placeholder { color: var(--d-faint); }
+html[data-theme="dark"] .users-search__input:focus {
+    background: #131A28;
+    border-color: var(--d-accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, .18);
+}
+html[data-theme="dark"] .users-select {
+    background-color: #131A28;
+    border-color: var(--d-border);
+    color: var(--d-text);
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2394A3B8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+html[data-theme="dark"] .users-select:focus {
+    background-color: #131A28;
+    border-color: var(--d-accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, .18);
+}
+
+/* extra filters panel (the "Filters" banner) */
+html[data-theme="dark"] .users-morefilters {
+    background: var(--d-surface);
+    border-color: var(--d-border-soft);
+}
+html[data-theme="dark"] .users-morefilters__hint { color: var(--d-muted); }
+html[data-theme="dark"] .users-morefilters__hint > i { color: #7EB0FF; }
+
+/* table card */
+html[data-theme="dark"] .users-table-card {
+    background: var(--d-surface);
+    border-color: var(--d-border-soft);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .35);
+}
+html[data-theme="dark"] .users-table-card .table.table-list { color: var(--d-text); }
+html[data-theme="dark"] .users-table-card .table.table-list > thead > tr > th {
+    background: var(--d-surface-2);
+    color: var(--d-muted);
+    border-bottom-color: var(--d-border-soft);
+}
+html[data-theme="dark"] .users-table-card .table.table-list > thead > tr > th.sorting:hover { color: #7EB0FF; }
+html[data-theme="dark"] .users-table-card .table.table-list > tbody > tr > td {
+    color: var(--d-text);
+    border-top-color: var(--d-border-soft);
+}
+html[data-theme="dark"] .users-table-card .table.table-list > tbody > tr:hover { background: #1A2231; }
+html[data-theme="dark"] .users-table-card .table.table-list > tbody > tr.row-table-inner:hover { background: transparent; }
+html[data-theme="dark"] .users-table-card .table.table-list > tbody > tr.row-table-inner > td { background: #131A28; }
+html[data-theme="dark"] .users-table-card .table.table-list td.no-data { color: var(--d-faint); }
+html[data-theme="dark"] .users-table-card .checkbox label { background: #131A28; border-color: #3A4761; }
+html[data-theme="dark"] .users-table-card .checkbox:hover label { border-color: #5B7FD1; }
+html[data-theme="dark"] .users-table-card .checkbox input[type="checkbox"]:checked + label {
+    background: var(--d-accent-2);
+    border-color: var(--d-accent-2);
+}
+
+/* cells */
+html[data-theme="dark"] .users-status-pill--success { background: var(--d-green-soft); color: var(--d-green); }
+html[data-theme="dark"] .users-status-pill--muted { background: var(--d-surface-3); color: var(--d-muted); }
+html[data-theme="dark"] .users-avatar { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22); }
+html[data-theme="dark"] .users-email { color: var(--d-text); }
+html[data-theme="dark"] .users-role { background: var(--d-accent-soft); color: #A9C8FF; }
+html[data-theme="dark"] .users-cell-manager,
+html[data-theme="dark"] .users-cell-date { color: var(--d-muted); }
+html[data-theme="dark"] .users-muted { color: var(--d-faint); }
+html[data-theme="dark"] .users-device-usage__text { color: var(--d-text); }
+html[data-theme="dark"] .users-device-usage__bar,
+html[data-theme="dark"] .users-device-usage__bar--unlimited { background: var(--d-surface-3); }
+html[data-theme="dark"] .users-device-usage__bar > span { background: var(--d-accent); }
+html[data-theme="dark"] .users-limit { color: var(--d-text); }
+html[data-theme="dark"] .users-limit--unlimited { color: var(--d-muted); }
+html[data-theme="dark"] .users-limit--unlimited > i { color: var(--d-faint); }
+html[data-theme="dark"] .users-plan { color: var(--d-faint); }
+
+/* row actions */
+html[data-theme="dark"] .users-actions__btn { color: var(--d-muted); }
+html[data-theme="dark"] .users-actions__btn:hover,
+html[data-theme="dark"] .users-actions__btn:focus {
+    background: var(--d-surface-3);
+    color: #7EB0FF;
+    border-color: var(--d-border);
+}
+
+/* pagination */
+html[data-theme="dark"] .users-pagination { background: var(--d-surface-2); border-top-color: var(--d-border-soft); }
+html[data-theme="dark"] .users-pagination__label { color: var(--d-muted); }
+html[data-theme="dark"] .users-pagination__select.form-control {
+    background-color: #131A28;
+    border-color: var(--d-border);
+    color: var(--d-text);
+}
+html[data-theme="dark"] .users-pagination__pages .pagination .page-link {
+    background: var(--d-surface-2);
+    border-color: var(--d-border);
+    color: var(--d-text);
+}
+html[data-theme="dark"] .users-pagination__pages .pagination .page-item:not(.disabled):not(.active) .page-link:hover {
+    background: var(--d-surface-3);
+    border-color: #3F5C99;
+    color: #A9C8FF;
+}
+html[data-theme="dark"] .users-pagination__pages .pagination .page-item.active .page-link {
+    background: var(--d-accent-2);
+    border-color: var(--d-accent-2);
+    color: #fff;
+}
+html[data-theme="dark"] .users-pagination__pages .pagination .page-item.disabled .page-link {
+    background: #121926;
+    border-color: var(--d-border-soft);
+    color: #4A5568;
 }
 
 /* ------------------------------------------------------ theme toggle item */

@@ -3,6 +3,7 @@
 namespace Tobuli\Helpers\GeoLocation;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Tobuli\Entities\Geofence;
 use Tobuli\Entities\User;
 use Tobuli\Helpers\GeoLocation\GeoServices\AbstractGeoService;
@@ -87,6 +88,12 @@ class GeoLocation
             return trans('front.nothing_found_request');
         } catch(\Exception $e) {
             return $e->getMessage();
+        } catch(\Throwable $e) {
+            // geocoder services can raise TypeError/Error on unexpected payloads -
+            // answer with a message instead of breaking the whole request
+            Log::error('Geocoder error: ' . $e->getMessage());
+
+            return trans('front.nothing_found_request');
         }
     }
 

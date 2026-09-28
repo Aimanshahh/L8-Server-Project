@@ -12789,12 +12789,16 @@ $(window).on('load', function(){
         dd('change.geoAddress', this);
 
         var _this = this,
-            _lat = $( this ).attr('data-lat'),
-            _lng = $( this ).attr('data-lng'),
-            _key = '_a_' + _lat + _lng;
+            _rawLat = $( this ).attr('data-lat'),
+            _rawLng = $( this ).attr('data-lng'),
+            _key = '_a_' + _rawLat + '_' + _rawLng;
 
-        if ( !_lat || !_lng )
+        // devices without a position carry data-lat/data-lng="undefined", which
+        // used to be sent to the server and answered with a validation error
+        if ( isNaN(parseFloat(_rawLat)) || isNaN(parseFloat(_rawLng)) ) {
+            $( _this ).html( '-' );
             return;
+        }
 
         $( _this ).html( '<i class="loader small"></i>' );
 
@@ -12806,15 +12810,22 @@ $(window).on('load', function(){
         $.ajax({
             type: 'GET',
             async: true,
-            url: app.urls.geoAddress + '?lat=' + _lat + '&lon=' + _lng,
+            url: app.urls.geoAddress + '?lat=' + parseFloat(_rawLat) + '&lon=' + parseFloat(_rawLng),
             success: function (res) {
-                $('[data-lat="'+_lat+'"][data-lng="'+_lng+'"][data-device="address"]:visible').html( res );
+                $('[data-lat="'+_rawLat+'"][data-lng="'+_rawLng+'"][data-device="address"]:visible')
+                    .html( res ? res : '-' );
             },
             complete: function() {
                 delete app.addressStack[_key];
             },
             error: function(jqXHR, textStatus, errorThrown) {
-                $( _this ).html( textStatus );
+                // textStatus is a jQuery state ("error", "timeout", ...) - never
+                // print it as the address
+                $('[data-lat="'+_rawLat+'"][data-lng="'+_rawLng+'"][data-device="address"]:visible')
+                    .html( '-' )
+                    .attr('title', errorThrown ? errorThrown : textStatus);
+
+                console.error('Geo address lookup failed', textStatus, jqXHR.status, jqXHR.responseText);
             }
         });
     });
@@ -12828,6 +12839,17 @@ $(window).on('load', function(){
         $(this).addClass('active');
 
         refreshDeviceStatusFilters();
+    });
+
+    // Device card selection is handled here instead of an inline onclick attribute
+    // so that clicks on the card's options dropdown (and its menu items) do not
+    // select the device. Blocking the event would also stop Bootstrap's delegated
+    // [data-toggle="dropdown"] handler and the menu would never open.
+    $(document).on('click', '#ajax-items .device-card', function (e) {
+        if ( $(e.target).closest('.device-card__side .btn-group').length )
+            return;
+
+        app.devices.select( parseInt( $(this).attr('data-device-id'), 10 ) );
     });
 
     $(document)

@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<script>
+    // ?theme=light|dark lets the side-by-side harness frame the same markup twice
+    (function () {
+        var m = /(?:^|\?|&)theme=(light|dark)(?:&|$)/.exec(location.search);
+        if (m) document.documentElement.setAttribute('data-theme', m[1]);
+    })();
+</script>
+<head>
+<meta charset="utf-8">
+<title>Users dark check</title>
+<link rel="stylesheet" href="../public/assets/css/light-blue.css">
+<link rel="stylesheet" href="../public/assets/css/style.css">
+<link rel="stylesheet" href="../public/assets/css/admin-list-overrides.css">
+<link rel="stylesheet" href="../public/assets/css/admin-users-overrides.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../public/assets/css/theme-dark.css">
+<style>
+    html, body { margin: 0; }
+    body.admin-layout .page__main { height: 100vh; overflow-y: auto; }
+</style>
+</head>
+<body class="admin-layout page">
+<div class="page__main">
+  <div class="content">
+    <div class="container-fluid">
+      <div class="users-page">
+        <div class="users-page__header">
+          <div class="users-page__heading">
+            <h1 class="users-page__title">Users</h1>
+            <p class="users-page__subtitle">Manage customers, managers and their assigned devices</p>
+          </div>
+          <div class="users-page__actions">
+            <div class="btn-group dropdown users-import-dropdown">
+              <button type="button" class="btn users-btn users-btn--ghost" data-toggle="dropdown"><i class="fa fa-upload"></i> Import</button>
+              <ul class="dropdown-menu users-import-menu">
+                <li><a href="javascript:"><i class="fa fa-microchip"></i> Import devices</a></li>
+                <li><a href="javascript:"><i class="fa fa-draw-polygon"></i> Import geofences</a></li>
+              </ul>
+            </div>
+            <button type="button" class="btn users-btn users-btn--ghost"><i class="fa fa-microchip"></i> Add new device</button>
+            <button type="button" class="btn users-btn users-btn--primary"><i class="fa fa-plus"></i> Add new user</button>
+          </div>
+        </div>
+
+        <div class="users-cards">
+          <div class="users-card users-card--blue">
+            <div class="users-card__icon"><i class="fa fa-users"></i></div>
+            <div class="users-card__body">
+              <div class="users-card__label">Total Users</div>
+              <div class="users-card__value">6</div>
+            </div>
+          </div>
+          <div class="users-card users-card--green">
+            <div class="users-card__icon"><i class="fa fa-user-check"></i></div>
+            <div class="users-card__body">
+              <div class="users-card__label">Active Users</div>
+              <div class="users-card__value">6</div>
+            </div>
+          </div>
+          <div class="users-card users-card--purple">
+            <div class="users-card__icon"><i class="fa fa-user-tie"></i></div>
+            <div class="users-card__body">
+              <div class="users-card__label">Managers</div>
+              <div class="users-card__value">1</div>
+            </div>
+          </div>
+          <div class="users-card users-card--teal">
+            <div class="users-card__icon"><i class="fa fa-microchip"></i></div>
+            <div class="users-card__body">
+              <div class="users-card__label">Total Devices</div>
+              <div class="users-card__value">23</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="users-toolbar">
+          <div class="users-toolbar__filters">
+            <div class="users-search">
+              <i class="fa fa-search"></i>
+              <input type="text" class="users-search__input" placeholder="Search Users...">
+            </div>
+            <div class="users-search">
+              <i class="fa fa-search"></i>
+              <input type="text" class="users-search__input" placeholder="Search device imei...">
+            </div>
+            <select class="users-select"><option>All Roles</option></select>
+            <select class="users-select"><option>All Status</option></select>
+          </div>
+          <button type="button" class="btn users-btn users-btn--ghost users-toolbar__more"><i class="fa fa-sliders-h"></i> Filters</button>
+        </div>
+
+        <div class="users-morefilters">
+          <span class="users-morefilters__hint"><i class="fa fa-info-circle"></i> Additional filters</span>
+          <button type="button" class="btn users-btn users-btn--link users-morefilters__reset"><i class="fa fa-undo"></i> Reset filters</button>
+        </div>
+
+        <div class="users-table-card">
+          <div class="panel-body">
+            <div class="table-responsive">
+              <table class="table table-list">
+                <thead>
+                <tr>
+                  <th class="users-cell-checkbox"><div class="checkbox"><input type="checkbox"><label></label></div></th>
+                  <th class="sorting">ACTIVE</th>
+                  <th class="sorting">EMAIL</th>
+                  <th class="sorting">GROUP</th>
+                  <th class="sorting">MANAGER</th>
+                  <th class="sorting">DEVICES</th>
+                  <th class="sorting">SUB. ACC</th>
+                  <th class="sorting">DEVICES LIMIT</th>
+                  <th class="sorting">EXPIRATION DATE</th>
+                  <th class="sorting">LAST CONNECTION</th>
+                  <th>ACTIONS</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                  <td class="users-cell-checkbox"><div class="checkbox"><input type="checkbox" checked><label></label></div></td>
+                  <td class="users-cell-status"><span class="users-status-pill users-status-pill--success"><i class="fa fa-circle"></i> Active</span></td>
+                  <td class="users-cell-user"><span class="users-avatar" style="background: hsl(140, 62%, 52%);">A</span><span class="users-email">admin@server.com</span></td>
+                  <td class="users-cell-group"><span class="users-role">Admin</span></td>
+                  <td class="users-cell-manager"><span class="users-muted">—</span></td>
+                  <td class="users-cell-devices">
+                    <div class="users-device-usage">
+                      <span class="users-device-usage__text">4 / &infin;</span>
+                      <span class="users-device-usage__bar users-device-usage__bar--unlimited"></span>
+                    </div>
+                  </td>
+                  <td class="users-cell-subusers">0</td>
+                  <td class="users-cell-limit"><span class="users-limit users-limit--unlimited"><i class="fa fa-infinity"></i> Unlimited</span></td>
+                  <td class="users-cell-date"><span class="users-limit users-limit--unlimited"><i class="fa fa-infinity"></i> Unlimited</span></td>
+                  <td class="users-cell-date">2026-09-25 14:01:22</td>
+                  <td class="users-cell-actions">
+                    <div class="btn-group dropdown droparrow users-actions">
+                      <button type="button" class="users-actions__btn"><i class="fa fa-ellipsis-v"></i></button>
+                      <button type="button" class="users-actions__btn users-actions__btn--devices"><i class="fa fa-chevron-down"></i></button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="users-cell-checkbox"><div class="checkbox"><input type="checkbox"><label></label></div></td>
+                  <td class="users-cell-status"><span class="users-status-pill users-status-pill--success"><i class="fa fa-circle"></i> Active</span></td>
+                  <td class="users-cell-user"><span class="users-avatar" style="background: hsl(40, 62%, 52%);">A</span><span class="users-email">agent@demo.lt</span></td>
+                  <td class="users-cell-group"><span class="users-role">User</span></td>
+                  <td class="users-cell-manager"><span class="users-manager">manager@demo.lt</span></td>
+                  <td class="users-cell-devices">
+                    <div class="users-device-usage">
+                      <span class="users-device-usage__text">12 / 25</span>
+                      <span class="users-device-usage__bar"><span style="width: 48%;"></span></span>
+                    </div>
+                  </td>
+                  <td class="users-cell-subusers">2</td>
+                  <td class="users-cell-limit"><span class="users-limit">25</span><span class="users-plan">Basic monthly</span></td>
+                  <td class="users-cell-date">2027-01-01 09:00:00</td>
+                  <td class="users-cell-date">2026-09-27 08:12:03</td>
+                  <td class="users-cell-actions">
+                    <div class="btn-group dropdown droparrow users-actions">
+                      <button type="button" class="users-actions__btn"><i class="fa fa-ellipsis-v"></i></button>
+                      <button type="button" class="users-actions__btn users-actions__btn--devices"><i class="fa fa-chevron-down"></i></button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="users-cell-checkbox"><div class="checkbox"><input type="checkbox"><label></label></div></td>
+                  <td class="users-cell-status"><span class="users-status-pill users-status-pill--muted"><i class="fa fa-circle"></i> Inactive</span></td>
+                  <td class="users-cell-user"><span class="users-avatar" style="background: hsl(280, 62%, 52%);">R</span><span class="users-email">radar@demo.pk</span></td>
+                  <td class="users-cell-group"><span class="users-role">User</span></td>
+                  <td class="users-cell-manager"><span class="users-muted">—</span></td>
+                  <td class="users-cell-devices">
+                    <div class="users-device-usage">
+                      <span class="users-device-usage__text">0 / 5</span>
+                      <span class="users-device-usage__bar"><span style="width: 0%;"></span></span>
+                    </div>
+                  </td>
+                  <td class="users-cell-subusers">0</td>
+                  <td class="users-cell-limit"><span class="users-limit">5</span></td>
+                  <td class="users-cell-date"><span class="users-muted">—</span></td>
+                  <td class="users-cell-date"><span class="users-muted">—</span></td>
+                  <td class="users-cell-actions">
+                    <div class="btn-group dropdown droparrow users-actions">
+                      <button type="button" class="users-actions__btn"><i class="fa fa-ellipsis-v"></i></button>
+                      <button type="button" class="users-actions__btn users-actions__btn--devices"><i class="fa fa-chevron-down"></i></button>
+                    </div>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="nav-pagination users-pagination">
+            <div class="users-pagination__size">
+              <span class="users-pagination__label">Show</span>
+              <select class="form-control users-pagination__select"><option>25</option></select>
+              <span class="users-pagination__label">entries</span>
+            </div>
+            <div class="users-pagination__pages">
+              <ul class="pagination">
+                <li class="page-item disabled"><a class="page-link" href="#">&laquo;</a></li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">&raquo;</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    // alt+click toggles the theme so both variants can be captured from one file
+    document.addEventListener('click', function (e) {
+        if (!e.altKey) return;
+        var el = document.documentElement;
+        el.dataset.theme = el.dataset.theme === 'dark' ? 'light' : 'dark';
+    });
+</script>
+</body>
+</html>

@@ -88,20 +88,22 @@ class GeoNominatim extends AbstractGeoService
 
     protected function locationObject($address)
     {
+        $details = Arr::get((array) $address, 'address');
+
         return new Location([
             'place_id'      => Arr::get($address, 'place_id'),
             'lat'           => Arr::get($address, 'lat'),
             'lng'           => Arr::get($address, 'lon'),
             'address'       => Arr::get($address, 'display_name'),
             'type'          => Arr::get($address, 'osm_type'),
-            'country'       => $this->getFirst($address['address'], ['country']),
-            'country_code'  => $this->getFirst($address['address'], ['country_code']),
-            'county'        => $this->getFirst($address['address'], ['county']),
-            'state'         => $this->getFirst($address['address'], ['state', 'region']),
-            'city'          => $this->getFirst($address['address'], ['city', 'town', 'village', 'municipality', 'city_district']),
-            'road'          => $this->getFirst($address['address'], ['road']),
-            'house'         => $this->getFirst($address['address'], ['house_number', 'house_name']),
-            'zip'           => $this->getFirst($address['address'], ['postcode']),
+            'country'       => $this->getFirst((array) $details, ['country']),
+            'country_code'  => $this->getFirst((array) $details, ['country_code']),
+            'county'        => $this->getFirst((array) $details, ['county']),
+            'state'         => $this->getFirst((array) $details, ['state', 'region']),
+            'city'          => $this->getFirst((array) $details, ['city', 'town', 'village', 'municipality', 'city_district']),
+            'road'          => $this->getFirst((array) $details, ['road']),
+            'house'         => $this->getFirst((array) $details, ['house_number', 'house_name']),
+            'zip'           => $this->getFirst((array) $details, ['postcode']),
         ]);
     }
 
