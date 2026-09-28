@@ -218,10 +218,16 @@ class Device extends AbstractEntity implements DisplayInterface, FcmTokenableInt
         });
     }
 
-    public function positions()
-    {
-        return $this->traccar->positions();
+public function positions()
+{
+    if (!$this->traccar) {
+        // Device has no matching tc_devices row — return empty query
+        // so chained calls (whereBetween/get/cursor/update) don't crash.
+        return TraccarPosition::whereRaw('1 = 0');
     }
+
+    return $this->traccar->positions();
+}
 
     public function positionTraccar()
     {
@@ -872,9 +878,13 @@ class Device extends AbstractEntity implements DisplayInterface, FcmTokenableInt
             : null;
     }
 
-    public function getDistanceBetween($dateFrom, $dateTo)
-    {
-        $odometer = $this->getOdometerSensor();
+public function getDistanceBetween($dateFrom, $dateTo)
+{
+    if (!$this->traccar) {
+        return 0;
+    }
+
+    $odometer = $this->getOdometerSensor();
 
         $query = $this->positions()->whereBetween('fixtime', [$dateFrom, $dateTo])->limit(1);
 
