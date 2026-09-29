@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<script>
+    (function () {
+        var m = /(?:^|\?|&)theme=(light|dark)(?:&|$)/.exec(location.search);
+        if (m) document.documentElement.setAttribute('data-theme', m[1]);
+    })();
+</script>
+<head>
+<meta charset="utf-8">
+<title>Modal theme check</title>
+<link rel="stylesheet" href="../public/assets/css/light-blue.css">
+<link rel="stylesheet" href="../public/assets/css/style.css">
+<link rel="stylesheet" href="../public/assets/css/sidebar-overrides.css">
+<link rel="stylesheet" href="../public/assets/css/modal-overrides.css">
+<link rel="stylesheet" href="../public/assets/css/admin-list-overrides.css">
+<link rel="stylesheet" href="../public/assets/css/admin-users-overrides.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../public/assets/css/theme-dark.css">
+<style>
+    html, body { margin: 0; padding: 0; }
+    body { font-family: Inter, Arial, sans-serif; padding: 24px; }
+    .frame { margin: 0 0 34px; }
+    .frame > h2 { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; opacity: .6; margin: 0 0 10px; }
+    .modal { position: static; display: block; background: transparent; overflow: visible; }
+    .modal .modal-dialog { margin: 0; width: 100%; max-width: 660px; }
+    .modal .modal-body { max-height: none; }
+</style>
+</head>
+<body>
+
+<div class="frame">
+  <h2>user modal — admin/clients/create (nav nav-tabs nav-default)</h2>
+  <!-- markup copied from Tobuli/Views/Admin/Clients/create.blade.php -->
+  <div class="modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span>&times;</span></button>
+            <div class="mo-title-icon"><i class="icon user"></i></div>
+            <div class="mo-heading">
+                <h4 class="modal-title">Add new user</h4>
+                <p class="mo-subtitle">Add a new client and save it.</p>
+            </div>
+        </div>
+        <div class="modal-body">
+            <ul class="nav nav-tabs nav-default" role="tablist">
+                <li class="active"><a href="#m" role="tab" data-toggle="tab">Main</a></li>
+                <li><a href="#p" role="tab" data-toggle="tab">Permissions</a></li>
+                <li><a href="#o" role="tab" data-toggle="tab">Objects</a></li>
+                <li><a href="#c" role="tab" data-toggle="tab">Client</a></li>
+                <li><a href="#r" role="tab" data-toggle="tab">Report types</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div id="m" class="tab-pane active">
+                    <div class="form-group">
+                        <div class="checkbox">
+                            <input type="hidden" name="active" value="0">
+                            <input type="checkbox" name="active" value="1" checked id="c_active">
+                            <label for="c_active">Active</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="c_email">Email:</label>
+                        <input type="text" class="form-control" id="c_email">
+                    </div>
+                    <div class="form-group">
+                        <label for="c_phone">Phone number:</label>
+                        <input type="text" class="form-control" id="c_phone">
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="c_group">Group*:</label>
+                                <select class="form-control" id="c_group"><option>User</option><option>Manager</option></select>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="c_manager">Manager:</label>
+                                <select class="form-control" id="c_manager" data-live-search="true"><option>Select</option></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Available maps:</label>
+                        <div class="checkboxes">
+                            <input type="hidden" name="available_maps">
+                            <div class="checkbox"><input type="checkbox" id="m1" checked><label for="m1">MapTiler Satellite</label></div>
+                            <div class="checkbox"><input type="checkbox" id="m2" checked><label for="m2">MapTiler Streets</label></div>
+                            <div class="checkbox"><input type="checkbox" id="m3" checked><label for="m3">OpenStreetMap</label></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="c_limit">Devices limit:</label>
+                                <div class="input-group">
+                                    <div class="checkbox input-group-btn"><input type="checkbox" id="c_l" checked><label for="c_l"></label></div>
+                                    <input type="text" class="form-control" id="c_limit" value="8">
+                                </div>
+                                <div class="help-block">Maximum of objects: 8</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="c_exp">Expiration date:</label>
+                                <div class="input-group">
+                                    <div class="checkbox input-group-btn"><input type="checkbox" id="c_e"><label for="c_e"></label></div>
+                                    <input type="text" class="form-control datetimepicker" id="c_exp" placeholder="Select expiration date" disabled>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="checkbox-inline"><input type="checkbox" id="pg" checked><label for="pg">Autogenerate</label></div>
+                        <div class="checkbox-inline"><input type="checkbox" id="pm"><label for="pm">Manual</label></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group has-error">
+                                <label for="c_pw">Password:</label>
+                                <input type="password" class="form-control" id="c_pw" value="123">
+                                <span class="help-block error input_error">The password must be at least 6 characters.</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="c_pw2">Password confirmation:</label>
+                                <input type="password" class="form-control" id="c_pw2">
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="form-group">
+                        <div class="checkbox"><input type="checkbox" id="ac" checked><label for="ac">Send account created email</label></div>
+                    </div>
+                    <div class="alert alert-info">Some of these settings are applied to the objects of the user as well.</div>
+                    <div class="well">A legacy <code>.well</code> block with <a href="javascript:">a link</a>.</div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <div class="buttons">
+                <button type="button" class="btn btn-action">Save</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div class="frame">
+  <h2>device modal — devices/create (plain nav-tabs) + panel/chip</h2>
+  <div class="modal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span>&times;</span></button>
+            <div class="mo-title-icon"><i class="icon device"></i></div>
+            <div class="mo-heading">
+                <h4 class="modal-title">Add new</h4>
+                <p class="mo-subtitle">Add a new device and save it.</p>
+            </div>
+        </div>
+        <div class="modal-body">
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="active"><a href="#d1" role="tab" data-toggle="tab">Main</a></li>
+                <li><a href="#d2" role="tab" data-toggle="tab">Users</a></li>
+                <li><a href="#d3" role="tab" data-toggle="tab">Icons</a></li>
+                <li><a href="#d4" role="tab" data-toggle="tab">Advanced</a></li>
+                <li><a href="#d5" role="tab" data-toggle="tab">Sensors</a></li>
+                <li><a href="#d6" role="tab" data-toggle="tab">Accuracy</a></li>
+                <li><a href="#d7" role="tab" data-toggle="tab">Tail</a></li>
+                <li><a href="#d8" role="tab" data-toggle="tab">Services</a></li>
+            </ul>
+            <div class="tab-content">
+                <div id="d1" class="tab-pane active">
+                    <div class="form-group">
+                        <div class="checkbox"><input type="checkbox" id="d_active" checked><label for="d_active">Active</label></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="d_name">Name*:</label>
+                        <input type="text" class="form-control" id="d_name" placeholder="Enter device name">
+                    </div>
+                    <div class="form-group">
+                        <label for="d_imei">Device IMEI <i class="fa fa-question-circle"></i> / Tracker ID:</label>
+                        <input type="text" class="form-control" id="d_imei" placeholder="Copy GPS Device IMEI or Create Mobile app Tracker ID">
+                    </div>
+                    <div class="form-group">
+                        <label for="d_exp">Expiration date:</label>
+                        <div class="input-group">
+                            <div class="checkbox input-group-btn"><input type="checkbox" id="d_e"><label for="d_e"></label></div>
+                            <input type="text" class="form-control" id="d_exp" placeholder="Select expiration date">
+                        </div>
+                    </div>
+                    <div class="mo-panel">
+                        <div class="mo-panel__head">
+                            <div class="mo-panel__icon"><i class="fa fa-code"></i></div>
+                            <div>
+                                <p class="mo-panel__title">Available variables</p>
+                                <p class="mo-panel__caption">Use these placeholders inside the message template.</p>
+                            </div>
+                        </div>
+                        <ul class="mo-panel__items">
+                            <li class="mo-panel__item"><span class="mo-chip">{name}</span><span class="mo-chip__label">Device name</span></li>
+                            <li class="mo-panel__item"><span class="mo-chip">{imei}</span><span class="mo-chip__label">Tracker id</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <div class="buttons">
+                <button type="button" class="btn btn-action">Save</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div class="frame">
+  <h2>table inside a dialog (objects / permissions tab)</h2>
+  <div class="modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span>&times;</span></button>
+            <div class="mo-heading"><h4 class="modal-title">Objects</h4></div>
+        </div>
+        <div class="modal-body">
+            <table class="table table-list">
+                <thead><tr><th>Object</th><th>IMEI</th><th>Status</th></tr></thead>
+                <tbody>
+                    <tr><td>AFR-022</td><td>356938035643809</td><td>Online</td></tr>
+                    <tr><td>ALD-813</td><td>356938035643810</td><td>Offline</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <div class="buttons"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div>
+        </div>
+    </div>
+  </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Modals — light vs dark</title>
+<style>
+    html, body { margin: 0; height: 100%; font-family: Inter, Arial, sans-serif; background: #0b0f18; }
+    .wrap { display: flex; height: 100vh; }
+    .col { flex: 1 1 50%; min-width: 0; display: flex; flex-direction: column; border-right: 1px solid #263144; }
+    .col:last-child { border-right: 0; }
+    .col h1 { margin: 0; padding: 10px 14px; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: #94A3B8; background: #111826; border-bottom: 1px solid #263144; }
+    iframe { flex: 1 1 auto; width: 100%; border: 0; background: #fff; }
+    .col--dark iframe { background: #0F1420; }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div class="col col--light">
+        <h1>light theme (unchanged)</h1>
+        <iframe src="modal.html?theme=light"></iframe>
+    </div>
+    <div class="col col--dark">
+        <h1>dark theme (fixed)</h1>
+        <iframe src="modal.html?theme=dark"></iframe>
+    </div>
+</div>
+</body>
+</html>
