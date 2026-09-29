@@ -77,8 +77,7 @@ php artisan route:list           # list routes
 Scheduled Tasks
 Add to crontab:
 
-text
-* * * * * cd /var/www/L8-Server-Project && php artisan schedule:run >> /dev/null 2>&1
+ * * * cd /var/www/L8-Server-Project && php artisan schedule:run >> /dev/null 2>&1
 Troubleshooting
 Issue	Check
 No live updates	pm2 list — socket.io must be online
