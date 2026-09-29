@@ -11,6 +11,12 @@ class TraccarPosition extends AbstractEntity
     const VIRTUAL_ENGINE_HOURS_KEY = 'enginehours';
     const ENGINE_HOURS_KEY         = 'hours';
 
+    /**
+     * tc_positions.speed is stored by Traccar in knots.
+     * The rest of the app (Formatter, history, reports) expects km/h.
+     */
+    const KNOTS_TO_KMH = 1.852;
+
     protected $connection = 'traccar_mysql';
     protected $table      = 'tc_positions';
 
@@ -118,9 +124,14 @@ class TraccarPosition extends AbstractEntity
     |--------------------------------------------------------------------------
     */
 
+    /**
+     * Traccar stores speed in knots; convert to km/h once, here.
+     * TraccarDevice::getSpeedAttribute() delegates to this accessor,
+     * so do NOT convert again anywhere else.
+     */
     public function getSpeedAttribute($value)
     {
-        return (float) $value;
+        return round((float) $value * self::KNOTS_TO_KMH, 2);
     }
 
     public function getParametersAttribute()

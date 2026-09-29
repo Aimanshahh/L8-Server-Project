@@ -50,6 +50,14 @@ class Device extends AbstractEntity implements DisplayInterface, FcmTokenableInt
 
     const STOP_DURATION_OFFSET = 10;
 
+    /**
+     * tc_devices.lastupdate (ack time) and tc_positions.servertime are written
+     * by Traccar independently, so lastupdate is routinely a few seconds later
+     * than the position it belongs to. Differences up to this many seconds are
+     * NOT treated as "ACK without a new position".
+     */
+    const ACK_TOLERANCE = 15;
+
     public static array $displayField = ['imei', 'name'];
 
     protected $table = 'devices';
@@ -218,16 +226,16 @@ class Device extends AbstractEntity implements DisplayInterface, FcmTokenableInt
         });
     }
 
-public function positions()
-{
-    if (!$this->traccar) {
-        // Device has no matching tc_devices row — return empty query
-        // so chained calls (whereBetween/get/cursor/update) don't crash.
-        return TraccarPosition::whereRaw('1 = 0');
-    }
+    public function positions()
+    {
+        if (!$this->traccar) {
+            // Device has no matching tc_devices row — return empty query
+            // so chained calls (whereBetween/get/cursor/update) don't crash.
+            return TraccarPosition::whereRaw('1 = 0');
+        }
 
-    return $this->traccar->positions();
-}
+        return $this->traccar->positions();
+    }
 
     public function positionTraccar()
     {
@@ -583,11 +591,22 @@ public function positions()
         return Formatter::distance()->format($distance);
     }
 
+    /**
+     * Current speed in km/h.
+     *
+     * Only a genuinely OFFLINE device reports 0. STATUS_ACK ("device sent
+     * something after its last position") must not zero the speed, otherwise a
+     * moving vehicle shows 0 whenever tc_devices.lastupdate is newer than the
+     * last position's servertime.
+     *
+     * Source chain: TraccarDevice::speed -> latestPosition -> TraccarPosition::getSpeedAttribute()
+     * (knots -> km/h conversion happens there, once).
+     */
     public function getSpeed($position = null)
     {
         $speed = 0;
 
-        if (is_null($position) && $this->getTimeoutStatus() != self::STATUS_ONLINE)
+        if (is_null($position) && $this->getTimeoutStatus() === self::STATUS_OFFLINE)
             return $speed;
 
         $sensor = $this->getSpeedSensor();
@@ -597,7 +616,7 @@ public function positions()
                 is_null($position) ? $this->positionTraccar() : $position
             );
         } else {
-            $speed = is_null($position) ? ($this->traccar->speed ?? null) : ($position->speed ?? null);
+            $speed = is_null($position) ? ($this->traccar->speed ?? 0) : ($position->speed ?? 0);
         }
 
         return $speed;
@@ -617,9 +636,9 @@ public function positions()
 
         $ackTime = strtotime($this->getAckTime());
 
-        // In new Traccar, server_time == lastupdate == ack_time on most devices.
-        // Use >= so equal timestamps count as ONLINE.
-        return $serverTime >= $ackTime ? self::STATUS_ONLINE : self::STATUS_ACK;
+        // In new Traccar, lastupdate (ack_time) is written separately from the
+        // position's servertime, so allow a small tolerance before calling it ACK.
+        return ($serverTime + self::ACK_TOLERANCE) >= $ackTime ? self::STATUS_ONLINE : self::STATUS_ACK;
     }
 
     public function getStatusAttribute()
@@ -878,13 +897,13 @@ public function positions()
             : null;
     }
 
-public function getDistanceBetween($dateFrom, $dateTo)
-{
-    if (!$this->traccar) {
-        return 0;
-    }
+    public function getDistanceBetween($dateFrom, $dateTo)
+    {
+        if (!$this->traccar) {
+            return 0;
+        }
 
-    $odometer = $this->getOdometerSensor();
+        $odometer = $this->getOdometerSensor();
 
         $query = $this->positions()->whereBetween('fixtime', [$dateFrom, $dateTo])->limit(1);
 

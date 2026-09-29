@@ -29,6 +29,10 @@ class DeviceMapFullTransformer extends DeviceTransformer  {
             ? $entity->getParameter('inaccuracy')
             : null;
 
+        // Fix time of the latest position (tc_positions.fixtime), used by the
+        // frontend to slide the marker over the real gap between two positions.
+        $fixTime = $entity->getTime();
+
         return [
             'id'    => (int)$entity->id,
             'name'  => $entity->name,
@@ -48,6 +52,7 @@ class DeviceMapFullTransformer extends DeviceTransformer  {
             'altitude' => $entity->altitude,
             'time' => $entity->time,
             'timestamp' => (int)$entity->timestamp,
+            'fix_timestamp' => $fixTime ? (int)strtotime($fixTime) : 0,
             'acktimestamp' => (int)$entity->acktimestamp,
             'moved_timestamp' => (int)$entity->moved_timestamp,
 
