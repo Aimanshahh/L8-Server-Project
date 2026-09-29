@@ -6,15 +6,17 @@
 
 @section('content')
     @php
-        $queue = $data['queue'];
-        $throughput = $data['throughput'];
-        $unregistered = $data['unregistered'];
-        $devices = $data['devices'];
-        $health = $data['health'];
-        $barMax = max(1, $throughput['max']);
-        $perMinute = $throughput['per_minute'];
+        $queue = $data['queue'] ?? ['depth' => 0, 'keys' => 0, 'locks' => 0, 'workers' => 0, 'available' => false, 'error' => null, 'top' => []];
+        $throughput = $data['throughput'] ?? ['max' => 1, 'per_minute' => [], 'rate' => 0, 'last_5m' => 0, 'last_60m' => 0, 'tables' => 0];
+        $unregistered = $data['unregistered'] ?? ['today' => 0, 'rows' => 0, 'recent' => []];
+        $devices = $data['devices'] ?? ['online' => 0, 'total' => 0, 'never' => 0, 'timeout' => 0];
+        $health = $data['health'] ?? ['level' => 'ok', 'issues' => []];
+        $recent = $data['recent'] ?? [];
+        $barMax = max(1, $throughput['max'] ?? 1);
+        $perMinute = $throughput['per_minute'] ?? [];
         $healthIcon = ['ok' => 'fa-circle-check', 'warning' => 'fa-triangle-exclamation', 'critical' => 'fa-circle-xmark'];
     @endphp
+
 
     <div class="al-page pl-page" id="pl-page">
         <div class="al-page__header">
@@ -210,7 +212,7 @@
                     </tr>
                     </thead>
                     <tbody id="pl-recent">
-                    @forelse ($data['recent'] as $row)
+                    @forelse ($recent as $row)
                         <tr>
                             <td class="pl-strong">{{ $row['name'] }}</td>
                             <td><span class="pl-code">{{ $row['imei'] }}</span></td>
