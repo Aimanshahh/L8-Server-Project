@@ -1,7 +1,14 @@
 @php /** @var \Tobuli\Entities\Device $item */ @endphp
 
+@php
+    // same value the right-hand device panel resolves the address from, so both
+    // surfaces always show the identical string
+    $device_lat = is_numeric($item->lat) ? $item->lat : null;
+    $device_lng = is_numeric($item->lng) ? $item->lng : null;
+@endphp
+
 <li id="list-device-{{ $item->id }}"
-    class="device-card"
+    class="device-card{{ $item->active ? '' : ' device-card--disabled' }}"
     data-device-id="{{ $item->id }}"
     data-device-status="{{ ["online"=>"moving","engine"=>"idle","ack"=>"stopped","offline"=>"offline","blocked"=>"offline"][$item->getStatus()] ?? "offline" }}">
 
@@ -23,6 +30,11 @@
 
         <div class="device-card__time-row">
             <i class="icon time"></i>
+            @if (! $item->active)
+                <span class="device-card__state device-card__state--disabled">{{ trans('front.disabled') }}</span>
+            @elseif ($item->getStatus() == 'offline')
+                <span class="device-card__state device-card__state--offline">{{ trans('front.not_connected') }}</span>
+            @else
             <span class="device-card__time" data-device="time">
                 {{ $item->time }}
 
@@ -38,11 +50,12 @@
                     @endif
                 @endif
             </span>
+            @endif
         </div>
 
         <div class="device-card__address">
             <i class="icon map"></i>
-            <span data-device="address">{{ \App\Http\Controllers\Frontend\ObjectsController::resolveDeviceAddress($item) }}</span>
+            <span data-device="address"@if (! is_null($device_lat) && ! is_null($device_lng)) data-lat="{{ $device_lat }}" data-lng="{{ $device_lng }}"@endif>{{ \App\Http\Controllers\Frontend\ObjectsController::resolveDeviceAddress($item) }}</span>
         </div>
     </div>
 

@@ -212,15 +212,23 @@ class ObjectsController extends Controller {
         $lat = $device->lat;
         $lng = $device->lng;
 
-        if (empty($lat) || empty($lng)) {
+        if (! is_numeric($lat) || ! is_numeric($lng)) {
             return '-';
         }
 
         try {
-            return app(\Tobuli\Helpers\GeoLocation\GeoLocation::class)
-                ->resolveAddress($lat, $lng) ?: '-';
+            $address = app(\Tobuli\Helpers\GeoLocation\GeoLocation::class)
+                ->resolveAddress($lat, $lng);
         } catch (\Throwable $e) {
-            return '-';
+            $address = null;
         }
+
+        if (! empty($address)) {
+            return $address;
+        }
+
+        // geocoder unavailable/empty - coordinates are still actionable, so show
+        // them instead of a bare dash
+        return number_format((float) $lat, 4, '.', '') . ', ' . number_format((float) $lng, 4, '.', '');
     }
 }

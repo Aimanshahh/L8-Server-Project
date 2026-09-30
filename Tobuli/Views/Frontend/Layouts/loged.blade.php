@@ -25,6 +25,7 @@
         </div>
     </div>
     @endif
+        <div class="op-header">
         <ul class="nav nav-tabs nav-default">
             <li role="presentation" class="active">
                 <a href="#objects_tab" type="button" data-toggle="tab">{!!trans('front.objects')!!}</a>
@@ -49,6 +50,11 @@
             <li role="presentation" class="hidden"><a href="#pois_create" data-toggle="tab"></a></li>
             <li role="presentation" class="hidden"><a href="#pois_edit" data-toggle="tab"></a></li>
         </ul>
+
+        <div class="op-header__actions">
+            @yield('panel_actions')
+        </div>
+        </div>
 
         @yield('items')
     </div>

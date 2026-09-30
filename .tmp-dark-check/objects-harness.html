@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Objects page harness</title>
+
+<link rel="stylesheet" href="../public/assets/css/light-blue.css">
+<link rel="stylesheet" href="../public/assets/css/style.css">
+<link rel="stylesheet" href="../public/assets/css/dashboard-overrides.css">
+<link rel="stylesheet" href="../public/assets/css/sidebar-overrides.css">
+<link rel="stylesheet" href="../public/assets/css/map-sidebar-overrides.css">
+<link rel="stylesheet" href="../public/assets/css/modal-overrides.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../public/assets/css/objects-page-overrides.css">
+<link rel="stylesheet" href="../public/assets/css/theme-dark.css">
+
+<style>
+  body { margin: 0; background: #eef1f5; font-family: Inter, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .stage { display: flex; align-items: stretch; height: 900px; padding: 12px; gap: 12px; }
+  #sidebar { position: relative; top: 0; bottom: 0; height: 100%; flex: 0 0 330px; }
+  #sidebar .sidebar-content { display: flex; flex-direction: column; height: 100%; overflow-y: auto; }
+  #mapWrap { flex: 1 1 auto; position: relative; background: #dfe6ee; border-radius: 8px; overflow: hidden; }
+  #mapWrap .fake-map { position: absolute; inset: 0;
+    background: repeating-linear-gradient(45deg, #dbe4ee, #dbe4ee 24px, #e5ecf4 24px, #e5ecf4 48px); }
+  #map-controls { position: absolute; top: 16px; right: 16px; display: flex; flex-direction: column; gap: 8px; }
+  #widgets { position: relative; top: 0; right: 0; flex: 0 0 320px; max-height: 100%; display: block !important; }
+  html[data-theme="dark"] body { background: #0b1020; }
+  html[data-theme="dark"] #mapWrap { background: #0F172A; }
+  html[data-theme="dark"] #mapWrap .fake-map {
+    background: repeating-linear-gradient(45deg, #131d33, #131d33 24px, #16203a 24px, #16203a 48px); }
+</style>
+</head>
+<body>
+
+<div class="stage">
+
+  <!-- ============================ left objects panel ============================ -->
+  <div id="sidebar">
+    <div class="sidebar-content">
+
+      <div class="op-header">
+        <ul class="nav nav-tabs nav-default">
+          <li role="presentation" class="active"><a href="#objects_tab" data-toggle="tab">Objects</a></li>
+          <li role="presentation"><a href="#events_tab" data-toggle="tab">Events</a></li>
+          <li role="presentation"><a href="#history_tab" data-toggle="tab">History</a></li>
+        </ul>
+        <div class="op-header__actions">
+          <button class="btn btn-primary" type="button"><i class="icon add"></i> <span>Add device</span></button>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="tab-pane active" id="objects_tab">
+
+          <div class="tab-pane-header">
+            <div class="op-toolbar">
+              <div class="form-group search">
+                <input class="form-control" type="text" placeholder="Search">
+              </div>
+              <button type="button" class="op-btn op-btn--ghost op-filters">
+                <i class="fas fa-sliders-h"></i> <span>Filters</span>
+              </button>
+            </div>
+
+            <div class="status-filters" id="device_status_filters">
+              <button type="button" class="status-chip active" data-status-filter="all">
+                <span class="chip-icon"><i class="fas fa-car"></i></span>
+                <span class="chip-label">Total</span>
+                <span class="chip-count" data-count="all">8</span>
+              </button>
+              <button type="button" class="status-chip status-chip--running" data-status-filter="moving">
+                <span class="chip-icon"><i class="fas fa-car"></i></span>
+                <span class="chip-label">Running</span>
+                <span class="chip-count" data-count="moving">0</span>
+              </button>
+              <button type="button" class="status-chip status-chip--idle" data-status-filter="idle">
+                <span class="chip-icon"><i class="fas fa-car"></i></span>
+                <span class="chip-label">Idle</span>
+                <span class="chip-count" data-count="idle">0</span>
+              </button>
+              <button type="button" class="status-chip status-chip--stopped" data-status-filter="stopped">
+                <span class="chip-icon"><i class="fas fa-car"></i></span>
+                <span class="chip-label">Stopped</span>
+                <span class="chip-count" data-count="stopped">4</span>
+              </button>
+              <button type="button" class="status-chip status-chip--nodata" data-status-filter="offline">
+                <span class="chip-icon"><i class="fas fa-satellite-dish"></i></span>
+                <span class="chip-label">No Data</span>
+                <span class="chip-count" data-count="offline">4</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="tab-pane-body">
+            <div id="ajax-items">
+              <ul class="group-list">
+
+                <li class="device-card device-card--disabled" data-device-id="1" data-device-status="offline">
+                  <div class="device-card__icon"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAMLCwgAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="" style="width:26px;height:34px"></div>
+                  <div class="device-card__body">
+                    <div class="device-card__top">
+                      <span class="device-card__name" data-device="name">AFR-022</span>
+                      <span class="device-card__speed" data-device="speed">0 kph</span>
+                    </div>
+                    <div class="device-card__time-row">
+                      <i class="icon time"></i>
+                      <span class="device-card__state device-card__state--disabled">Disabled</span>
+                    </div>
+                    <div class="device-card__address">
+                      <i class="icon map"></i>
+                      <span data-device="address" data-lat="34.0151" data-lng="71.5249">Peshawar, Khyber Pakhtunkhwa, Pakistan</span>
+                    </div>
+                  </div>
+                  <div class="device-card__side">
+                    <div class="btn-group dropleft droparrow" data-position="fixed">
+                      <i class="btn icon options" data-toggle="dropdown"></i>
+                    </div>
+                    <span class="device-card__status-dot" data-device="status" style="background-color:#aaaaaa"></span>
+                  </div>
+                </li>
+
+                <li class="device-card active" data-device-id="2" data-device-status="stopped">
+                  <div class="device-card__icon"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAMLCwgAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="" style="width:26px;height:34px"></div>
+                  <div class="device-card__body">
+                    <div class="device-card__top">
+                      <span class="device-card__name" data-device="name">ALD-813 (REMOVAL REQUIRED)</span>
+                      <span class="device-card__speed" data-device="speed">0 kph</span>
+                    </div>
+                    <div class="device-card__time-row">
+                      <i class="icon time"></i>
+                      <span class="device-card__time" data-device="time">2026-09-29 10:18:46</span>
+                    </div>
+                    <div class="device-card__address">
+                      <i class="icon map"></i>
+                      <span data-device="address" data-lat="34.0151" data-lng="71.5249">Sabzi Mandi, Karakoram Highway, Mansehra, Mansehra Tehsil, Mansehra District, Hazara Division, Khyber Pakhtunkhwa, Pakistan</span>
+                    </div>
+                  </div>
+                  <div class="device-card__side">
+                    <div class="btn-group dropleft droparrow" data-position="fixed">
+                      <i class="btn icon options" data-toggle="dropdown"></i>
+                    </div>
+                    <span class="device-card__status-dot" data-device="status" style="background-color:#22c55e"></span>
+                  </div>
+                </li>
+
+                <li class="device-card" data-device-id="3" data-device-status="offline">
+                  <div class="device-card__icon"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAMLCwgAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="" style="width:26px;height:34px"></div>
+                  <div class="device-card__body">
+                    <div class="device-card__top">
+                      <span class="device-card__name" data-device="name">BGM-729 (REMOVAL CASE)</span>
+                      <span class="device-card__speed" data-device="speed">0 kph</span>
+                    </div>
+                    <div class="device-card__time-row">
+                      <i class="icon time"></i>
+                      <span class="device-card__state device-card__state--offline">Not connected</span>
+                    </div>
+                    <div class="device-card__address">
+                      <i class="icon map"></i>
+                      <span data-device="address" data-lat="6.5244" data-lng="3.3792">Lagos, Nigeria</span>
+                    </div>
+                  </div>
+                  <div class="device-card__side">
+                    <div class="btn-group dropleft droparrow" data-position="fixed">
+                      <i class="btn icon options" data-toggle="dropdown"></i>
+                    </div>
+                    <span class="device-card__status-dot" data-device="status" style="background-color:#ef4444"></span>
+                  </div>
+                </li>
+
+                <li class="device-card" data-device-id="4" data-device-status="moving">
+                  <div class="device-card__icon"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAMLCwgAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" alt="" style="width:26px;height:34px"></div>
+                  <div class="device-card__body">
+                    <div class="device-card__top">
+                      <span class="device-card__name" data-device="name">BYA-592 (ONE REMOVAL)</span>
+                      <span class="device-card__speed" data-device="speed">4 kph</span>
+                    </div>
+                    <div class="device-card__time-row">
+                      <i class="icon time"></i>
+                      <span class="device-card__time" data-device="time">2026-09-29 10:17:31</span>
+                    </div>
+                    <div class="device-card__address">
+                      <i class="icon map"></i>
+                      <span data-device="address" data-lat="18.5204" data-lng="73.8567">Pune, Maharashtra, India</span>
+                    </div>
+                  </div>
+                  <div class="device-card__side">
+                    <div class="btn-group dropleft droparrow" data-position="fixed">
+                      <i class="btn icon options" data-toggle="dropdown"></i>
+                    </div>
+                    <span class="device-card__status-dot" data-device="status" style="background-color:#22c55e"></span>
+                  </div>
+                </li>
+
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================================ map area ================================= -->
+  <div id="mapWrap">
+    <div class="fake-map"></div>
+    <div id="map-controls">
+      <div class="btn-group-vertical" role="group">
+        <label class="btn"><input type="checkbox"><span class="icon group-devices"></span></label>
+        <label class="btn"><input type="checkbox"><span class="icon fitBounds"></span></label>
+        <label class="btn"><input type="checkbox"><span class="icon devices"></span></label>
+        <label class="btn"><input type="checkbox"><span class="icon geofences"></span></label>
+        <label class="btn"><input type="checkbox"><span class="icon routes"></span></label>
+        <label class="btn"><input type="checkbox"><span class="icon show-name"></span></label>
+        <label class="btn"><input type="checkbox"><span class="icon show-tail"></span></label>
+      </div>
+      <div class="btn-group-vertical" role="group">
+        <button type="button" class="btn"><span class="icon zoomIn"></span></button>
+        <button type="button" class="btn"><span class="icon zoomOut"></span></button>
+      </div>
+      <div class="btn-group-vertical" role="group">
+        <button type="button" class="btn"><span class="icon map-expand"></span></button>
+      </div>
+      <div class="btn-group-vertical" role="group">
+        <button type="button" class="btn"><span class="icon map-layers"></span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ right info panel ============================= -->
+  <div id="widgets">
+    <div class="widgets-content">
+      <div class="widget">
+        <div class="widget-heading">
+          <div class="widget-title">
+            <i class="icon device"></i>
+            <span data-device="name">ALD-813 (REMOVAL REQUIRED)</span>
+            <span data-device="status" style="background-color:#22c55e"></span>
+          </div>
+          <a class="widget-close" href="javascript:" aria-label="close"><i class="fas fa-chevron-up"></i></a>
+        </div>
+      </div>
+
+      <div class="widget widget-device">
+        <div class="widget-body">
+          <div class="panel-section">
+            <div class="panel-section__title op-section-head" role="button" data-toggle="collapse" data-target="#op_location_time_body" aria-expanded="true">
+              <i class="icon map"></i>
+              <span>Location &amp; Time</span>
+              <button type="button" class="op-eye js-op-eye"><i class="fas fa-eye"></i></button>
+              <i class="fas fa-chevron-up op-section-caret"></i>
+            </div>
+            <div class="collapse in" id="op_location_time_body">
+              <table class="table table--panel">
+                <tbody>
+                  <tr>
+                    <td>Address:</td>
+                    <td><span data-device="preview"></span><span data-device="address" data-preview="true">Mansehra, Mansehra Tehsil, Mansehra District, Hazara Division, Khyber Pakhtunkhwa, Pakistan</span></td>
+                  </tr>
+                  <tr><td>Time:</td><td><span data-device="time">2026-09-30 13:29:02</span></td></tr>
+                  <tr><td>Stop duration:</td><td><span data-device="stop_duration">0s</span></td></tr>
+                  <tr><td>Driver:</td><td><span data-device="driver.name">-</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <div class="panel-section__title"><i class="icon map"></i> Customer Info</div>
+            <table class="table table--panel">
+              <tbody>
+                <tr><td>Customer Name:</td><td><span data-device="name">ALD-813 (REMOVAL REQUIRED)</span></td></tr>
+                <tr><td>Contact No:</td><td><span data-device="driver.phone">-</span></td></tr>
+                <tr><td>T-PIN:</td><td><span data-device="tpin">-</span></td></tr>
+                <tr><td>Instruction:</td><td><span data-device="instruction">-</span></td></tr>
+                <tr><td>Geofence:</td><td><span data-device="geofence">-</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget widget-sensors">
+        <div class="widget-heading">
+          <div class="widget-title"><i class="icon sensors"></i> Sensors</div>
+          <div class="widget-actions">
+            <a href="javascript:" class="btn-circle-add" title="Add sensor"><i class="fas fa-plus"></i></a>
+          </div>
+        </div>
+        <div class="widget-body">
+          <table class="table" data-device="sensors">
+            <tbody>
+              <tr><td><i class="icon ignition"></i>IGNITION</td><td>On</td></tr>
+              <tr><td><i class="icon battery"></i>Internal Batter Level</td><td>-</td></tr>
+              <tr><td><i class="icon battery"></i>External Volts</td><td>-</td></tr>
+              <tr><td><i class="icon engine"></i>ENGINE</td><td>On</td></tr>
+              <tr><td><i class="icon odometer"></i>ODOMETER</td><td>-</td></tr>
+              <tr><td><i class="icon result"></i>Result</td><td>-</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  (function () {
+    var m = location.search.match(/theme=(light|dark)/);
+    if (m) document.documentElement.setAttribute('data-theme', m[1]);
+  })();
+
+  window.addEventListener('load', function () {
+    function cs(sel, props) {
+      var el = document.querySelector(sel);
+      if (!el) return 'MISSING ' + sel;
+      var s = getComputedStyle(el), o = {};
+      props.forEach(function (p) { o[p] = s.getPropertyValue(p); });
+      return o;
+    }
+    var out = {
+      theme: document.documentElement.getAttribute('data-theme'),
+      widgetsContent: cs('#widgets .widgets-content', ['background-color', 'color']),
+      widgets: cs('#widgets', ['background-color', 'border-color']),
+      chipNoData: cs('.status-chip--nodata', ['background-color', 'border-color']),
+      chipNoDataCount: cs('.status-chip--nodata .chip-count', ['color']),
+      chipRunning: cs('.status-chip--running', ['background-color', 'border-color']),
+      card: cs('.device-card', ['background-color', 'border-color']),
+      cardActive: cs('.device-card.active', ['background-color', 'box-shadow']),
+      cardName: cs('.device-card__name', ['color']),
+      cardAddr: cs('.device-card__address', ['color']),
+      cardSpeed: (function () {
+        var el = document.querySelector('.device-card__speed');
+        if (!el) return 'none';
+        return { cls: el.className, html: el.outerHTML.slice(0, 140), color: getComputedStyle(el).color,
+                 all: Array.prototype.map.call(document.querySelectorAll('.device-card__speed'), function (e) { return e.className + '=' + getComputedStyle(e).color; }) };
+      })(),
+      tdLabel: cs('#widgets .table tr > td:first-child', ['color']),
+      tdValue: cs('#widgets .table tr > td:last-child', ['color']),
+      sectionTitle: cs('.panel-section__title', ['color']),
+      searchInput: cs('#objects_tab .form-group.search .form-control', ['background-color', 'border-color', 'color']),
+      tabActive: cs('#sidebar .nav-tabs li.active > a', ['color', 'border-bottom-color']),
+      mapBtn: cs('#map-controls .btn-group-vertical > .btn', ['background-color', 'color']),
+      sensorsPlus: cs('#widgets .widget-actions .btn-circle-add', ['background-color', 'color']),
+      addDeviceBtn: cs('.op-header__actions .btn.btn-primary', ['background-color', 'color']),
+      rules: window.__rules,
+      stack: [[60, 45], [120, 45], [200, 45], [60, 30]].map(function (p) {
+        var el = document.elementFromPoint(p[0], p[1]);
+        var out = [p[0] + ',' + p[1]];
+        while (el && out.length < 5) {
+          out.push(el.tagName + '.' + (el.className || '') + '|bg=' + getComputedStyle(el).backgroundColor);
+          el = el.parentElement;
+        }
+        return out;
+      })
+    };
+    window.__rules = [];
+    Array.prototype.forEach.call(document.styleSheets, function (ss) {
+      var rules;
+      try { rules = ss.cssRules; } catch (e) { return; }
+      if (!rules) return;
+      Array.prototype.forEach.call(rules, function (r) {
+        if (r.selectorText && /device-card/.test(r.selectorText) && /color/.test(r.style && r.style.cssText || '')) {
+          window.__rules.push((ss.href || 'inline').split('/').pop() + ' :: ' + r.selectorText + ' { ' + r.style.cssText + ' }');
+        }
+      });
+    });
+    out.rules = window.__rules;
+
+    var pre = document.createElement('pre');
+    pre.id = '__probe';
+    pre.textContent = 'PROBE_JSON=' + JSON.stringify(out);
+    document.body.appendChild(pre);
+  });
+</script>
+</body>
+</html>

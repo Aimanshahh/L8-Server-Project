@@ -1,5 +1,9 @@
 @extends('Frontend.Layouts.loged')
 
+@section('panel_actions')
+    @include('Frontend.Objects.partials.addDevice')
+@stop
+
 @section('items')
 <div class="tab-content">
     <div class="tab-pane active" id="objects_tab">

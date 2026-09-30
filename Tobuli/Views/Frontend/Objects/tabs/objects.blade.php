@@ -1,60 +1,18 @@
 <div class="tab-pane-header">
-    <div class="form">
-        <div class="input-group">
-            <div class="form-group search">
-                {!!Form::text('search', null, ['class' => 'form-control', 'placeholder' => trans('front.search'), 'autocomplete' => 'off'])!!}
-            </div>
-            <span class="input-group-btn">
-                @if (Auth::User()->perm('custom_device_add', 'view'))
-                    <a class="btn btn-primary" href="{!!route('register.step.create', 'device')!!}">
-                        {{ trans('front.add_device') }}
-                    </a>
-                @else
-                    @php
-                        $actions = [];
-                        if (Auth::User()->perm('devices', 'edit')) {
-                            $actions[] = [
-                               'url' => route('devices.create'),
-                               'modal' => 'devices_create',
-                               'title' => trans('front.devices'),
-                            ];
-                        }
-                        if (settings('plugins.beacons.status') && Auth::User()->perm('beacons', 'edit')) {
-                            $actions[] = [
-                               'url' => route('beacons.create'),
-                               'modal' => 'beacons_create',
-                               'title' => trans('front.beacons'),
-                            ];
-                        }
-                    @endphp
-
-                    <div class="btn-group" id="device_add_btn">
-                    @if (count($actions) > 1)
-                            <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-                                <i class="icon add"></i>
-                            </button>
-                            <ul class="dropdown-menu pull-left">
-                                @foreach($actions as $action)
-                                <li>
-                                    <a href="javascript:" data-url="{{ $action['url'] }}" data-modal="{{ $action['modal'] }}">
-                                        {{ $action['title'] }}
-                                    </a>
-                                </li>
-                                @endforeach
-                            </ul>
-
-                    @elseif(count($actions) > 0)
-                        <button class="btn btn-primary"
-                                type="button"
-                                data-url="{{ $actions[0]['url'] }}"
-                                data-modal="{{ $actions[0]['modal'] }}">
-                            <i class="icon add"></i>
-                        </button>
-                    @endif
-                    </div>
-                @endif
-            </span>
+    <div class="op-toolbar">
+        <div class="form-group search">
+            {!!Form::text('search', null, ['class' => 'form-control', 'placeholder' => trans('front.search'), 'autocomplete' => 'off'])!!}
         </div>
+
+        <button type="button"
+                class="op-btn op-btn--ghost op-filters"
+                id="op_filters_btn"
+                onclick="var h=this.closest('.tab-pane-header');var c=h.classList.toggle('op-filters-collapsed');this.classList.toggle('is-on', !c);this.setAttribute('aria-expanded', c ? 'false' : 'true');"
+                aria-expanded="true"
+                title="{{ trans('admin.filters') }}">
+            <i class="fas fa-sliders-h"></i>
+            <span>{{ trans('admin.filters') }}</span>
+        </button>
     </div>
 
     <div class="status-filters" id="device_status_filters">
@@ -79,7 +37,7 @@
             <span class="chip-count" data-count="stopped">0</span>
         </button>
         <button type="button" class="status-chip status-chip--nodata" data-status-filter="offline">
-            <span class="chip-icon"><i class="fas fa-car"></i></span>
+            <span class="chip-icon"><i class="fas fa-satellite-dish"></i></span>
             <span class="chip-label">{{ trans('front.no_data') }}</span>
             <span class="chip-count" data-count="offline">0</span>
         </button>
