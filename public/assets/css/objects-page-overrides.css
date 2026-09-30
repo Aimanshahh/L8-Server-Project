@@ -56,7 +56,6 @@
   justify-content: space-between;
   gap: 8px;
   padding: 14px 14px 0;
-  overflow: hidden;
 }
 
 /* map-sidebar-overrides.css locks this to flex: 0 0 auto with an ID selector,
@@ -75,8 +74,11 @@
 .op-header__actions {
   flex: 0 0 auto;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
   gap: 6px;
+  min-width: 0;
   padding-bottom: 6px;
   margin-left: auto;
 }
@@ -95,11 +97,11 @@
 }
 
 #sidebar .nav-tabs > li > a {
-  margin: 0 12px 0 0;
+  margin: 0 10px 0 0;
   padding: 0 0 8px;
   border: 0;
   background: transparent;
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--op-text-2);
   white-space: nowrap;
@@ -354,15 +356,17 @@
   background: var(--op-green-soft);
   border-color: #a7f3d0;
 }
+/* the count/icon carry the full status colour, so they need a slightly deeper
+   shade than the tint to stay legible on the light card background */
 .status-chip--running .chip-icon,
-.status-chip--running .chip-count { color: var(--op-green); }
+.status-chip--running .chip-count { color: #059669; }
 
 .status-chip--idle {
   background: var(--op-yellow-soft);
   border-color: #fde68a;
 }
 .status-chip--idle .chip-icon,
-.status-chip--idle .chip-count { color: var(--op-yellow); }
+.status-chip--idle .chip-count { color: #D97706; }
 
 .status-chip--stopped {
   background: var(--op-red-soft);
@@ -376,7 +380,7 @@
   border-color: var(--op-border);
 }
 .status-chip--nodata .chip-icon,
-.status-chip--nodata .chip-count { color: var(--op-nodata); }
+.status-chip--nodata .chip-count { color: #6B7280; }
 
 /* ==========================================================================
    4. Device list rows

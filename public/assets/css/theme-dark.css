@@ -1602,7 +1602,9 @@ html[data-theme="dark"] #sidebar .droparrow.dropleft.right > .dropdown-menu:afte
 html[data-theme="dark"] .leaflet-container { background: #0B1220; }
 
 html[data-theme="dark"] .leaflet-tile-pane {
-    filter: invert(1) hue-rotate(180deg) brightness(.92) contrast(.92) saturate(.75);
+    /* inflate the (inverted) black so land does not read as a black hole and
+       the baked-in place labels stay legible */
+    filter: invert(1) hue-rotate(180deg) brightness(1.06) contrast(.86) saturate(.7);
 }
 
 html[data-theme="dark"] .leaflet-control-attribution,
@@ -1637,6 +1639,61 @@ html[data-theme="dark"] .leaflet-popup-tip {
 html[data-theme="dark"] .leaflet-popup-content { color: #E2E8F0; }
 html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button { color: #94A3B8; }
 html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button:hover { color: #F1F5F9; }
+
+/* The device popup is built as
+   .leaflet-popup-content > .popup > (.popup-header + .popup-body).
+   light-blue.css paints those surfaces #ffffff / #f9f9f9, while the generic
+   dark table rules above force the table text to --d-text. Net result was
+   near-white text on a white card - i.e. invisible. Re-skin the surfaces so
+   the text the global rules already lighten is readable again. */
+html[data-theme="dark"] .leaflet-popup-content {
+    background: var(--d-surface);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, .55);
+}
+html[data-theme="dark"] .popup-header {
+    background: var(--d-surface-2);
+    border-bottom: 1px solid var(--d-border-soft);
+}
+html[data-theme="dark"] .popup-header .popup-title { color: var(--d-text-strong); }
+html[data-theme="dark"] .popup-header .nav-tabs,
+html[data-theme="dark"] .popup-header .nav-tabs > li > a,
+html[data-theme="dark"] .popup-body > .nav { background: transparent; border-bottom: 0; }
+html[data-theme="dark"] .popup-header .nav-tabs > li > a { color: var(--d-muted); }
+html[data-theme="dark"] .popup-header .nav-tabs > li > a:hover,
+html[data-theme="dark"] .popup-header .nav-tabs > li.active > a { color: #7EB0FF; background: transparent; }
+html[data-theme="dark"] .popup-body {
+    background: var(--d-surface);
+    color: var(--d-muted);
+}
+html[data-theme="dark"] .popup-body .table { background: transparent; color: var(--d-muted); }
+
+/* the rounded white "expand side panel" handle on the widgets panel */
+html[data-theme="dark"] #widgets .btn-collapse,
+html[data-theme="dark"] .btn-collapse-widget {
+    background: #1E293B;
+    border-color: #334155;
+    color: #93C5FD;
+}
+html[data-theme="dark"] .leaflet-div-icon {
+    background: var(--d-surface);
+    border-color: var(--d-border);
+    color: var(--d-text);
+}
+
+/* address / place autocomplete dropdown - another white surface that inherits
+   light text in dark mode */
+html[data-theme="dark"] .autocomplete-suggestions {
+    background: var(--d-surface-2);
+    border-color: var(--d-border);
+    color: var(--d-text);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, .5);
+}
+html[data-theme="dark"] .autocomplete-suggestion { color: var(--d-text); }
+html[data-theme="dark"] .autocomplete-suggestion:hover,
+html[data-theme="dark"] .autocomplete-suggestion.autocomplete-selected {
+    background: var(--d-accent-soft);
+    color: #A9C8FF;
+}
 
 html[data-theme="dark"] .leaflet-tooltip {
     background: #1E293B;

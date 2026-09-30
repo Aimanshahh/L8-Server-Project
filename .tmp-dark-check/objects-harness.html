@@ -219,6 +219,38 @@
   <div id="mapWrap">
     <div class="fake-map"></div>
     <div id="map"></div>
+
+    <!-- the device popup exactly as device.js builds it -->
+    <div style="position:absolute; left:30px; top:60px; z-index:900">
+      <div class="leaflet-popup" style="position:relative; margin:0">
+        <div class="leaflet-popup-content-wrapper">
+          <div class="leaflet-popup-content">
+            <div class="popup">
+              <div class="popup-header">
+                <ul class="nav nav-tabs nav-default">
+                  <li><a href="javascript:"><i class="fas fa-bars"></i></a></li>
+                  <li><a href="javascript:" data-dismiss="popup"><i class="fas fa-times"></i></a></li>
+                </ul>
+                <div class="popup-title">BYA-592 (DNE REMOVAL)</div>
+              </div>
+              <div class="popup-body scrollbox">
+                <div class="tab-content">
+                  <table class="table">
+                    <tbody>
+                      <tr><th>Status:</th><td>Stopped</td></tr>
+                      <tr><th>Speed:</th><td>0 kph</td></tr>
+                      <tr><th>Address:</th><td>Al-Harmain, George Street, Teen Mari Lines, Jamshed Town, Karachi East District, Sindh, 74550, Pakistan</td></tr>
+                      <tr><th>Time:</th><td>2026-09-30 14:33:35</td></tr>
+                      <tr><th>Driver:</th><td>-</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div id="map-controls">
       <div class="btn-group-vertical" role="group">
         <label class="btn"><input type="checkbox"><span class="icon group-devices"></span></label>
@@ -387,6 +419,53 @@
                  mapZ: getComputedStyle(document.getElementById('map')).zIndex,
                  mapPos: getComputedStyle(document.getElementById('map')).position,
                  wrapZ: getComputedStyle(document.getElementById('mapWrap')).zIndex };
+      })(),
+      lowContrast: (function () {
+        function lum(c) {
+          var m = c.match(/[\d.]+/g);
+          if (!m) return null;
+          var a = m[3] === undefined ? 1 : parseFloat(m[3]);
+          if (a === 0) return null;
+          var v = m.slice(0, 3).map(function (n) {
+            n = parseFloat(n) / 255;
+            return n <= 0.03928 ? n / 12.92 : Math.pow((n + 0.055) / 1.055, 2.4);
+          });
+          return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+        }
+        // composite every semi-transparent background up the tree, otherwise a
+        // 12%-opacity tint reads as if it were a solid colour
+        function bgRgb(el) {
+          var stack = [], n;
+          for (n = el; n && n.nodeType === 1; n = n.parentElement) {
+            var m = getComputedStyle(n).backgroundColor.match(/[\d.]+/g);
+            if (!m) continue;
+            var a = m[3] === undefined ? 1 : parseFloat(m[3]);
+            if (a === 0) continue;
+            stack.push({ rgb: [+m[0], +m[1], +m[2]], a: a });
+            if (a === 1) break;
+          }
+          if (!stack.length || stack[stack.length - 1].a < 1) stack.push({ rgb: [15, 20, 32], a: 1 });
+          var base = stack[stack.length - 1].rgb;
+          for (var i = stack.length - 2; i >= 0; i--) {
+            var l = stack[i];
+            base = [0, 1, 2].map(function (k) { return l.rgb[k] * l.a + base[k] * (1 - l.a); });
+          }
+          return 'rgb(' + base.map(Math.round).join(',') + ')';
+        }
+        var out = [];
+        Array.prototype.forEach.call(document.body.querySelectorAll('*'), function (el) {
+          if (!el.textContent || !el.textContent.trim()) return;
+          if (el.children.length && Array.prototype.some.call(el.children, function (c) { return c.textContent && c.textContent.trim(); })) return;
+          var cs = getComputedStyle(el);
+          if (cs.visibility === 'hidden' || cs.display === 'none' || parseFloat(cs.opacity) < 0.2) return;
+          var bgC = bgRgb(el);
+          var fg = lum(cs.color), bg = lum(bgC);
+          if (fg === null || bg === null) return;
+          var hi = Math.max(fg, bg), lo = Math.min(fg, bg);
+          var ratio = (hi + 0.05) / (lo + 0.05);
+          if (ratio < 2.5) out.push({ t: el.tagName + '.' + (el.className || '').toString().slice(0, 40), txt: el.textContent.trim().slice(0, 28), color: cs.color, bg: bgC, r: Math.round(ratio * 100) / 100 });
+        });
+        return out.slice(0, 25);
       })(),
       rules: window.__rules,
       stack: [[60, 45], [415, 320], [460, 400], [600, 500], [412, 610]].map(function (p) {
