@@ -1,4 +1,4 @@
-<div class="tab-pane-header">
+<div class="tab-pane-header events-header">
     <div class="form">
         <div class="input-group">
             <div class="form-group search">
@@ -18,25 +18,19 @@
             </span>
         </div>
     </div>
+    <div class="events-col-head">
+        <span class="events-col-head__time">{{ trans('front.time') }}</span>
+        <span class="events-col-head__object">{{ trans('front.object') }}</span>
+        <span class="events-col-head__event">{{ trans('front.event') }}</span>
+        <span class="events-col-head__actions"></span>
+    </div>
 </div>
 
 <div class="tab-pane-body">
-    <table class="table table-condensed">
+    <table class="table table-condensed events-table">
         <thead>
             <tr>
-                <th>
-                    <div class="row">
-                        <div class="col-xs-3 datetime">
-                            {{ trans('front.time') }}
-                        </div>
-                        <div class="col-xs-4">
-                            {{ trans('front.object') }}
-                        </div>
-                        <div class="col-xs-5">
-                            {{ trans('front.event') }}
-                        </div>
-                    </div>
-                </th>
+                <th></th>
                 <th></th>
             </tr>
         </thead>

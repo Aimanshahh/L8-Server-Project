@@ -1,30 +1,24 @@
 @if (!empty($events))
     @foreach ($events as $item)
-        <tr data-event-id="{!!$item->id!!}" onClick="app.events.select({!!$item->id!!});">
-            <td>
-                <div class="row">
-                    <div class="col-xs-3 datetime">
-                        <span class="time">{{ Formatter::date()->human($item->time) }}</span>
-                        <span class="date">{{ Formatter::dtime()->human($item->time) }}</span>
-                    </div>
-
-                    <div class="col-xs-4">
-                        {{ $item->device->name ?? '' }}
-                    </div>
-                    <div class="col-xs-5">
-                        {{ $item->title }}
-                    </div>
-                </div>
-
+        <tr class="events-row" data-event-id="{!!$item->id!!}" onClick="app.events.select({!!$item->id!!});">
+            <td class="events-cell events-cell--time">
+                <span class="datetime">
+                    <span class="time">{{ Formatter::date()->human($item->time) }}</span>
+                    <span class="date">{{ Formatter::dtime()->human($item->time) }}</span>
+                </span>
+            </td>
+            <td class="events-cell events-cell--object">
+                <span class="device-name">{{ $item->device->name ?? '' }}</span>
+            </td>
+            <td class="events-cell events-cell--event">
+                <span class="event-title">{{ $item->title }}</span>
                 @if (settings('plugins.event_section_address.status'))
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <span data-device="address" data-lat="{{ $item->latitude }}" data-lng="{{ $item->longitude }}"></span>
-                        </div>
-                    </div>
+                    <span class="event-address">
+                        <span data-device="address" data-lat="{{ $item->latitude }}" data-lng="{{ $item->longitude }}"></span>
+                    </span>
                 @endif
             </td>
-            <td>
+            <td class="events-cell events-cell--actions">
                 @if(Auth::user()->can('remove', $item))
                 <div class="btn-group dropleft droparrow"  data-position="fixed">
                     <i class="btn icon options" data-toggle="dropdown" data-position="fixed" aria-haspopup="true" aria-expanded="false"></i>
@@ -63,12 +57,12 @@
         </tr>
     @endforeach
     @if (method_exists($events, 'nextPageUrl') && $events->nextPageUrl())
-        <tr data-toggle="scroll" data-parent=".tab-pane-body" data-url="{{ $events->nextPageUrl() }}">
-            <td colspan="2"></td>
+        <tr data-toggle="scroll" data-parent=".tab-pane-body" data-url="{{ $events->nextPageUrl() }}" class="events-load-more">
+            <td colspan="4"></td>
         </tr>
     @endif
 @else
-    <tr>
-        <td class="no-data">{!!trans('front.no_events')!!}</td>
+    <tr class="events-row">
+        <td class="events-cell no-data" colspan="4">{!!trans('front.no_events')!!}</td>
     </tr>
 @endif
