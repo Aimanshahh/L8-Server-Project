@@ -30,12 +30,14 @@
                     <i class="btn icon options" data-toggle="dropdown" data-position="fixed" aria-haspopup="true" aria-expanded="false"></i>
                     <ul class="dropdown-menu">
 
+                        @if (!empty($item->alert_id))
                         <li>
                             <a href="javascript:;" data-url="{{ route('alerts.edit', $item->alert_id) }}" data-modal="alerts_edit">
                                 <span class="icon event"></span>
                                 <span class="text">{{ trans('global.alert') }}</span>
                             </a>
                         </li>
+                        @endif
 
 
                             <li>
