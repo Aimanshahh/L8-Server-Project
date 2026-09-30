@@ -94,7 +94,11 @@ abstract class Action
         if (is_null($value))
             $value = $default;
 
-        return $position->sensors[$sensor->id]['v'] = $value;
+        $sensors = $position->sensors;
+        $sensors[$sensor->id]['v'] = $value;
+        $position->setSensorsValuesAttribute($sensors);
+
+        return $value;
     }
 
     protected function registerStat($key, $stat)

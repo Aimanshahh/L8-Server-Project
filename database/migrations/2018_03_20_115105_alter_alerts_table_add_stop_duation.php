@@ -16,7 +16,7 @@ class AlterAlertsTableAddStopDuation extends Migration
             return;
 
         Schema::table('alerts', function ($table) {
-            $table->integer('stop_duration')->after('ac_alarm')->nullable();
+            $table->integer('stop_duration')->nullable();
         });
     }
 

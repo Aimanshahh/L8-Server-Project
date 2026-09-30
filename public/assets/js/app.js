@@ -6871,6 +6871,15 @@ L.Marker.include({
 		if (this.getLatLng().lat == latlng.lat && this.getLatLng().lng == latlng.lng)
 			return;
 
+		if (this._slideFrame) {
+
+		        L.Util.cancelAnimFrame(this._slideFrame);
+
+		        this._slideFrame = null;
+
+		}
+
+
 		this._slideToDuration = options.duration;
 		this._slideToUntil    = performance.now() + options.duration;
 		this._slideFromLatLng = this.getLatLng();
@@ -9074,7 +9083,7 @@ function Devices() {
         $.ajax({
             type: 'GET',
             dataType: 'html',
-            url: app.urls.devicesSidebar,
+            url: app.urls.devicesSidebar.replace(/\/+$/, '') + '/items',
             data: {
                 s: $('#objects_tab input[name="search"]').val()
             },
@@ -9206,9 +9215,6 @@ function Devices() {
         var _layers = [],
             _animate = app.settings.animateDeviceMove;
 
-        if ( ! _animate)
-            cluster.clearLayers();
-
         if ( ! app.devices.disableLayer ) {
             $.each(items, function (id, device) {
                 if (!device)
@@ -9221,9 +9227,28 @@ function Devices() {
             });
         }
 
-        cluster
-            .clearLayers()
-            .addLayers( _layers );
+        if ( ! _animate ) {
+            cluster.clearLayers().addLayers( _layers );
+        } else {
+            // Incremental update — do not clear, so ongoing slides are not reset
+            var keepIds = {};
+
+            $.each(_layers, function(i, layer) {
+                if (layer && layer.options && layer.options.device_id) {
+                    keepIds[layer.options.device_id] = true;
+                    if ( ! cluster.hasLayer(layer) ) {
+                        cluster.addLayer(layer);
+                    }
+                }
+            });
+
+            cluster.eachLayer(function(existing) {
+                var devId = existing.options && existing.options.device_id;
+                if (devId && ! keepIds[devId]) {
+                    cluster.removeLayer(existing);
+                }
+            });
+        }
     };
 
     _this.refreshCluster = function( _doFitBounds ) {
@@ -14140,14 +14165,17 @@ function Device(data) {
         var _animate = app.settings.animateDeviceMove;
 
         _animate = _animate && app.map.hasLayer(layer);
-        //_animate = _animate && layer.distanceTo(position) < 500;
 
         if ( ! _animate) {
             layer.setLatLng(position);
         } else {
+            var _now = Date.now();
+            var _elapsed = layer._gpsLastUpdate ? (_now - layer._gpsLastUpdate) : (app.checkFrequency * 1000);
+            layer._gpsLastUpdate = _now;
+            var _dur = Math.max(3000, Math.min(_elapsed, 60000));
             setTimeout(function () {
-                layer.slideTo(position, {duration: app.checkFrequency * 1000});
-            }, 150);
+                layer.slideTo(position, {duration: _dur});
+            }, 50);
         }
 
         return layer;
@@ -16704,6 +16732,7 @@ function Dashboard()
 
     _this.init = function ()
     {
+        return; // TEMP: dashboard disabled during migration debugging
         var modal = $modal.initModal();
 
         modal.load(app.urls.dashboard, '', function () {

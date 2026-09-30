@@ -16,9 +16,9 @@ class MoveTraccarDevicesTable  extends Migration
         if (Schema::hasTable('traccar_devices'))
             return;
 
-        DB::statement('CREATE TABLE `traccar_devices` LIKE `gpswox_traccar`.`devices`;');
-        DB::statement('INSERT INTO `traccar_devices` SELECT * FROM `gpswox_traccar`.`devices`;');
-        DB::statement('DROP TABLE `gpswox_traccar`.`devices`');
+        DB::statement('CREATE TABLE `traccar_devices` LIKE `hypegps_traccar`.`devices`;');
+        DB::statement('INSERT INTO `traccar_devices` SELECT * FROM `hypegps_traccar`.`devices`;');
+        DB::statement('DROP TABLE `hypegps_traccar`.`devices`');
     }
 
     /**
@@ -28,8 +28,8 @@ class MoveTraccarDevicesTable  extends Migration
      */
     public function down()
     {
-        DB::statement('CREATE TABLE `gpswox_traccar`.`devices` LIKE `traccar_devices`;');
-        DB::statement('INSERT INTO `gpswox_traccar`.`devices` SELECT * FROM `traccar_devices`;');
+        DB::statement('CREATE TABLE `hypegps_traccar`.`devices` LIKE `traccar_devices`;');
+        DB::statement('INSERT INTO `hypegps_traccar`.`devices` SELECT * FROM `traccar_devices`;');
         DB::statement('DROP TABLE `traccar_devices`');
     }
 }

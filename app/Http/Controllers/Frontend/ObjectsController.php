@@ -195,4 +195,32 @@ class ObjectsController extends Controller {
         else
             return ['status' => 0, 'error' => isset($result['error']) ? $result['error'] : ''];
     }
+
+    /**
+     * Resolve a device's current address for list rendering.
+     * Prefers Traccar's stored address; falls back to GPSWOX geocoder.
+     */
+    public static function resolveDeviceAddress(\Tobuli\Entities\Device $device): string
+    {
+        if ($device->traccar) {
+            $position = $device->traccar->latestPosition;
+            if ($position && !empty($position->address)) {
+                return $position->address;
+            }
+        }
+
+        $lat = $device->lat;
+        $lng = $device->lng;
+
+        if (empty($lat) || empty($lng)) {
+            return '-';
+        }
+
+        try {
+            return app(\Tobuli\Helpers\GeoLocation\GeoLocation::class)
+                ->resolveAddress($lat, $lng) ?: '-';
+        } catch (\Throwable $e) {
+            return '-';
+        }
+    }
 }

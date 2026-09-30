@@ -48,7 +48,7 @@ class Device extends AbstractEntity implements DisplayInterface, FcmTokenableInt
     const KIND_GENERAL = 0;
     const KIND_BEACON = 1;
 
-    const STOP_DURATION_OFFSET = 10;
+    const STOP_DURATION_OFFSET = 3;
 
     /**
      * tc_devices.lastupdate (ack time) and tc_positions.servertime are written
@@ -641,6 +641,47 @@ class Device extends AbstractEntity implements DisplayInterface, FcmTokenableInt
         return ($serverTime + self::ACK_TOLERANCE) >= $ackTime ? self::STATUS_ONLINE : self::STATUS_ACK;
     }
 
+    /**
+     * Determine if the device has actually changed GPS position recently.
+     * Compares the spread of positions in the given time window.
+     * This is needed because some trackers report a non-zero speed value
+     * even when the vehicle is parked (no coordinate change).
+     */
+    public function hasMovedRecently($seconds = 300, $minMeters = 30)
+    {
+        if (!$this->traccar_device_id) {
+            return false;
+        }
+
+        $since = date('Y-m-d H:i:s', time() - $seconds);
+
+        $positions = \Tobuli\Entities\TraccarPosition::where('deviceid', $this->traccar_device_id)
+            ->where('servertime', '>=', $since)
+            ->orderBy('servertime', 'asc')
+            ->limit(50)
+            ->get(['latitude', 'longitude']);
+
+        if ($positions->count() < 2) {
+            return false;
+        }
+
+        $latitudes  = $positions->pluck('latitude')->toArray();
+        $longitudes = $positions->pluck('longitude')->toArray();
+
+        $latSpread = max($latitudes) - min($latitudes);
+        $lngSpread = max($longitudes) - min($longitudes);
+
+        $avgLat = array_sum($latitudes) / count($latitudes);
+
+        // Convert degrees to meters (approximate)
+        $latMeters = $latSpread * 111000;
+        $lngMeters = $lngSpread * 111000 * cos(deg2rad($avgLat));
+
+        $distance = sqrt($latMeters * $latMeters + $lngMeters * $lngMeters);
+
+        return $distance >= $minMeters;
+    }
+
     public function getStatusAttribute()
     {
         return $this->getStatus();
@@ -665,14 +706,10 @@ class Device extends AbstractEntity implements DisplayInterface, FcmTokenableInt
 
         $speed = $this->getSpeed();
 
-        if ($speed >= $this->min_moving_speed)
+        if ($speed >= $this->min_moving_speed && $this->hasMovedRecently())
             return self::STATUS_ONLINE;
 
-        $stopDuration = $this->getStopDuration();
-
-        if (!is_null($stopDuration) && $stopDuration < self::STOP_DURATION_OFFSET)
-            return self::STATUS_ONLINE;
-
+        // Engine on but not moving → IDLE
         if ($engine = $this->getEngineStatus()) {
             return self::STATUS_ENGINE;
         }
@@ -926,6 +963,17 @@ class Device extends AbstractEntity implements DisplayInterface, FcmTokenableInt
         }
 
         return ($distance > 0) ? $distance : 0;
+    }
+
+    public function getAddressAttribute()
+    {
+        if (!$this->traccar) {
+            return null;
+        }
+
+        $position = $this->traccar->latestPosition;
+
+        return $position ? $position->address : null;
     }
 
     public function getProtocolAttribute()

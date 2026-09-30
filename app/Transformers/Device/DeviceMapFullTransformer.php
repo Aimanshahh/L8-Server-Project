@@ -5,6 +5,8 @@ namespace App\Transformers\Device;
 use App\Transformers\BaseTransformer;
 use Tobuli\Entities\Device;
 use Formatter;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class DeviceMapFullTransformer extends DeviceTransformer  {
 
@@ -53,6 +55,7 @@ class DeviceMapFullTransformer extends DeviceTransformer  {
             'time' => $entity->time,
             'timestamp' => (int)$entity->timestamp,
             'fix_timestamp' => $fixTime ? (int)strtotime($fixTime) : 0,
+            'track' => $this->playbackTrack($entity),
             'acktimestamp' => (int)$entity->acktimestamp,
             'moved_timestamp' => (int)$entity->moved_timestamp,
 
@@ -71,6 +74,44 @@ class DeviceMapFullTransformer extends DeviceTransformer  {
             'sensors'   => $this->sensors($entity),
             'services'  => $entity->getFormatServices(),
         ];
+    }
+
+    /**
+     * Last fixes (oldest first) with timestamps for frontend marker playback.
+     * Cached per latest position id: MySQL is hit only when a device has a new position.
+     */
+    public function playbackTrack($entity)
+    {
+        try {
+            $tid = (int) $entity->traccar_device_id;
+            if ( ! $tid)
+                return [];
+
+            $posId = (int) optional($entity->traccar)->positionid;
+            $key   = 'mp_track:' . $tid . ':' . $posId;
+            $ttl   = $posId ? 3600 : 10;
+
+            return Cache::remember($key, $ttl, function () use ($tid) {
+                $rows = DB::connection('traccar_mysql')->table('tc_positions')
+                    ->select('id', 'fixtime', 'latitude', 'longitude')
+                    ->where('deviceid', $tid)
+                    ->orderBy('fixtime', 'desc')
+                    ->orderBy('id', 'desc')
+                    ->limit(6)
+                    ->get();
+
+                $out = [];
+                foreach ($rows->reverse() as $r) {
+                    $t = strtotime($r->fixtime);
+                    if ( ! $t || ! ((float) $r->latitude || (float) $r->longitude))
+                        continue;
+                    $out[] = ['t' => $t * 1000, 'lat' => (float) $r->latitude, 'lng' => (float) $r->longitude];
+                }
+                return $out;
+            });
+        } catch (\Throwable $e) {
+            return [];
+        }
     }
 
     //tmp

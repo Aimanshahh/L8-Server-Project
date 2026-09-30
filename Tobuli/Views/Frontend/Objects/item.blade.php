@@ -3,7 +3,7 @@
 <li id="list-device-{{ $item->id }}"
     class="device-card"
     data-device-id="{{ $item->id }}"
-    data-device-status="{{ $item->getStatus() }}">
+    data-device-status="{{ ["online"=>"moving","engine"=>"idle","ack"=>"stopped","offline"=>"offline","blocked"=>"offline"][$item->getStatus()] ?? "offline" }}">
 
     <div class="device-card__icon">
         @if ($item->icon)
@@ -42,7 +42,7 @@
 
         <div class="device-card__address">
             <i class="icon map"></i>
-            <span data-device="address">{{ $item->address ?? '' }}</span>
+            <span data-device="address">{{ \App\Http\Controllers\Frontend\ObjectsController::resolveDeviceAddress($item) }}</span>
         </div>
     </div>
 
