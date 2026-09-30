@@ -1555,3 +1555,116 @@ html[data-theme="dark"] .btn-sidebar-expand:hover {
     background: #273449;
     color: #BFDBFE;
 }
+
+/* --- device row actions menu (\u22ee kebab, droparrow) ------------------- */
+html[data-theme="dark"] #sidebar .droparrow > .dropdown-menu,
+html[data-theme="dark"] #sidebar .device-card .dropdown-menu {
+    background: #1E293B;
+    border-color: #334155;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, .55);
+}
+html[data-theme="dark"] #sidebar .droparrow > .dropdown-menu > li > a,
+html[data-theme="dark"] #sidebar .device-card .dropdown-menu > li > a {
+    color: #CBD5E1;
+    background: transparent;
+}
+html[data-theme="dark"] #sidebar .droparrow > .dropdown-menu > li > a:hover,
+html[data-theme="dark"] #sidebar .droparrow > .dropdown-menu > li > a:focus,
+html[data-theme="dark"] #sidebar .device-card .dropdown-menu > li > a:hover,
+html[data-theme="dark"] #sidebar .device-card .dropdown-menu > li > a:focus {
+    background: #273449;
+    color: #F1F5F9;
+}
+html[data-theme="dark"] #sidebar .droparrow > .dropdown-menu > li > a > .icon,
+html[data-theme="dark"] #sidebar .device-card .dropdown-menu > li > a > .icon { color: #94A3B8; }
+html[data-theme="dark"] #sidebar .droparrow > .dropdown-menu > li > a:hover > .icon,
+html[data-theme="dark"] #sidebar .device-card .dropdown-menu > li > a:hover > .icon { color: #93C5FD; }
+html[data-theme="dark"] #sidebar .dropdown-menu > li.divider { background-color: #334155; }
+html[data-theme="dark"] #sidebar .droparrow.dropleft > .dropdown-menu:before,
+html[data-theme="dark"] #sidebar .droparrow.dropleft.right > .dropdown-menu:before,
+html[data-theme="dark"] #sidebar .droparrow.dropright > .dropdown-menu:before,
+html[data-theme="dark"] #sidebar .droparrow.dropright.left > .dropdown-menu:before {
+    border-right-color: #334155;
+    border-left-color: #334155;
+}
+html[data-theme="dark"] #sidebar .droparrow.dropleft > .dropdown-menu:after,
+html[data-theme="dark"] #sidebar .droparrow.dropright.left > .dropdown-menu:after { border-left-color: #1E293B; }
+html[data-theme="dark"] #sidebar .droparrow.dropright > .dropdown-menu:after,
+html[data-theme="dark"] #sidebar .droparrow.dropleft.right > .dropdown-menu:after { border-right-color: #1E293B; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Map (Leaflet) — dark scheme
+   The tile provider is chosen in settings, and the maps configured on this
+   install are all light raster layers, so the tile pane itself is inverted +
+   hue-rotated (the standard dark-map transform). Overlays, markers, tails and
+   clusters live in their own panes and keep their real colours.
+   ═════════════════════════════════════════════════════════════════════════ */
+html[data-theme="dark"] .leaflet-container { background: #0B1220; }
+
+html[data-theme="dark"] .leaflet-tile-pane {
+    filter: invert(1) hue-rotate(180deg) brightness(.92) contrast(.92) saturate(.75);
+}
+
+html[data-theme="dark"] .leaflet-control-attribution,
+html[data-theme="dark"] .leaflet-control-scale-line {
+    background: rgba(15, 23, 42, .85);
+    border-color: #334155;
+    color: #94A3B8;
+}
+html[data-theme="dark"] .leaflet-control-attribution a { color: #60A5FA; }
+
+html[data-theme="dark"] .leaflet-bar a,
+html[data-theme="dark"] .leaflet-bar a:hover {
+    background: #1E293B;
+    border-bottom-color: #334155;
+    color: #CBD5E1;
+}
+html[data-theme="dark"] .leaflet-bar a:hover {
+    background: #273449;
+    color: #F1F5F9;
+}
+html[data-theme="dark"] .leaflet-bar a.leaflet-disabled {
+    background: #16203a;
+    color: #4A5568;
+}
+
+html[data-theme="dark"] .leaflet-popup-content-wrapper,
+html[data-theme="dark"] .leaflet-popup-tip {
+    background: #1E293B;
+    color: #F1F5F9;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, .55);
+}
+html[data-theme="dark"] .leaflet-popup-content { color: #E2E8F0; }
+html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button { color: #94A3B8; }
+html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button:hover { color: #F1F5F9; }
+
+html[data-theme="dark"] .leaflet-tooltip {
+    background: #1E293B;
+    border-color: #334155;
+    color: #F1F5F9;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .5);
+}
+html[data-theme="dark"] .leaflet-tooltip-top:before { border-top-color: #334155; }
+html[data-theme="dark"] .leaflet-tooltip-bottom:before { border-bottom-color: #334155; }
+html[data-theme="dark"] .leaflet-tooltip-left:before { border-left-color: #334155; }
+html[data-theme="dark"] .leaflet-tooltip-right:before { border-right-color: #334155; }
+
+html[data-theme="dark"] .leaflet-control-layers,
+html[data-theme="dark"] .leaflet-control-layers-expanded {
+    background: #1E293B;
+    border-color: #334155;
+    color: #E2E8F0;
+}
+html[data-theme="dark"] .leaflet-control-layers-separator { border-top-color: #334155; }
+html[data-theme="dark"] .leaflet-draw-toolbar a {
+    background-color: #1E293B;
+    border-color: #334155;
+}
+
+/* the map's own floating controls sit on top of the tiles */
+html[data-theme="dark"] #map-controls .btn,
+html[data-theme="dark"] #map-controls button.btn {
+    background: #1E293B;
+    border-color: #334155;
+    color: #94A3B8;
+}
