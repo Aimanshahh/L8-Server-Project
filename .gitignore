@@ -33,4 +33,9 @@ _ev_preview.html
 _lang_preview.html
 _ports_preview.html
 _st_*.html
-_tools_preview.html
+_tools_preview.html*.bak
+*.bak_*
+*.bak2_*
+*.bak
+*.bak_*
+*.bak2_*

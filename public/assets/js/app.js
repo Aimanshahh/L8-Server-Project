@@ -14163,20 +14163,14 @@ function Device(data) {
         }
 
         var _animate = app.settings.animateDeviceMove;
-
-        _animate = _animate && app.map.hasLayer(layer);
-
-        if ( ! _animate) {
-            layer.setLatLng(position);
-        } else {
-            var _now = Date.now();
-            var _elapsed = layer._gpsLastUpdate ? (_now - layer._gpsLastUpdate) : (app.checkFrequency * 1000);
-            layer._gpsLastUpdate = _now;
-            var _dur = Math.max(3000, Math.min(_elapsed, 60000));
-            setTimeout(function () {
-                layer.slideTo(position, {duration: _dur});
-            }, 50);
-        }
+_animate = _animate && app.map.hasLayer(layer);
+if (!_animate) {
+    if (window.GpsSmooth) { window.GpsSmooth.place(layer, position); } else { layer.setLatLng(position); }
+} else if (window.GpsSmooth) {
+    window.GpsSmooth.move(layer, position, (app.checkFrequency || 10) * 1000);
+} else {
+    layer.setLatLng(position);
+}
 
         return layer;
     };
@@ -14499,11 +14493,30 @@ function Device(data) {
 
     _this.onLayerMove = function()
     {
+        /* GPS-MOVE-THROTTLE: redraw tail/accuracy circle at most ~10x/sec instead of every frame */
         if ( ! app.settings.showDevice )
             return;
 
-        _this.moveTail();
-        _this.updateInaccuracy();
+        var _n = Date.now();
+        var _draw = function () {
+            if (_this._mvT) {
+                clearTimeout(_this._mvT);
+                _this._mvT = null;
+            }
+            if ( ! layer )
+                return;
+            _this._mvLast = Date.now();
+            _this.moveTail();
+            _this.updateInaccuracy();
+        };
+
+        if (_n - (_this._mvLast || 0) >= 100) {
+            _draw();
+            return;
+        }
+
+        if ( ! _this._mvT )
+            _this._mvT = setTimeout(_draw, 100);
     };
 
     _this.onLayerClick = function() {
@@ -16803,3 +16816,170 @@ function Dashboard()
         });
     }
 }
+;
+/* GPS-SMOOTH-BEGIN v1 - stateful per-marker glide engine (replaces slideTo restarts) */
+(function (win) {
+    'use strict';
+
+    var CFG = {
+        enabled: true,
+        minSegMs: 1500,
+        maxSegMs: 240000,
+        stretch: 1.1,
+        catchUp: 0.25,
+        emaAlpha: 0.35,
+        snapMeters: 3000,
+        minMoveMeters: 0.5,
+        maxQueue: 6,
+        debug: false
+    };
+
+    var active = [];
+    var raf = null;
+
+    var nowMs = function () {
+        return (win.performance && win.performance.now) ? win.performance.now() : Date.now();
+    };
+    var requestFrame = function (fn) {
+        return (win.requestAnimationFrame || function (f) { return win.setTimeout(f, 16); })(fn);
+    };
+    var lerp = function (a, b, k) { return a + (b - a) * k; };
+    var log = function () {
+        if (CFG.debug && win.console) { win.console.log.apply(win.console, ['[GpsSmooth]'].concat([].slice.call(arguments))); }
+    };
+
+    function snap(st, p) {
+        st.seg = null;
+        st.q.length = 0;
+        st.carry = null;
+        st.cur = p;
+        st.last = p;
+        st.layer.setLatLng(p);
+    }
+
+    function move(layer, position, hintMs) {
+        if (!layer || typeof layer.setLatLng !== 'function' || !position) { return; }
+        var p;
+        try { p = L.latLng(position); } catch (e) { return; }
+        if (!p || isNaN(p.lat) || isNaN(p.lng)) { return; }
+
+        if (!CFG.enabled) { layer.setLatLng(p); return; }
+
+        var t = nowMs();
+        var st = layer._gpsSm;
+        if (!st) {
+            var g = (typeof layer.getLatLng === 'function') ? layer.getLatLng() : null;
+            var start = g ? L.latLng(g.lat, g.lng) : p;
+            st = layer._gpsSm = { layer: layer, q: [], seg: null, carry: null, ema: 0, lastFixAt: 0, cur: start, last: start };
+        }
+
+        if (st.last.distanceTo(p) < CFG.minMoveMeters) { return; }
+
+        var gap = st.lastFixAt ? (t - st.lastFixAt) : 0;
+        st.lastFixAt = t;
+        if (gap > 0 && gap < CFG.maxSegMs * 2) {
+            st.ema = st.ema ? st.ema + CFG.emaAlpha * (gap - st.ema) : gap;
+        }
+
+        if ((win.document && win.document.hidden) || st.last.distanceTo(p) > CFG.snapMeters) {
+            snap(st, p);
+            log('snap', p);
+            return;
+        }
+
+        var base = st.ema || hintMs || 10000;
+        var dur = Math.max(CFG.minSegMs, Math.min(CFG.maxSegMs, base * CFG.stretch));
+
+        st.q.push({ to: p, dur: dur });
+        st.last = p;
+        while (st.q.length > CFG.maxQueue) {
+            var d = st.q.shift();
+            st.seg = null;
+            st.cur = d.to;
+        }
+        log('queued', p, 'dur', Math.round(dur), 'queue', st.q.length);
+
+        if (active.indexOf(st) < 0) { active.push(st); }
+        if (raf === null) { raf = requestFrame(tick); }
+    }
+
+    function step(st, t) {
+        var layer = st.layer, map = layer._map, guard = 0;
+
+        if (!map) {
+            st.seg = null; st.q.length = 0; st.carry = null;
+            st.cur = st.last;
+            layer.setLatLng(st.last);
+            return false;
+        }
+        if (map._animatingZoom) { return true; }
+
+        while (guard++ < 20) {
+            if (!st.seg) {
+                var n = st.q.shift();
+                if (!n) { st.carry = null; return false; }
+                st.seg = {
+                    from: st.cur,
+                    to: n.to,
+                    t0: (st.carry !== null ? st.carry : t),
+                    dur: Math.max(CFG.minSegMs, n.dur / (1 + CFG.catchUp * st.q.length))
+                };
+                st.carry = null;
+            }
+            var seg = st.seg;
+            var k = (t - seg.t0) / seg.dur;
+            if (k >= 1) {
+                st.cur = seg.to;
+                st.carry = seg.t0 + seg.dur;
+                st.seg = null;
+                if (!st.q.length) {
+                    st.carry = null;
+                    layer.setLatLng(st.cur);
+                    return false;
+                }
+                continue;
+            }
+            if (k < 0) { k = 0; }
+            st.cur = L.latLng(lerp(seg.from.lat, seg.to.lat, k), lerp(seg.from.lng, seg.to.lng, k));
+            layer.setLatLng(st.cur);
+            return true;
+        }
+        return true;
+    }
+
+    function tick() {
+        raf = null;
+        var t = nowMs(), keep = [], i;
+        for (i = 0; i < active.length; i++) {
+            if (step(active[i], t)) { keep.push(active[i]); }
+        }
+        active = keep;
+        if (active.length) { raf = requestFrame(tick); }
+    }
+
+    if (win.document && win.document.addEventListener) {
+        win.document.addEventListener('visibilitychange', function () {
+            if (win.document.hidden) { return; }
+            var list = active; active = [];
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].last) { snap(list[i], list[i].last); }
+            }
+        });
+    }
+
+    function place(layer, position) {
+        var p;
+        try { p = L.latLng(position); } catch (e) { return; }
+        if (!p || isNaN(p.lat) || isNaN(p.lng)) { return; }
+        if (layer._gpsSm) { snap(layer._gpsSm, p); } else { layer.setLatLng(p); }
+    }
+
+    win.GpsSmooth = {
+        cfg: CFG,
+        move: move,
+        place: place,
+        _active: function () { return active.length; }
+    };
+}(window));
+/* GPS-SMOOTH-END */
+
