@@ -14162,15 +14162,29 @@ function Device(data) {
                 .setIconAngle( course );
         }
 
-        var _animate = app.settings.animateDeviceMove;
-_animate = _animate && app.map.hasLayer(layer);
-if (!_animate) {
-    if (window.GpsSmooth) { window.GpsSmooth.place(layer, position); } else { layer.setLatLng(position); }
-} else if (window.GpsSmooth) {
-    window.GpsSmooth.move(layer, position, (app.checkFrequency || 10) * 1000);
-} else {
-    layer.setLatLng(position);
-}
+                var _animate = app.settings.animateDeviceMove;
+
+        // Parse legacy plugin setting if it's a JSON string
+        if (typeof _animate === 'string') {
+            try {
+                var _p = JSON.parse(_animate);
+                _animate = !!(_p.device_move_animation && _p.device_move_animation.status);
+            } catch (e) { _animate = false; }
+        }
+
+        _animate = _animate && app.map.hasLayer(layer);
+
+        if ( ! _animate) {
+            layer.setLatLng(position);
+        } else {
+            var _now = Date.now();
+            var _elapsed = layer._gpsLastUpdate ? (_now - layer._gpsLastUpdate) : (app.checkFrequency * 1000);
+            layer._gpsLastUpdate = _now;
+            var _dur = Math.max(3000, Math.min(_elapsed, 60000));
+            setTimeout(function () {
+                layer.slideTo(position, {duration: _dur});
+            }, 50);
+        }
 
         return layer;
     };
@@ -16830,7 +16844,7 @@ function Dashboard()
         emaAlpha: 0.35,
         snapMeters: 3000,
         minMoveMeters: 0.5,
-        maxQueue: 6,
+        maxQueue: 2,
         debug: false
     };
 
@@ -16892,10 +16906,11 @@ function Dashboard()
 
         st.q.push({ to: p, dur: dur });
         st.last = p;
+        // Burst handling: drop oldest queued positions instead of snapping.
+        // Keeps the marker gliding continuously even when tracker dumps
+        // a backlog of positions after being offline.
         while (st.q.length > CFG.maxQueue) {
-            var d = st.q.shift();
-            st.seg = null;
-            st.cur = d.to;
+            st.q.shift();
         }
         log('queued', p, 'dur', Math.round(dur), 'queue', st.q.length);
 
