@@ -14282,6 +14282,9 @@ function Device(data) {
             } else {
                 layer.setLatLng(position);
             }
+        } else if ( window.GpsGlide && window.GpsGlide.isOn() ) {
+            // Alternative glide engine (assets/js/gps-glide.js); off via localStorage gpsGlide=0
+            window.GpsGlide.move(layer, position);
         } else if ( window.GpsSmooth ) {
             // Smooth, pace-matched glide. GpsSmooth owns the animation clock plus
             // the per-device cadence/speed estimates (see assets/js/gps-smooth.js).
@@ -17112,3 +17115,210 @@ function Dashboard()
 }(window));
 /* GPS-SMOOTH-END */
 
+
+/* ============================================================
+   op-panel: relocate map controls into the widget panel header
+   Runs every 1s — cheap check, relocates only once
+   ============================================================ */
+(function () {
+    function opRelocateControls() {
+        var c = document.getElementById('map-controls');
+        var h = document.querySelector('.op-device-header');
+        if (!c || !h) return;
+        if (c.classList.contains('op-map-controls-inline')) return;
+
+        c.classList.add('op-map-controls-inline');
+        h.parentNode.insertBefore(c, h);
+        if (window.console && console.log) {
+            console.log('[op-panel] Map controls relocated into widget panel');
+        }
+    }
+
+    // Run on load, then poll every 1s (safety net for async panel render)
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', opRelocateControls);
+    } else {
+        opRelocateControls();
+    }
+    setInterval(opRelocateControls, 1000);
+})();
+
+/* ============================================================
+   op-tabs wiring — Overview / Tracking / History
+   Bound at the document level so it works regardless of when
+   the panel is rendered.
+   ============================================================ */
+(function () {
+    // Make tabs visibly clickable
+    var style = document.createElement('style');
+    style.textContent = '.op-tab{cursor:pointer;} .op-tabs{user-select:none;}';
+    document.head.appendChild(style);
+
+    $(document).off('click.opTabs').on('click.opTabs', '.op-tab', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var tab = $(this).data('op-tab');
+        if (window.console && console.log) {
+            console.log('[op-tab] clicked:', tab);
+        }
+
+        // Visual active state
+        $('.op-tab').removeClass('is-active');
+        $(this).addClass('is-active');
+        $('.op-tab-panel').removeClass('is-active');
+        $('.op-tab-panel[data-op-panel="' + tab + '"]').addClass('is-active');
+
+        // Wire to real functionality
+        if (tab === 'history') {
+            // Switch to the sidebar History tab (trip history)
+            try {
+                var $h = $('#sidebar .nav-tabs a[href="#history_tab"]');
+                if ($h.length) {
+                    $h.tab('show');
+                } else {
+                    console.warn('[op-tab] history tab link not found');
+                }
+            } catch (err) { console.warn('[op-tab] history failed:', err); }
+
+        } else {
+            // Overview — back to objects tab
+            try {
+                $('#sidebar .nav-tabs a[href="#objects_tab"]').tab('show');
+            } catch (err) {}
+        }
+    });
+})();
+
+/* ============================================================
+   op-history — inline vehicle history inside the panel
+   Shows last 20 events for the SELECTED device only.
+   ============================================================ */
+(function () {
+    function getSelectedDeviceId() {
+        try {
+            if (window.app && app.devices && typeof app.devices.getSelected === 'function') {
+                return app.devices.getSelected();
+            }
+            var sel = $('#widgets').attr('data-device-id');
+            if (sel) return sel;
+        } catch (e) {}
+        return null;
+    }
+
+    function deviceNameFromId(id) {
+        var $el = $('#ajax-items [data-device-id="' + id + '"] [data-device="name"]');
+        return $el.length ? $el.text().trim() : ('Device #' + id);
+    }
+
+    function fmtTime(str) {
+        if (!str) return '';
+        try {
+            var d = new Date(str.replace(' ', 'T'));
+            if (isNaN(d.getTime())) return str;
+            var now = new Date();
+            var sameDay = d.toDateString() === now.toDateString();
+            var hh = ('0' + d.getHours()).slice(-2);
+            var mm = ('0' + d.getMinutes()).slice(-2);
+            if (sameDay) return hh + ':' + mm;
+            var mo = ('0' + (d.getMonth() + 1)).slice(-2);
+            var dd = ('0' + d.getDate()).slice(-2);
+            return mo + '-' + dd + ' ' + hh + ':' + mm;
+        } catch (e) { return str; }
+    }
+
+    function renderHistory(items, deviceName) {
+        var $c = $('[data-op-history]');
+        if (!$c.length) return;
+
+        if (!items || !items.length) {
+            $c.html('<div class="op-history__empty">No recent activity for ' + deviceName + '</div>');
+            return;
+        }
+
+        var html = '<div class="op-history__header">Recent activity · ' + deviceName + '</div>';
+        html += '<ul class="op-history__list">';
+
+        for (var i = 0; i < items.length; i++) {
+            var e = items[i];
+            var title = e.message || e.type || 'Event';
+            var time  = fmtTime(e.time || e.created_at);
+            var addr  = e.address || '';
+            var lat   = e.latitude || '';
+            var lng   = e.longitude || '';
+
+            html += '<li class="op-history__row" data-lat="' + lat + '" data-lng="' + lng + '">';
+            html += '  <div class="op-history__dot"></div>';
+            html += '  <div class="op-history__body">';
+            html += '    <div class="op-history__title">' + title + '</div>';
+            html += '    <div class="op-history__meta">' + time + (addr ? ' · ' + addr : '') + '</div>';
+            html += '  </div>';
+            html += '</li>';
+        }
+        html += '</ul>';
+        $c.html(html);
+    }
+
+    function loadHistory() {
+        var id = getSelectedDeviceId();
+        var $c = $('[data-op-history]');
+        if (!$c.length) return;
+
+        if (!id) {
+            $c.html('<div class="op-history__empty">Select a vehicle to view its activity</div>');
+            return;
+        }
+
+        var deviceName = deviceNameFromId(id);
+        $c.html('<div class="op-history__loading">Loading activity…</div>');
+
+        // /events?ajax=1 returns HTML <tr> rows (not JSON)
+        $.ajax({
+            url: '/events',
+            type: 'GET',
+            data: { ajax: 1, device_id: id, limit: 20 },
+            dataType: 'html',
+            success: function (html) {
+                if (!html || !html.trim()) {
+                    $c.html('<div class="op-history__empty">No recent activity for ' + deviceName + '</div>');
+                    return;
+                }
+
+                // Strip the injected <script>app.events.add(...)</script> tags
+                var cleaned = html.replace(/<script[\s\S]*?<\/script>/gi, '');
+
+                // Wrap in our container
+                var out = '<div class="op-history__header">Recent activity · ' + deviceName + '</div>';
+                out += '<table class="op-history__table"><tbody>' + cleaned + '</tbody></table>';
+                $c.html(out);
+            },
+            error: function (xhr) {
+                console.warn('[op-history] HTTP ' + xhr.status);
+                $c.html('<div class="op-history__empty">Could not load activity (HTTP ' + xhr.status + ')</div>');
+            }
+        });
+    }
+
+    window.opLoadHistory = loadHistory;
+
+    // Auto-reload when a device is selected
+    $(document).on('device.selected device.updated', function () {
+        if ($('.op-tab.is-active').data('op-tab') === 'history') {
+            setTimeout(loadHistory, 100);
+        }
+    });
+
+    // Reload if user clicks the History tab
+    $(document).off('click.opHistory').on('click.opHistory', '.op-tab[data-op-tab="history"]', function () {
+        setTimeout(loadHistory, 50);
+    });
+
+    // Click on a history row → center map on that position
+    $(document).off('click.opHistoryRow').on('click.opHistoryRow', '.op-history__row', function () {
+        var lat = parseFloat($(this).data('lat'));
+        var lng = parseFloat($(this).data('lng'));
+        if (lat && lng && window.app && app.map) {
+            app.map.setView([lat, lng], app.map.getZoom());
+        }
+    });
+})();

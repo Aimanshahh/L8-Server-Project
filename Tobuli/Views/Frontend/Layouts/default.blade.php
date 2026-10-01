@@ -77,6 +77,7 @@
 
 <script src="{{ asset_resource('assets/js/core.js') }}" type="text/javascript"></script>
 <script src="{{ asset_resource('assets/js/gps-smooth.js') }}" type="text/javascript"></script>
+<script src="{{ asset_resource('assets/js/gps-glide.js') }}" type="text/javascript"></script>
 <script src="{{ asset_resource('assets/js/app.js') }}" type="text/javascript"></script>
 <script type="text/javascript">
    $(document).ready(function(){
