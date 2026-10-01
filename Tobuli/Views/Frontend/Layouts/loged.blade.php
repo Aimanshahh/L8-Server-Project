@@ -80,6 +80,8 @@
                     <span class="icon fitBounds"></span>
                 </label>
                 <label class="btn" data-toggle="tooltip" data-placement="left" title="{!!trans('front.objects')!!}">
+                @include('Frontend.Layouts.partials.map-follow-control')
+                <label class="btn" data-toggle="tooltip" data-placement="left" title="{!!trans('front.objects')!!}">
                     <input id="showDevice" type="checkbox" autocomplete="off" onchange="app.changeSetting('showDevice', this.checked);">
                     <span class="icon devices"></span>
                 </label>
@@ -214,6 +216,7 @@
 </script>
 
 <script src="{{ asset_resource('assets/js/core.js') }}" type="text/javascript"></script>
+<script src="{{ asset_resource('assets/js/gps-smooth.js') }}" type="text/javascript"></script>
 <script src="{{ asset_resource('assets/js/app.js') }}" type="text/javascript"></script>
 
 <div id="bottombar">

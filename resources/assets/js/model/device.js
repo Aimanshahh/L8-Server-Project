@@ -722,10 +722,25 @@ function Device(data) {
         //_animate = _animate && layer.distanceTo(position) < 500;
 
         if ( ! _animate) {
-            layer.setLatLng(position);
+            if ( window.GpsSmooth ) {
+                // Instant snap: animation disabled, or the marker lives inside
+                // the cluster group and is not individually drawn.
+                window.GpsSmooth.place(layer, position);
+            } else {
+                layer.setLatLng(position);
+            }
         } else {
             setTimeout(function () {
-                layer.slideTo(position, {duration: app.checkFrequency * 1000});
+                if ( window.GpsSmooth ) {
+                    // Smooth, pace-matched glide (assets/js/gps-smooth.js).
+                    window.GpsSmooth.move(layer, position, {
+                        animate: true,
+                        ts: options.timestamp,
+                        speed: options.speed
+                    });
+                } else {
+                    layer.slideTo(position, {duration: app.checkFrequency * 1000});
+                }
             }, 150);
         }
 
@@ -1070,6 +1085,9 @@ function Device(data) {
     _this.onLayerRemove = function(){
         _this.removeTail();
         _this.removeInaccuracy();
+
+        if ( window.GpsSmooth )
+            window.GpsSmooth.forget(layer);
     };
 
     _this.updateTimestampOffset = function() {

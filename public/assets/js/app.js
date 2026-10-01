@@ -8747,6 +8747,13 @@ function Devices() {
 
         _this.following = null;
 
+        if ( window.GpsSmooth ) {
+            // Follow mode pauses itself when the user drags the map, so keep the
+            // control in sync with the engine instead of assuming it stayed on.
+            window.GpsSmooth.onFollowChange( _this.followControl );
+            _this.followControl( window.GpsSmooth.isFollowing() );
+        }
+
         _this.enableFitBounds();
     };
 
@@ -8770,6 +8777,8 @@ function Devices() {
 
     _this.toggleFitBounds = function(value) {
         if (value) {
+            // An explicit "fit objects" takes the viewport back from follow mode.
+            _this.stopFollow();
             _this.enableFitBounds();
             _this.fitBounds( true );
         } else {
@@ -8800,6 +8809,94 @@ function Devices() {
         app.settings.fitBounds = false;
     };
 
+    _this.followControl = function(value) {
+        var $input = $('#followDevice');
+
+        if ( ! $input.length )
+            return;
+
+        $input.prop('checked', !!value);
+        $input.parent().toggleClass('active', !!value);
+    };
+
+    _this.startFollow = function() {
+        if ( ! window.GpsSmooth || _this.single === null ) {
+            _this.stopFollow();
+            return false;
+        }
+
+        var _device = _this.get(_this.single);
+
+        if ( ! _device ) {
+            _this.stopFollow();
+            return false;
+        }
+
+        var _layer = _device.getLayer();
+
+        if ( ! _layer || ! app.map.hasLayer(_layer) ) {
+            // Clustered, hidden, or not on the map - there is nothing to follow.
+            _this.stopFollow();
+            return false;
+        }
+
+        var _started = false,
+            _begin = function() {
+                if ( _started )
+                    return;
+
+                _started = true;
+
+                if ( window.GpsSmooth.follow(_layer, app.map) ) {
+                    // Follow mode owns the viewport from here: switch the polling
+                    // fitBounds() off, it snaps the map instead of panning it.
+                    app.settings.fitBounds = false;
+                } else {
+                    _this.followControl(false);
+                }
+            };
+
+        // Let the select / fitBounds animation settle, then take over smoothly.
+        app.map.once('moveend', _begin);
+        setTimeout(_begin, 900);
+
+        _this.followControl(true);
+
+        return true;
+    };
+
+    _this.stopFollow = function() {
+        if ( window.GpsSmooth )
+            window.GpsSmooth.unfollow('stop');
+
+        _this.followControl(false);
+    };
+
+    _this.toggleFollow = function(value) {
+        if ( ! value ) {
+            _this.stopFollow();
+            return;
+        }
+
+        if ( _this.single === null ) {
+            var _visible = _this.getVisibleItems();
+
+            if ( ! _visible.length ) {
+                _this.followControl(false);
+                return;
+            }
+
+            _this.select( _visible[0].id() );
+            return;
+        }
+
+        _this.startFollow();
+    };
+
+    _this.isFollowing = function() {
+        return !!(window.GpsSmooth && window.GpsSmooth.isFollowing());
+    };
+
     _this.select = function(id) {
         if ( ! _this.get(id) ) {
             // Device not in items array — load it from server, then select
@@ -8818,11 +8915,13 @@ function Devices() {
 
         if ( _this.single === id ) {
             _this.single = null;
+            _this.stopFollow();
         } else {
             $('#ajax-items [data-device-id="'+id+'"]').addClass('active');
             _this.single = id;
             _this.get(id).updateLayer();
             _this.setWidgets( id );
+            _this.startFollow();
         }
 
         _this.fitBounds();
@@ -9104,6 +9203,7 @@ function Devices() {
 
                 //reset single follow
                 _this.single = null;
+                _this.stopFollow();
                 _this.enableFitBounds();
 
                 if (callback) {
@@ -14175,15 +14275,23 @@ function Device(data) {
         _animate = _animate && app.map.hasLayer(layer);
 
         if ( ! _animate) {
-            layer.setLatLng(position);
+            if ( window.GpsSmooth ) {
+                // Instant snap: animation disabled in settings, or the marker
+                // lives inside the cluster group and is not individually drawn.
+                window.GpsSmooth.place(layer, position);
+            } else {
+                layer.setLatLng(position);
+            }
+        } else if ( window.GpsSmooth ) {
+            // Smooth, pace-matched glide. GpsSmooth owns the animation clock plus
+            // the per-device cadence/speed estimates (see assets/js/gps-smooth.js).
+            window.GpsSmooth.move(layer, position, {
+                animate: true,
+                ts: options.timestamp,
+                speed: options.speed
+            });
         } else {
-            var _now = Date.now();
-            var _elapsed = layer._gpsLastUpdate ? (_now - layer._gpsLastUpdate) : (app.checkFrequency * 1000);
-            layer._gpsLastUpdate = _now;
-            var _dur = Math.max(3000, Math.min(_elapsed, 60000));
-            setTimeout(function () {
-                layer.slideTo(position, {duration: _dur});
-            }, 50);
+            layer.setLatLng(position);
         }
 
         return layer;
@@ -14546,6 +14654,9 @@ function Device(data) {
     _this.onLayerRemove = function(){
         _this.removeTail();
         _this.removeInaccuracy();
+
+        if ( window.GpsSmooth )
+            window.GpsSmooth.forget(layer);
     };
 
     _this.updateTimestampOffset = function() {
@@ -16831,7 +16942,10 @@ function Dashboard()
     }
 }
 ;
-/* GPS-SMOOTH-BEGIN v1 - stateful per-marker glide engine (replaces slideTo restarts) */
+/* GPS-SMOOTH-BEGIN v1 (SUPERSEDED - kept inert, do not use).
+   The live glide engine is assets/js/gps-smooth.js v2, loaded before this file.
+   This bundle has no build step, so the old v1 block stays here under a legacy
+   alias so that it cannot shadow the v2 window.GpsSmooth. */
 (function (win) {
     'use strict';
 
@@ -16989,7 +17103,7 @@ function Dashboard()
         if (layer._gpsSm) { snap(layer._gpsSm, p); } else { layer.setLatLng(p); }
     }
 
-    win.GpsSmooth = {
+    win.GpsSmoothLegacy = {
         cfg: CFG,
         move: move,
         place: place,

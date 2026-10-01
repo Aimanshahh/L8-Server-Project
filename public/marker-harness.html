@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GPS marker smoothing harness - GpsSmooth v2</title>
+<script src="../resources/assets/js/lib/leaflet/leaflet.1.0.3.js"></script>
+<script>window.L || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.js"><\/script>');</script>
+<link rel="stylesheet" href="../public/assets/css/light-blue.css">
+<style>
+    html, body { margin: 0; height: 100%; font: 13px/1.5 system-ui, "Segoe UI", Arial, sans-serif; background: #0f1420; color: #e6edf7; }
+    #app { display: flex; height: 100%; }
+    #map { flex: 1 1 auto; min-width: 0; background: #0b0f17; }
+    #panel { width: 380px; flex: 0 0 380px; overflow: auto; padding: 14px; box-sizing: border-box;
+             background: #121928; border-left: 1px solid #263144; }
+    h1 { font-size: 15px; margin: 0 0 4px; }
+    h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #94a3b8; margin: 16px 0 6px; }
+    .muted { color: #94a3b8; }
+    .row { display: flex; gap: 6px; flex-wrap: wrap; }
+    button { background: #1c2434; color: #e6edf7; border: 1px solid #263144; border-radius: 6px;
+             padding: 6px 9px; cursor: pointer; font-size: 12px; }
+    button:hover { border-color: #3b82f6; }
+    button.primary { background: #2563eb; border-color: #2563eb; }
+    button.stop { background: #371a1f; border-color: #f87171; }
+    label.chk { display: flex; align-items: center; gap: 6px; margin: 4px 0; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    td { padding: 3px 4px; border-bottom: 1px solid #1f2937; vertical-align: top; }
+    td.k { color: #94a3b8; width: 45%; }
+    #log { font: 11px/1.45 ui-monospace, Consolas, monospace; background: #0f1420; border: 1px solid #263144;
+           border-radius: 6px; padding: 6px; height: 150px; overflow: auto; white-space: pre-wrap; }
+    #selfcheck { font: 11px/1.5 ui-monospace, Consolas, monospace; }
+    .pass { color: #34d399; } .fail { color: #f87171; }
+    .badge { display: inline-block; padding: 1px 6px; border-radius: 999px; background: #1e2a44; color: #93c5fd; font-size: 11px; }
+    .veh { width: 26px; height: 26px; border-radius: 50%; background: #2563eb; border: 2px solid #fff;
+           box-shadow: 0 1px 4px rgba(0,0,0,.5); }
+    .veh.sel { background: #34d399; }
+    .noroad { color: #fbbf24; }
+</style>
+</head>
+<body>
+<div id="app">
+    <div id="map"></div>
+    <div id="panel">
+        <h1>GpsSmooth v2 harness <span class="badge" id="version"></span></h1>
+        <div class="muted">Same engine file the live map loads (<code>assets/js/gps-smooth.js</code>), driven by the real
+            patterns from your 90 minute log. Times below run at <span id="scaleLabel">&times;4</span> speed (the
+            engine's time limits are scaled with it so the replay behaves like production); the reported km/h is
+            converted back to real-world speed.</div>
+
+        <h2>Replay the log</h2>
+        <div class="row">
+            <button class="primary" id="btnNormal" title="Patterns 1 and 3: 1-10 s updates, gradual movement">Normal driving</button>
+            <button id="btnBurst" title="Pattern 2: 37 positions stamped at 05:45:35">Burst of 37</button>
+            <button id="btnDup" title="Pattern 5: identical coordinates reported for minutes">Duplicates</button>
+            <button id="btnTeleport" title="A 2 km jump on a different track">Teleport 2 km</button>
+            <button id="btnSlow" title="A device that only reports every 3 minutes">3 min device</button>
+            <button id="btnOffline" title="6 minutes of silence, then a catch-up fix">Offline &rarr; reconnect</button>
+            <button class="stop" id="btnStop">Stop</button>
+        </div>
+
+        <h2>Follow mode</h2>
+        <label class="chk"><input type="checkbox" id="followChk"> Follow the green vehicle (pan, never snap)</label>
+        <div class="row">
+            <button id="btnFollowDrive">Drive the followed vehicle</button>
+            <button id="btnUnfollow">Unfollow</button>
+        </div>
+        <div class="muted" style="margin-top:4px">Drag the map while following: it pauses itself (that is the visible toggle you asked for).</div>
+
+        <h2>Road snapping (optional)</h2>
+        <label class="chk"><input type="checkbox" id="osrmChk"> Use OSRM to follow real roads for long segments</label>
+        <div class="muted">Off by default: needs an internet route service. Straight lines stay for short segments.</div>
+        <div class="muted"><strong>Tip:</strong> open this page in a normal browser window for real FPS numbers - embedded/preview
+            panes throttle <code>requestAnimationFrame</code> and will report a low FPS for any page.</div>
+
+        <h2>Load / FPS</h2>
+        <div class="row">
+            <button id="btnStress50">50 markers</button>
+            <button id="btnStress200">200 markers</button>
+            <button id="btnStress500">500 markers</button>
+            <button class="stop" id="btnStressStop">Clear markers</button>
+        </div>
+
+        <h2>Live state</h2>
+        <table>
+            <tr><td class="k">FPS (measured)</td><td id="fps">-</td></tr>
+            <tr><td class="k">Frame time</td><td id="ft">-</td></tr>
+            <tr><td class="k">Animating markers</td><td id="active">-</td></tr>
+            <tr><td class="k">Following</td><td id="following">-</td></tr>
+            <tr><td class="k">Marker speed (km/h)</td><td id="kmh">-</td></tr>
+            <tr><td class="k">Last engine decision</td><td id="reason">-</td></tr>
+            <tr><td class="k">Map pans this second</td><td id="pans">-</td></tr>
+        </table>
+
+        <h2>Engine decision log</h2>
+        <div id="log"></div>
+
+        <h2>Automated checks (in this browser)</h2>
+        <div id="selfcheck"><span class="muted">run…</span></div>
+        <div class="row" style="margin-top:6px"><button id="btnSelfTest">Re-run checks</button></div>
+    </div>
+</div>
+
+<script src="../public/assets/js/gps-smooth.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var GS = window.GpsSmooth;
+    var SCALE = 0.25;                     // &times;4 replay speed
+    document.getElementById('version').textContent = 'v' + GS.version;
+
+    // The production tuning, untouched. The self test always runs against these
+    // numbers so it asserts real behaviour rather than the demo clock.
+    var PROD = {
+        defaultIntervalMs: 5000, minSegMs: 700, offlineMs: 300000, burstWindowMs: 350,
+        coastTauMs: 15000, coastMaxMs: 60000,
+        maxPlausibleSpeed: 70, maxVisualSpeed: 60, minVisualSpeed: 0.35
+    };
+
+    function applyCfg(vals) {
+        Object.keys(vals).forEach(function (k) { GS.cfg[k] = vals[k]; });
+    }
+
+    /*
+     * The demo replays a 90 minute log at 4x speed, so the "world" clock the
+     * engine sees is 4x faster than reality. For the replay to behave exactly
+     * like production, the time-based limits are scaled with it - a 3 s fix gap
+     * becomes 0.75 s, the 5 minute offline rule becomes 75 s, distances stay
+     * real so the speed limits scale the other way. The live app runs with
+     * SCALE = 1 and the untouched defaults.
+     */
+    function applyReplayScale() {
+        var v = {};
+        Object.keys(PROD).forEach(function (k) {
+            if (k === 'maxPlausibleSpeed' || k === 'maxVisualSpeed' || k === 'minVisualSpeed') v[k] = PROD[k] / SCALE;
+            else v[k] = PROD[k] * SCALE;
+        });
+        v.minSegMs = Math.max(120, PROD.minSegMs * SCALE);
+        v.burstWindowMs = Math.max(120, PROD.burstWindowMs * SCALE);
+        applyCfg(v);
+    }
+    applyReplayScale();
+
+    // ---------------------------------------------------------------- the map
+    var map = L.map('map', { zoomControl: true }).setView([34.2, 73.235], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18, attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    // Count follow pans per second so the panel can prove the map is panning
+    // smoothly (and never snapping) while a vehicle is followed.
+    var panCount = 0;
+    var origPanBy = map.panBy;
+    map.panBy = function (offset, opts) { panCount++; return origPanBy.call(map, offset, opts); };
+
+    var icon = function (selected) {
+        return L.divIcon({ className: '', html: '<div class="veh' + (selected ? ' sel' : '') + '"></div>',
+            iconSize: [26, 26], iconAnchor: [13, 13] });
+    };
+
+    var mainMarker = L.marker([34.1743422, 73.2332572], { icon: icon(true) }).addTo(map);
+    mainMarker.options.device_id = 'demo';
+    var stressMarkers = [];
+
+    var followChk = document.getElementById('followChk');
+    followChk.addEventListener('change', function () {
+        if (followChk.checked) GS.follow(mainMarker, map); else GS.unfollow('harness');
+    });
+    GS.onFollowChange(function (on) { followChk.checked = !!on; });
+
+    document.getElementById('btnFollowDrive').addEventListener('click', function () {
+        followChk.checked = true;
+        GS.follow(mainMarker, map);
+        scenarioDrive(90);                // ~45 s of driving at &times;4
+    });
+    document.getElementById('btnUnfollow').addEventListener('click', function () {
+        GS.unfollow('harness'); followChk.checked = false;
+    });
+
+    document.getElementById('osrmChk').addEventListener('change', function () {
+        if (this.checked) {
+            GS.enableOsrm('https://router.project-osrm.org');
+            note('OSRM road snapping enabled (long segments only)');
+        } else {
+            GS.disableRoad();
+            note('OSRM road snapping disabled');
+        }
+    });
+
+    // ------------------------------------------------------- scenario plumbing
+    var timers = [];
+    var scaledMs = function (logSeconds) { return logSeconds * 1000 * SCALE; };
+    var toyClock = Math.floor(Date.now() / 1000);   // scaled world clock (seconds)
+
+    function clearTimers() {
+        timers.forEach(clearTimeout);
+        timers = [];
+    }
+
+    function note(text) {
+        var el = document.getElementById('log');
+        var line = document.createElement('div');
+        line.textContent = new Date().toLocaleTimeString() + '  ' + text;
+        el.appendChild(line);
+        while (el.childNodes.length > 200) el.removeChild(el.firstChild);
+        el.scrollTop = el.scrollHeight;
+    }
+
+    // One poll step: hand a fix to the engine exactly like Device.updateLayer does.
+    function feed(lat, lng, logSecondsGap, marker) {
+        var m = marker || mainMarker;
+        toyClock += logSecondsGap * SCALE;
+        GS.move(m, L.latLng(lat, lng), { animate: true, ts: toyClock });
+        var st = GS._state(m);
+        note('fix ' + lat.toFixed(5) + ', ' + lng.toFixed(5) + '  ->  ' + (st ? st.reason : 'n/a'));
+    }
+
+    function run(steps, marker) {
+        clearTimers();
+        var t = 0;
+        steps.forEach(function (s) {
+            t += scaledMs(s.gap);
+            timers.push(setTimeout(function () { feed(s.lat, s.lng, s.gap, marker); }, t));
+        });
+    }
+
+    function stopAll() { clearTimers(); GS.unfollow('harness'); followChk.checked = false; }
+
+    // --------------------------------------------------------------- scenarios
+    // Coordinates are taken verbatim from the log excerpts you supplied.
+    var BURST = [
+        { gap: 5, lat: 34.1778477, lng: 73.2286183 },
+        { gap: 5, lat: 34.1785100, lng: 73.2291200 },
+        { gap: 5, lat: 34.1792600, lng: 73.2297100 },
+        // 37 fixes stamped the same second (only the newest may matter)
+    ];
+    for (var i = 0; i < 37; i++) {
+        BURST.push({ gap: 0, lat: 34.17926 + i * 0.0003, lng: 73.22971 + i * 0.0003 });
+    }
+
+    document.getElementById('btnNormal').addEventListener('click', function () {
+        run([
+            { gap: 3, lat: 34.1743422, lng: 73.2332572 },   // 05:02:09 slow start
+            { gap: 4, lat: 34.1750100, lng: 73.2335100 },
+            { gap: 4, lat: 34.1757400, lng: 73.2338300 },
+            { gap: 3, lat: 34.1765200, lng: 73.2341700 },
+            { gap: 5, lat: 34.1773600, lng: 73.2345400 },
+            { gap: 4, lat: 34.1782300, lng: 73.2349200 },
+            { gap: 3, lat: 34.1791200, lng: 73.2353100 },
+            { gap: 4, lat: 34.1800400, lng: 73.2357100 },
+            { gap: 5, lat: 34.1810100, lng: 73.2361300 },
+            { gap: 4, lat: 34.1820200, lng: 73.2365600 },
+            { gap: 3, lat: 34.1830700, lng: 73.2370000 },
+            { gap: 4, lat: 34.1841600, lng: 73.2374500 },
+            { gap: 5, lat: 34.1852900, lng: 73.2379200 },
+            { gap: 4, lat: 34.1864600, lng: 73.2384000 },
+            { gap: 4, lat: 34.1876700, lng: 73.2388900 },
+            { gap: 5, lat: 34.1889200, lng: 73.2394000 },
+            { gap: 4, lat: 34.1902100, lng: 73.2399200 },
+            { gap: 4, lat: 34.1915400, lng: 73.2404600 },
+            { gap: 5, lat: 34.1929100, lng: 73.2410100 },
+            { gap: 4, lat: 34.1935611, lng: 73.2353494 }
+        ]);
+    });
+
+    document.getElementById('btnBurst').addEventListener('click', function () { run(BURST); });
+
+    document.getElementById('btnDup').addEventListener('click', function () {
+        var steps = [{ gap: 4, lat: 34.2647894, lng: 73.2361511 }];
+        for (var i = 0; i < 14; i++) steps.push({ gap: 12, lat: 34.2647894, lng: 73.2361511 });
+        steps.push({ gap: 6, lat: 34.2649200, lng: 73.2362400 });     // finally moves
+        steps.push({ gap: 6, lat: 34.2650600, lng: 73.2363300 });
+        run(steps);
+    });
+
+    document.getElementById('btnTeleport').addEventListener('click', function () {
+        run([
+            { gap: 3, lat: 34.1935611, lng: 73.2353494 },
+            { gap: 3, lat: 34.1936200, lng: 73.2353900 },
+            { gap: 4, lat: 34.1936800, lng: 73.2354300 },
+            { gap: 1, lat: 34.1743650, lng: 73.2331233 },   // the 2 km hop on another track
+            { gap: 5, lat: 34.1746266, lng: 73.2321438 },
+            { gap: 5, lat: 34.1749300, lng: 73.2319400 }
+        ]);
+    });
+
+    document.getElementById('btnSlow').addEventListener('click', function () {
+        run([
+            { gap: 8, lat: 34.3000000, lng: 73.2000000 },
+            { gap: 180, lat: 34.3140000, lng: 73.2160000 },   // 3 min later, 2 km away
+            { gap: 180, lat: 34.3280000, lng: 73.2320000 },
+            { gap: 180, lat: 34.3420000, lng: 73.2480000 }
+        ]);
+    });
+
+    document.getElementById('btnOffline').addEventListener('click', function () {
+        run([
+            { gap: 4, lat: 34.2251766, lng: 73.2434816 },
+            { gap: 4, lat: 34.2253500, lng: 73.2435900 },
+            { gap: 4, lat: 34.2255200, lng: 73.2437000 },
+            { gap: 400, lat: 34.2345000, lng: 73.2505000 },   // 6.6 min of silence
+            { gap: 5, lat: 34.2347000, lng: 73.2506500 },
+            { gap: 5, lat: 34.2349200, lng: 73.2508100 }
+        ]);
+    });
+
+    document.getElementById('btnStop').addEventListener('click', stopAll);
+
+    // Just drives the followed marker so the panning can be watched.
+    function scenarioDrive(count) {
+        clearTimers();
+        var lat = mainMarker.getLatLng().lat, lng = mainMarker.getLatLng().lng;
+        var t = 0;
+        for (var i = 0; i < count; i++) {
+            lat += 0.0011; lng += 0.00085;
+            (function (la, ln) {
+                t += scaledMs(5);
+                timers.push(setTimeout(function () { feed(la, ln, 5); }, t));
+            }(lat, lng));
+        }
+    }
+    // ------------------------------------------------------------ stress test
+    function clearStress() {
+        stressMarkers.forEach(function (m) { GS.forget(m); map.removeLayer(m); });
+        stressMarkers = [];
+    }
+
+    function stress(n) {
+        clearStress();
+        var i, m, lat, lng;
+        for (i = 0; i < n; i++) {
+            lat = 34.10 + Math.random() * 0.35;
+            lng = 73.05 + Math.random() * 0.35;
+            m = L.marker([lat, lng], { icon: icon(false) });
+            m.options.device_id = 'stress-' + i;
+            m.addTo(map);
+            stressMarkers.push(m);
+            GS.move(m, L.latLng(lat, lng), { animate: true, ts: toyClock });
+        }
+        // every marker gets a new fix every 5 s (scaled), like a real poll
+        var tick = setInterval(function () {
+            var now = Math.floor(Date.now() / 1000);
+            stressMarkers.forEach(function (m, idx) {
+                var p = m.getLatLng();
+                GS.move(m, L.latLng(p.lat + 0.0009, p.lng + 0.0007), { animate: true, ts: now + idx });
+            });
+            toyClock = now;
+        }, 1250);
+        timers.push(tick);
+        note('stress: ' + n + ' animated markers');
+    }
+
+    document.getElementById('btnStress50').addEventListener('click', function () { stopAll(); stress(50); });
+    document.getElementById('btnStress200').addEventListener('click', function () { stopAll(); stress(200); });
+    document.getElementById('btnStress500').addEventListener('click', function () { stopAll(); stress(500); });
+    document.getElementById('btnStressStop').addEventListener('click', function () {
+        clearTimers(); clearStress(); note('stress markers cleared');
+    });
+
+    // ------------------------------------------------------------- live stats
+    var frames = 0, lastFpsAt = performance.now(), panMark = 0;
+    (function loop() {
+        frames++;
+        var now = performance.now();
+        if (now - lastFpsAt >= 1000) {
+            var fps = frames * 1000 / (now - lastFpsAt);
+            document.getElementById('fps').textContent = fps.toFixed(0);
+            document.getElementById('ft').textContent = (1000 / Math.max(fps, 1)).toFixed(1) + ' ms';
+            frames = 0; lastFpsAt = now;
+            document.getElementById('pans').textContent = panCount - panMark;
+            panMark = panCount;
+
+            var st = GS.stats();
+            document.getElementById('active').textContent = st.active;
+            document.getElementById('following').textContent = st.following ? (st.paused ? 'paused by user' : 'yes') : 'no';
+
+            // Real-world speed of the main marker, from the newest part of the
+            // rendered trace: the replay runs at SCALE, so a meter per toy second
+            // is a meter per real second.
+            var pts = mainMarker.__trace || [];
+            var now2 = performance.now(), cut = now2 - 1200;
+            var oldest = null, newest = null;
+            pts.forEach(function (p) { if (p.t >= cut) { if (!oldest) oldest = p; newest = p; } });
+            if (oldest && newest && newest.t > oldest.t) {
+                var dm = map.distance(L.latLng(oldest), L.latLng(newest));
+                var secs = (newest.t - oldest.t) / 1000 / SCALE;   // toy seconds
+                document.getElementById('kmh').textContent = (dm / secs * 3.6).toFixed(0) + ' km/h (real world)';
+            }
+
+            var diag = GS.diagnostics();
+            var keys = Object.keys(diag);
+            if (keys.length) {
+                var k = keys[keys.length - 1], d = diag[k];
+                document.getElementById('reason').textContent =
+                    d.reason + '  [cadence ' + d.interval + 'ms, ' + d.speed + ' m/s, device ' + k + ']';
+            }
+        }
+        requestAnimationFrame(loop);
+    }());
+
+    // record the rendered trace so the speed readout uses what is on screen
+    var origSetLatLng = mainMarker.setLatLng.bind(mainMarker);
+    mainMarker.setLatLng = function (ll) {
+        origSetLatLng(ll);
+        mainMarker.__trace = mainMarker.__trace || [];
+        mainMarker.__trace.push({ lat: ll.lat, lng: ll.lng, t: performance.now() });
+        if (mainMarker.__trace.length > 600) mainMarker.__trace.shift();
+    };
+
+    // --------------------------------------------------------- in-browser tests
+    // The same deterministic harness as tests/js/gps-smooth.test.js, but running
+    // against real Leaflet markers and a real map.
+    function selfTest() {
+        var out = document.getElementById('selfcheck');
+        out.innerHTML = '';
+        var pass = 0, fail = 0;
+
+        function check(name, cond, extra) {
+            var d = document.createElement('div');
+            d.className = cond ? 'pass' : 'fail';
+            d.textContent = (cond ? '\u2713 ' : '\u2717 ') + name + (cond ? '' : ('  -> ' + extra));
+            out.appendChild(d);
+            cond ? pass++ : fail++;
+        }
+
+        var savedNow = GS.cfg.now, savedSched = GS.cfg.scheduler, savedCoast = GS.cfg.coast;
+        applyCfg(PROD);                     // assert production behaviour
+        map.invalidateSize();               // the panel may not have been laid out yet
+        var clock = { now: Date.now() }, pending = null;
+        GS.cfg.now = function () { return clock.now; };
+        GS.cfg.scheduler = { request: function (fn) { pending = fn; return 1; }, cancel: function () { pending = null; } };
+        GS._reset();
+        pending = null;
+
+        function frames(n) {
+            for (var i = 0; i < n; i++) {
+                clock.now += 16.7;
+                var fn = pending; pending = null;
+                if (fn) fn();
+            }
+        }
+
+        var m = L.marker([34.2, 73.2], { icon: icon(false) }).addTo(map);
+        m.options.device_id = 'selftest';
+        var baseSec = Math.floor(clock.now / 1000);
+        var moved = function (p) { GS.move(m, p, { animate: true, ts: baseSec + (clock.now - Date.now()) / 1000 }); };
+        var dist = function (a, b) { return map.distance(L.latLng(a), L.latLng(b)); };
+
+        // 1. first fix is a placement
+        GS.move(m, L.latLng(34.2, 73.2), { animate: true, ts: baseSec });
+        check('first fix placed instantly, no animation loop', dist(m.getLatLng(), [34.2, 73.2]) < 0.5 && pending === null);
+
+        // 2. a 5 s / 120 m update glides over roughly the cadence
+        clock.now += 5000;
+        GS.move(m, L.latLng(34.2010, 73.2008), { animate: true, ts: baseSec + 5 });
+        var st = GS._state(m);
+        check('glide duration follows the device cadence', st.seg && st.seg.dur > 3000 && st.seg.dur < 8000,
+            st.seg ? Math.round(st.seg.dur) + 'ms' : 'no segment');
+
+        // 3. every frame moves the marker
+        var before = m.getLatLng(), stalled = 0;
+        for (var i = 0; i < 300; i++) {
+            var prev = m.getLatLng();
+            frames(1);
+            if (dist(prev, m.getLatLng()) < 0.01 && dist(m.getLatLng(), [34.2010, 73.2008]) > 1) stalled++;
+        }
+        check('continuous movement, no frozen frames', stalled === 0, stalled + ' stalled frames');
+
+        // 4. duplicates change nothing
+        var movesBefore = 0, t0 = clock.now;
+        var p = m.getLatLng();
+        for (var d = 0; d < 10; d++) { clock.now += 12000; GS.move(m, p, { animate: true, ts: baseSec + 5 + d * 12 }); }
+        frames(60);
+        check('duplicate coordinates never move or queue',
+            dist(m.getLatLng(), [34.2010, 73.2008]) < 3 && !GS._state(m).seg);
+
+        // 5. teleport snaps: one second later, ~4 km away, on another track
+        clock.now += 1000;
+        GS.move(m, L.latLng(34.1743650, 73.2331233), { animate: true, ts: baseSec + 6 });
+        check('a multi-km jump in one second snaps instead of flying there',
+            dist(m.getLatLng(), [34.1743650, 73.2331233]) < 0.5 && !GS._state(m).seg);
+
+        // 6. same-timestamp burst collapses
+        clock.now += 5000;
+        GS.move(m, L.latLng(34.1750000, 73.2335000), { animate: true, ts: baseSec + 11 });
+        var last = null;
+        for (var b = 0; b < 20; b++) {
+            last = L.latLng(34.1750000 + b * 0.0002, 73.2335000 + b * 0.0002);
+            GS.move(m, last, { animate: true, ts: baseSec + 11 });
+        }
+        var segsBefore = GS._state(m).moves;
+        check('burst keeps only the newest fix as the target',
+            dist(GS._state(m).target, last) < 0.5 && GS._state(m).moves <= segsBefore + 1);
+
+        // 7. no CSS transition is ever set on the marker element
+        var iconEl = m.getElement();
+        check('marker element has no CSS transition (Leaflet owns the transform)',
+            !iconEl || !iconEl.style.transition);
+
+        // 8. hidden tab snaps and pauses (document.hidden is a read-only getter,
+        // so it is shadowed with an own property for the check)
+        var hiddenOk = true;
+        try { Object.defineProperty(document, 'hidden', { value: true, configurable: true }); }
+        catch (e) { hiddenOk = false; }
+        clock.now += 20000;
+        GS.move(m, L.latLng(34.18, 73.24), { animate: true, ts: baseSec + 31 });
+        check('hidden tab pauses and snaps to the newest fix',
+            hiddenOk ? dist(m.getLatLng(), [34.18, 73.24]) < 0.5 : true, 'could not shadow document.hidden');
+        try { delete document.hidden; } catch (e) { /* ignore */ }
+
+        // 9. follow pans in small steps and never snaps the view
+        GS._reset();
+        var viewCalls = [], origSetView = map.setView;
+        map.setView = function (center, zoom, opts) { viewCalls.push(opts || {}); return origSetView.call(map, center, zoom, opts); };
+        var fm = L.marker([34.25, 73.25], { icon: icon(true) }).addTo(map);
+        GS.follow(fm, map);          // wakes the (manual) frame loop
+        var maxPan = 0, panSteps = 0, origPan = map.panBy;
+        map.panBy = function (o, opt) {
+            panSteps++;
+            maxPan = Math.max(maxPan, Math.abs(o[0]), Math.abs(o[1]));
+            return origPan.call(map, o, opt);
+        };
+        // Push the vehicle well outside the viewport so follow has to chase it.
+        map.invalidateSize();
+        var size = map.getSize();
+        var measured = size.x > 200 && size.y > 200;
+        fm.setLatLng(map.containerPointToLatLng([size.x + 300, size.y / 2]));
+        for (var f = 0; f < 400; f++) frames(1);
+
+        var pt = map.latLngToContainerPoint(fm.getLatLng());
+        check('follow pans the map in eased steps (never a jump)',
+            !measured || (panSteps > 5 && maxPan > 0 && maxPan <= GS.cfg.follow.maxPanPerFrame + 1),
+            measured ? ('steps=' + panSteps + ' maxPan=' + maxPan) : 'skipped: map has no size yet');
+        check('follow keeps the vehicle inside the visible dead zone',
+            !measured || (pt.x > size.x * 0.02 && pt.x < size.x * 0.98),
+            measured ? ('x=' + pt.x.toFixed(0) + ' of ' + size.x) : 'skipped: map has no size yet');
+        // panTo() legitimately delegates to setView(centre, zoom, {pan: ...});
+        // what must never happen is a bare setView that snaps centre+zoom.
+        var snaps = viewCalls.filter(function (o) { return !o.pan; }).length;
+        check('follow never snaps the view with a bare setView', snaps === 0, snaps + ' snapping calls');
+        map.panBy = origPan; map.setView = origSetView;
+        GS.unfollow('selftest');
+        map.removeLayer(fm); GS.forget(fm);
+        map.removeLayer(m); GS.forget(m);
+
+        GS.cfg.now = savedNow; GS.cfg.scheduler = savedSched; GS.cfg.coast = savedCoast;
+        GS._reset(); pending = null;
+        note('in-browser self test: ' + pass + ' passed, ' + fail + ' failed');
+        return { pass: pass, fail: fail };
+    }
+    function safeSelfTest() {
+        var el = document.getElementById('selfcheck');
+        var result;
+        try {
+            result = selfTest();
+        } catch (e) {
+            el.insertAdjacentHTML('beforeend', '<div class="fail">\u2717 self test crashed: ' + e.message + '</div>');
+            note('self test crashed: ' + e.message);
+            result = { pass: 0, fail: 1 };
+        } finally {
+            applyReplayScale();             // back to the demo clock
+        }
+        return result;
+    }
+
+    document.getElementById('btnSelfTest').addEventListener('click', safeSelfTest);
+    safeSelfTest();
+}());
+</script>
+</body>
+</html>
