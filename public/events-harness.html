@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Events Tab Review</title>
+<base href="/">
+<link rel="stylesheet" href="assets/css/light-blue.css">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/dashboard-overrides.css?v=20260907-3">
+<link rel="stylesheet" href="assets/css/sidebar-overrides.css?v=20260907-1">
+<link rel="stylesheet" href="assets/css/map-sidebar-overrides.css?v=20260907-1">
+<link rel="stylesheet" href="assets/css/modal-overrides.css?v=20260918-1">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/objects-page-overrides.css?v=20260930-1">
+<link rel="stylesheet" href="assets/css/events-page-overrides.css?v=20260930-1">
+<link rel="stylesheet" href="assets/css/theme-dark.css?v=20260930-1">
+<style>
+  html[data-theme="dark"] { color-scheme: dark; }
+  html[data-theme="light"] { color-scheme: light; }
+  body { margin: 0; font-family: "Inter", "Helvetica Neue", Arial, sans-serif; }
+  #sidebar { display: flex; flex-direction: column; width: 340px; height: 2200px; background: inherit; border-right: 1px solid #e5e7eb; }
+  html[data-theme="dark"] #sidebar { border-right-color: #263144; }
+  .tab-pane-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+  .demo-switcher { padding: 8px 12px; border-bottom: 1px solid #e5e7eb; display:flex; gap:8px; align-items:center; }
+  html[data-theme="dark"] .demo-switcher { border-bottom-color: var(--d-border-soft); }
+  .demo-switcher button { cursor: pointer; padding: 4px 8px; border:1px solid #d1d5db; background:#fff; border-radius:6px; font-size:12px; }
+  html[data-theme="dark"] .demo-switcher button { border-color:#374151; background:#1f2937; color:#e5e7eb; }
+  .demo-switcher button.active { background:#2563eb; color:#fff; border-color:#2563eb; }
+  .demo-card { padding: 10px 12px 6px; border-bottom: 1px solid #e5e7eb; }
+  html[data-theme="dark"] .demo-card { border-bottom-color: var(--d-border-soft); }
+  .events-row + .events-row { margin-top: 0; }
+  .address-missing { color: #9ca3af; }
+  html[data-theme="dark"] .address-missing { color: var(--d-faint); }
+  .table-tools { padding: 6px 12px; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+  <div class="demo-switcher">
+    <span style="font-size:12px;">Theme:</span>
+    <button id="theme-light" class="active" onclick="setTheme('light')">Light</button>
+    <button id="theme-dark" onclick="setTheme('dark')">Dark</button>
+  </div>
+
+  <div id="objects_tab"></div>
+  <div id="events_tab">
+    <div class="tab-pane-header events-header">
+      <div class="form">
+        <div class="input-group">
+          <div class="form-group search">
+            <input type="text" class="form-control" id="events_search_field" placeholder="Search" autocomplete="off">
+          </div>
+          <span class="input-group-btn">
+            <button class="btn btn-default" type="button"><i class="icon lookup"></i></button>
+            <button class="btn btn-default" type="button"><i class="icon remove-all"></i></button>
+          </span>
+        </div>
+      </div>
+      <div class="events-col-head">
+        <span class="events-col-head__time">Time</span>
+        <span class="events-col-head__object">Object</span>
+        <span class="events-col-head__event">Event</span>
+        <span class="events-col-head__actions"></span>
+      </div>
+    </div>
+
+    <div class="tab-pane-body">
+      <table class="table table-condensed events-table">
+        <thead><tr><th></th><th></th></tr></thead>
+        <tbody id="ajax-events">
+          <!-- row 1: long address -->
+          <tr class="events-row" data-event-id="1" onclick="app.events.select(1);">
+            <td class="events-cell events-cell--time">
+              <span class="datetime">
+                <span class="time">2026-09-30 17:02:26</span>
+                <span class="date">Sep 30, 2026</span>
+              </span>
+            </td>
+            <td class="events-cell events-cell--object">
+              <span class="device-name">ALD-813 (REMOVAL REQUIRED)</span>
+            </td>
+            <td class="events-cell events-cell--event">
+              <span class="event-title">Start of movement</span>
+              <span class="event-address">
+                <span data-device="address" data-lat="34.35" data-lng="73.35">Karakoram Highway, Mansehra, Mansehra Tehsil, Mansehra District, Hazara Division, Khyber Pakhtunkhwa, Pakistan</span>
+              </span>
+            </td>
+            <td class="events-cell events-cell--actions">
+              <div class="btn-group dropleft droparrow" data-position="fixed">
+                <i class="btn icon options" data-toggle="dropdown" data-position="fixed" aria-haspopup="true" aria-expanded="false"></i>
+                <ul class="dropdown-menu">
+                  <li><a href="javascript:;"><span class="icon event"></span><span class="text">Alert</span></a></li>
+                  <li><a href="javascript:;"><span class="icon delete"></span><span class="text">Delete</span></a></li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+          <!-- row 2: very long device name, short event -->
+          <tr class="events-row" data-event-id="2" onclick="app.events.select(2);">
+            <td class="events-cell events-cell--time">
+              <span class="datetime">
+                <span class="time">2026-09-30 17:00:10</span>
+                <span class="date">Sep 30, 2026</span>
+              </span>
+            </td>
+            <td class="events-cell events-cell--object">
+              <span class="device-name">VeryLongDeviceNameThatShouldTruncateGracefullyWithoutBreakingTheLayoutAtAll</span>
+            </td>
+            <td class="events-cell events-cell--event">
+              <span class="event-title">deviceStopped</span>
+              <span class="event-address">
+                <span data-device="address" data-lat="34.20" data-lng="73.20">Mansehra, Mansehra Tehsil, Mansehra District, Hazara Division, Khyber Pakhtunkhwa, Pakistan</span>
+              </span>
+            </td>
+            <td class="events-cell events-cell--actions">
+              <div class="btn-group dropleft droparrow" data-position="fixed">
+                <i class="btn icon options" data-toggle="dropdown" data-position="fixed" aria-haspopup="true" aria-expanded="false"></i>
+                <ul class="dropdown-menu">
+                  <li><a href="javascript:;"><span class="icon event"></span><span class="text">Alert</span></a></li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+          <!-- row 3: long event title, address present -->
+          <tr class="events-row" data-event-id="3" onclick="app.events.select(3);">
+            <td class="events-cell events-cell--time">
+              <span class="datetime">
+                <span class="time">2026-09-30 16:40:08</span>
+                <span class="date">Sep 30, 2026</span>
+              </span>
+            </td>
+            <td class="events-cell events-cell--object">
+              <span class="device-name">CPJ-461 (DNE REMOVAL)</span>
+            </td>
+            <td class="events-cell events-cell--event">
+              <span class="event-title">Start of movement — geofence exit triggered immediate alert notification for this vehicle in convoy</span>
+              <span class="event-address">
+                <span data-device="address" data-lat="24.86" data-lng="67.01">OMI Hospital, Commissariat Road, Pakistan Coast Guards Headquarters, Saddar Town, Karachi District, Karachi Division, Sindh, 74550, Pakistan</span>
+              </span>
+            </td>
+            <td class="events-cell events-cell--actions">
+              <div class="btn-group dropleft droparrow" data-position="fixed">
+                <i class="btn icon options" data-toggle="dropdown" data-position="fixed" aria-haspopup="true" aria-expanded="false"></i>
+                <ul class="dropdown-menu">
+                  <li><a href="javascript:;"><span class="icon event"></span><span class="text">Alert</span></a></li>
+                  <li><a href="javascript:;"><span class="icon delete"></span><span class="text">Delete</span></a></li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+          <!-- row 4: address missing -> should show placeholder -->
+          <tr class="events-row" data-event-id="4" onclick="app.events.select(4);">
+            <td class="events-cell events-cell--time">
+              <span class="datetime">
+                <span class="time">2026-09-30 15:56:34</span>
+                <span class="date">Sep 30, 2026</span>
+              </span>
+            </td>
+            <td class="events-cell events-cell--object">
+              <span class="device-name">ALD-813 (REMOVAL REQUIRED)</span>
+            </td>
+            <td class="events-cell events-cell--event">
+              <span class="event-title">Start of movement</span>
+              <span class="event-address address-missing">—</span>
+            </td>
+            <td class="events-cell events-cell--actions">
+              <div class="btn-group dropleft droparrow" data-position="fixed">
+                <i class="btn icon options" data-toggle="dropdown" data-position="fixed" aria-haspopup="true" aria-expanded="false"></i>
+                <ul class="dropdown-menu">
+                  <li><a href="javascript:;"><span class="icon event"></span><span class="text">Alert</span></a></li>
+                  <li><a href="javascript:;"><span class="icon delete"></span><span class="text">Delete</span></a></li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+          <!-- row 5: selected state demo -->
+          <tr class="events-row selected" data-event-id="5" onclick="app.events.select(5);">
+            <td class="events-cell events-cell--time">
+              <span class="datetime">
+                <span class="time">2026-09-30 15:50:00</span>
+                <span class="date">Sep 30, 2026</span>
+              </span>
+            </td>
+            <td class="events-cell events-cell--object">
+              <span class="device-name">BGM-729 (REMOVAL CASE)</span>
+            </td>
+            <td class="events-cell events-cell--event">
+              <span class="event-title">Speed limit exceeded</span>
+              <span class="event-address">
+                <span data-device="address" data-lat="24.90" data-lng="67.05">Shahrah-e-Faisal, Karachi, Sindh, Pakistan</span>
+              </span>
+            </td>
+            <td class="events-cell events-cell--actions">
+              <div class="btn-group dropleft droparrow" data-position="fixed">
+                <i class="btn icon options" data-toggle="dropdown" data-position="fixed" aria-haspopup="true" aria-expanded="false"></i>
+                <ul class="dropdown-menu">
+                  <li><a href="javascript:;"><span class="icon event"></span><span class="text">Alert</span></a></li>
+                  <li><a href="javascript:;"><span class="icon delete"></span><span class="text">Delete</span></a></li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+          <!-- row 6: empty state -->
+        </tbody>
+      </table>
+      <div style="padding: 10px 12px; color:#9ca3af; font-size:12px;">After the rows above, the real app would show the infinite-scroll loader row with data-toggle="scroll". Here we just show a spacer to simulate scrolling.</div>
+      <div style="height: 1200px;"></div>
+      <div style="padding: 10px 12px; font-size:11px; color:#9ca3af;">End of simulated content — scroll back up to confirm the sticky header stays pinned.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  var b = document.getElementById('theme-' + t);
+  document.getElementById('theme-light').classList.toggle('active', t === 'light');
+  document.getElementById('theme-dark').classList.toggle('active', t === 'dark');
+}
+window.app = { events: { select: function(){} } };
+</script>
+</body>
+</html>
