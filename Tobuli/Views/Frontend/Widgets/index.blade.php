@@ -20,6 +20,7 @@ if (empty($widgets)) {
                         </div>
                         <span class="op-device-header__name" data-device="name"></span>
                         <span class="op-device-header__speed" data-device="speed"></span>
+                        <span class="op-last-seen op-age--unknown" title="No data yet">—</span>
 
                         <a class="op-close" href="javascript:" title="Close" onclick="$('#widgets').hide();">
                             <i class="fas fa-times"></i>

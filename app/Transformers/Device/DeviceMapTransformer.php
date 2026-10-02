@@ -44,7 +44,7 @@ class DeviceMapTransformer extends DeviceTransformer  {
             'online' => $status,
             'lat' => $entity->lat,
             'lng' => $entity->lng,
-            'speed' => $entity->speed,
+            'speed' => $this->hasReallyMoved($entity) ? $entity->speed : 0,
             'course' => $entity->course,
             'altitude' => $entity->altitude,
             'time' => $entity->time,
@@ -52,6 +52,9 @@ class DeviceMapTransformer extends DeviceTransformer  {
             'acktimestamp' => (int)$entity->acktimestamp,
             'engine_status' => $entity->getEngineStatus(),
             'inaccuracy' => is_null($inaccuracy) ? null : intval($inaccuracy),
+            'track' => $this->playbackTrack($entity),
+            'stop_duration' => $entity->stop_duration,
+            'stop_duration_sec' => $entity->getStopDuration(),
         ];
     }
 }

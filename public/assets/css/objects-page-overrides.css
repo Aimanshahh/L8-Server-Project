@@ -2692,3 +2692,26 @@ html[data-theme="dark"] body :is(.events-table, .op-history__table) td.cell-acti
     background-color: #1E293B !important;
     color: #F1F5F9 !important;
 }
+
+/* Last-seen indicator badge */
+.op-last-seen {
+    flex: 0 0 auto;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    transition: color 0.2s, background 0.2s;
+}
+.op-age--fresh   { color: #059669; background: #ECFDF5; }
+.op-age--recent  { color: #D97706; background: #FFFBEB; }
+.op-age--aging   { color: #EA580C; background: #FFF7ED; }
+.op-age--stale   { color: #DC2626; background: #FEF2F2; }
+.op-age--unknown { color: #9CA3AF; background: #F3F4F6; }
+
+html[data-theme="dark"] .op-age--fresh   { color: #34D399; background: rgba(16,185,129,.15); }
+html[data-theme="dark"] .op-age--recent  { color: #FBBF24; background: rgba(245,158,11,.15); }
+html[data-theme="dark"] .op-age--aging   { color: #FB923C; background: rgba(234,88,12,.15); }
+html[data-theme="dark"] .op-age--stale   { color: #F87171; background: rgba(239,68,68,.15); }
+html[data-theme="dark"] .op-age--unknown { color: #64748B; background: #1E293B; }

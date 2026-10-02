@@ -10,9 +10,9 @@
         minMoveM: 8,            // smaller "moves" are GPS jitter / duplicates: ignored
         snapM: 3000,            // bigger jumps (reconnect after a long gap): snap, never fly
         minDurMs: 1500,
-        maxDurMs: 180000,
+        maxDurMs: 1200000,
         alpha: 0.35,            // smoothing of the observed fix interval
-        minSpeedMs: 1.5,        // never crawl slower than ~5 km/h
+        minSpeedMs: 0.3,        // never crawl slower than ~5 km/h
         maxSpeedMs: 45,         // never glide faster than ~160 km/h
         fallbackSpeedMs: 12     // pace used until an interval has been learned (~43 km/h)
     };
@@ -88,7 +88,7 @@
         // learn the fix interval, but only from believable samples
         var sample = Math.min(Math.max(gap, cfg.minDurMs), cfg.maxDurMs),
             v = d / (sample / 1000);
-        if (v >= 1 && v <= cfg.maxSpeedMs) {
+        if (v >= 0.2 && v <= cfg.maxSpeedMs) {
             s.ema = (s.ema === null) ? sample : s.ema + cfg.alpha * (sample - s.ema);
         }
 

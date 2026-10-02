@@ -647,36 +647,46 @@ class Device extends AbstractEntity implements DisplayInterface, FcmTokenableInt
      * This is needed because some trackers report a non-zero speed value
      * even when the vehicle is parked (no coordinate change).
      */
-    public function hasMovedRecently($seconds = 300, $minMeters = 30)
+    public function hasMovedRecently($seconds = 600, $minMeters = 30)
     {
         if (!$this->traccar_device_id) {
             return false;
         }
 
-        $since = date('Y-m-d H:i:s', time() - $seconds);
+        // 1) Newest fix — if it reports speed=0 (or below threshold),
+        //    the vehicle is stopped NOW. Return immediately.
+        $latest = \Tobuli\Entities\TraccarPosition::where('deviceid', $this->traccar_device_id)
+            ->orderBy('id', 'desc')
+            ->first(['latitude', 'longitude', 'speed']);
 
+        if (!$latest) {
+            return false;
+        }
+
+        if ((float) $latest->speed < (float) $this->min_moving_speed) {
+            return false;
+        }
+
+        // 2) Latest says moving — but some trackers report fake speed while
+        //    parked, so verify actual coordinate change over the last 10 fixes.
         $positions = \Tobuli\Entities\TraccarPosition::where('deviceid', $this->traccar_device_id)
-            ->where('servertime', '>=', $since)
-            ->orderBy('servertime', 'asc')
-            ->limit(50)
+            ->orderBy('id', 'desc')
+            ->limit(10)
             ->get(['latitude', 'longitude']);
 
         if ($positions->count() < 2) {
             return false;
         }
 
-        $latitudes  = $positions->pluck('latitude')->toArray();
-        $longitudes = $positions->pluck('longitude')->toArray();
+        $lats = $positions->pluck('latitude')->toArray();
+        $lngs = $positions->pluck('longitude')->toArray();
 
-        $latSpread = max($latitudes) - min($latitudes);
-        $lngSpread = max($longitudes) - min($longitudes);
+        $latSpread = max($lats) - min($lats);
+        $lngSpread = max($lngs) - min($lngs);
+        $avgLat = array_sum($lats) / count($lats);
 
-        $avgLat = array_sum($latitudes) / count($latitudes);
-
-        // Convert degrees to meters (approximate)
         $latMeters = $latSpread * 111000;
         $lngMeters = $lngSpread * 111000 * cos(deg2rad($avgLat));
-
         $distance = sqrt($latMeters * $latMeters + $lngMeters * $lngMeters);
 
         return $distance >= $minMeters;
@@ -1262,7 +1272,16 @@ class Device extends AbstractEntity implements DisplayInterface, FcmTokenableInt
         if (!$motiontime)
             return null;
 
-        return max(0, time() - strtotime($motiontime));
+        // Compare against MySQL's own clock so the timezone of the stored
+        // string (server local, e.g. CEST) matches the "now" side.
+        // Avoids PHP's UTC clock misinterpreting CEST strings as UTC.
+        $row = \Illuminate\Support\Facades\DB::connection('traccar_mysql')
+            ->selectOne(
+                "SELECT GREATEST(0, TIMESTAMPDIFF(SECOND, ?, NOW())) AS seconds",
+                [$motiontime]
+            );
+
+        return $row ? (int) $row->seconds : null;
     }
 
     public function getStopDurationAttribute()
