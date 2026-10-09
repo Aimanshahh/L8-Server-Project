@@ -56,17 +56,18 @@ abstract class DeviceTransformer extends BaseTransformer {
 
             $posId = (int) optional($entity->traccar)->positionid;
             $key   = 'mp_track2:' . $tid . ':' . $posId;
-            $ttl   = $posId ? 3600 : 10;
+            $ttl   = $posId ? 300 : 10;
 
             return Cache::remember($key, $ttl, function () use ($tid) {
                 $rows = DB::connection('traccar_mysql')->table('tc_positions')
-                    ->select('id', 'fixtime', 'latitude', 'longitude')
+                    ->select('id', 'fixtime', 'latitude', 'longitude', 'speed', 'course')
                     ->where('deviceid', $tid)
                     ->orderBy('id', 'desc')
                     ->limit(30)
                     ->get();
 
                 $out = [];
+                $lastT = null;
                 foreach ($rows->reverse() as $r) {
                     $t = strtotime($r->fixtime);
                     if ( ! $t || ! ((float) $r->latitude || (float) $r->longitude))
@@ -77,7 +78,22 @@ abstract class DeviceTransformer extends BaseTransformer {
                     if ($prev && $prev['lat'] === $lat && $prev['lng'] === $lng) {
                         continue;
                     }
-                    $out[] = ['id' => (int) $r->id, 't' => $t * 1000, 'lat' => $lat, 'lng' => $lng];
+                    // Trackers often burst their buffered fixes: many points
+                    // arrive with an identical fixtime. GpsGlide needs strictly
+                    // increasing timestamps to animate across, so spread each
+                    // burst over a synthetic interval (3s per point).
+                    if ($lastT !== null && $t <= $lastT) {
+                        $t = $lastT + 3;
+                    }
+                    $lastT = $t;
+                    $out[] = [
+                        'id'  => (int) $r->id,
+                        't'   => $t * 1000,
+                        'lat' => $lat,
+                        'lng' => $lng,
+                        'sp'  => is_numeric($r->speed)  ? (float) $r->speed  : null,
+                        'co'  => is_numeric($r->course) ? (float) $r->course : null,
+                    ];
                 }
                 return $out;
             });
@@ -95,6 +111,16 @@ abstract class DeviceTransformer extends BaseTransformer {
     protected function hasReallyMoved($entity, $minMeters = 30)
     {
         if (!$entity->traccar_device_id) return false;
+
+        // Same 300s freshness rule as Device::hasMovedRecently().
+        // Bursts then silence must not keep showing a moving speed.
+        $ageRow = \DB::connection('traccar_mysql')->selectOne(
+            "SELECT TIMESTAMPDIFF(SECOND, MAX(servertime), NOW()) AS age FROM tc_positions WHERE deviceid = ?",
+            [$entity->traccar_device_id]
+        );
+        if (!$ageRow || $ageRow->age === null || (int) $ageRow->age > 300) {
+            return false;
+        }
 
         $positions = \Tobuli\Entities\TraccarPosition::where('deviceid', $entity->traccar_device_id)
             ->orderBy('id', 'desc')

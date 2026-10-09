@@ -609,6 +609,27 @@ class Device extends AbstractEntity implements DisplayInterface, FcmTokenableInt
         if (is_null($position) && $this->getTimeoutStatus() === self::STATUS_OFFLINE)
             return $speed;
 
+        // Only report a live speed when the newest fix is fresh.
+        // Bursts then silence must not keep showing a moving speed
+        // from either tc_positions.speed or the sticky tc_devices.speed.
+        if (is_null($position) && $this->traccar_device_id) {
+            $age = $this->latestFixAgeSeconds();
+            if (is_null($age) || $age > 300) {
+                return 0;
+            }
+        }
+
+        // Prefer the real latest position speed over Traccar's sticky value.
+        if (is_null($position) && $this->traccar_device_id) {
+            $latest = \Tobuli\Entities\TraccarPosition::where('deviceid', $this->traccar_device_id)
+                ->orderBy('id', 'desc')
+                ->first(['speed']);
+            if ($latest && $latest->speed !== null) {
+                $knots = (float) $latest->speed;
+                return $knots * \Tobuli\Entities\TraccarPosition::KNOTS_TO_KMH;
+            }
+        }
+
         $sensor = $this->getSpeedSensor();
 
         if ($sensor) {
@@ -642,6 +663,23 @@ class Device extends AbstractEntity implements DisplayInterface, FcmTokenableInt
     }
 
     /**
+     * Seconds since the newest position fix for this device.
+     * Uses MySQL clock (servertime is stored UTC) so PHP TZ doesn't matter.
+     * Returns null when no fix exists for the device.
+     */
+    public function latestFixAgeSeconds()
+    {
+        if (!$this->traccar_device_id) return null;
+
+        $row = \DB::connection('traccar_mysql')->selectOne(
+            "SELECT TIMESTAMPDIFF(SECOND, MAX(servertime), NOW()) AS age FROM tc_positions WHERE deviceid = ?",
+            [$this->traccar_device_id]
+        );
+
+        return ($row && $row->age !== null) ? (int) $row->age : null;
+    }
+
+    /**
      * Determine if the device has actually changed GPS position recently.
      * Compares the spread of positions in the given time window.
      * This is needed because some trackers report a non-zero speed value
@@ -650,6 +688,13 @@ class Device extends AbstractEntity implements DisplayInterface, FcmTokenableInt
     public function hasMovedRecently($seconds = 600, $minMeters = 30)
     {
         if (!$this->traccar_device_id) {
+            return false;
+        }
+
+        // Reject stale fixes. A tracker that bursts its backlog then goes
+        // silent must not be classified as "moving" from the burst's last row.
+        $age = $this->latestFixAgeSeconds();
+        if (is_null($age) || $age > 300) {
             return false;
         }
 
@@ -1203,9 +1248,34 @@ class Device extends AbstractEntity implements DisplayInterface, FcmTokenableInt
 
     public function getOtherAttribute()
     {
-        return $this->traccar->attributes ?? null;
-    }
+        // getOtherAttribute reads the newest fix's attributes JSON directly
+        // from tc_positions via the raw DB layer. Eloquent's model casting
+        // wraps the 'attributes' field and starves every sensor downstream.
+        static $cache = [];
 
+        if (array_key_exists($this->id, $cache)) {
+            return $cache[$this->id];
+        }
+
+        $attrs = [];
+
+        if ($this->traccar_device_id) {
+            $raw = \DB::connection('traccar_mysql')
+                ->table('tc_positions')
+                ->where('deviceid', $this->traccar_device_id)
+                ->orderBy('id', 'desc')
+                ->value('attributes');
+
+            if (is_string($raw) && $raw !== '' && $raw !== '{}') {
+                $decoded = json_decode($raw, true);
+                if (is_array($decoded)) {
+                    $attrs = $decoded;
+                }
+            }
+        }
+
+        return $cache[$this->id] = $attrs;
+    }
     public function getSpeedAttribute()
     {
         return Formatter::speed()->format($this->getSpeed());
@@ -1261,20 +1331,19 @@ class Device extends AbstractEntity implements DisplayInterface, FcmTokenableInt
 
     public function getStopDuration()
     {
-        if (!$this->traccar)
-            return null;
+        if (!$this->traccar) return null;
 
-        if ((int) ($this->traccar->motionstate ?? 0) === 1)
-            return null;
+        // If Traccar says the device is currently moving, there is no stop.
+        if ((int) ($this->traccar->motionstate ?? 0) === 1) return null;
+
+        // Cross-check with our own coordinate check. If the last 10 positions
+        // show real movement, this is NOT a stop — regardless of what Traccar's
+        // motion flag claims (Traccar's flag is often stale).
+        if ($this->hasMovedRecently()) return null;
 
         $motiontime = $this->traccar->motiontime ?? null;
+        if (!$motiontime) return null;
 
-        if (!$motiontime)
-            return null;
-
-        // Compare against MySQL's own clock so the timezone of the stored
-        // string (server local, e.g. CEST) matches the "now" side.
-        // Avoids PHP's UTC clock misinterpreting CEST strings as UTC.
         $row = \Illuminate\Support\Facades\DB::connection('traccar_mysql')
             ->selectOne(
                 "SELECT GREATEST(0, TIMESTAMPDIFF(SECOND, ?, NOW())) AS seconds",

@@ -88,13 +88,43 @@ class DeviceMapFullTransformer extends DeviceTransformer  {
             return null;
 
         $result = [];
+        $other = $entity->other;
 
         foreach ($entity->sensors as $sensor) {
             if (in_array($sensor->type, ['harsh_acceleration', 'harsh_breaking', 'harsh_turning']))
                 continue;
 
             $value = $sensor->getValueCurrent($entity);
-            $icon = $value->getIcon();
+
+            // GPSWOX sensor pipeline drops the odometer and hours attributes
+            // that Traccar stores on every position. Read them straight from
+            // the position bag and override the sensor when it returns blank.
+            $current = $value->getValue();
+            $isBlank = is_null($current) || $current === '-' || $current === 0 || $current === '0';
+
+            if ($isBlank && is_array($other)) {
+                if ($sensor->type === 'odometer' && isset($other['odometer'])) {
+                    $km = (float) $other['odometer'] / 1000;
+                    $value = new class($km, number_format($km, 2) . ' km') {
+                        private $v; private $d;
+                        public function __construct($v, $d) { $this->v = $v; $this->d = $d; }
+                        public function getValue() { return $this->v; }
+                        public function getFormatted() { return $this->d; }
+                        public function getIcon() { return null; }
+                    };
+                } elseif ($sensor->type === 'engine_hours' && isset($other['hours'])) {
+                    $hours = (float) $other['hours'];
+                    $value = new class($hours, number_format($hours, 2) . ' h') {
+                        private $v; private $d;
+                        public function __construct($v, $d) { $this->v = $v; $this->d = $d; }
+                        public function getValue() { return $this->v; }
+                        public function getFormatted() { return $this->d; }
+                        public function getIcon() { return null; }
+                    };
+                }
+            }
+
+            $icon = method_exists($value, 'getIcon') ? $value->getIcon() : null;
 
             $result[] = [
                 'id'            => $sensor->id,

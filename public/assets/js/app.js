@@ -13754,6 +13754,10 @@ function Device(data) {
 
         options = $.extend({}, options, data);
 
+        // Keep the public reference in sync so DOM consumers (panel,
+        // age badge, left-list speed sync) read live values.
+        _this.options = options;
+
         _this.lat = options.lat;
         _this.lng = options.lng;
 
@@ -17622,4 +17626,78 @@ function Dashboard()
     } else {
         setTimeout(syncSpeeds, 500);
     }
+})();
+
+
+/* op-last-seen v4 — uses stop_duration_sec (accurate) as primary source */
+(function () {
+    'use strict';
+    function selectedId() {
+        try { return app.devices.getSelected && app.devices.getSelected(); } catch (e) { return null; }
+    }
+    function humanAge(ms) {
+        if (!isFinite(ms) || ms < 0) ms = 0;
+        var s = Math.floor(ms / 1000);
+        if (s < 10) return 'now';
+        if (s < 60) return s + 's';
+        var m = Math.floor(s / 60);
+        if (m < 60) return m + 'm';
+        var h = Math.floor(m / 60);
+        var rh = m % 60;
+        if (h < 24) return h + 'h' + (rh ? ' ' + rh + 'm' : '');
+        return Math.floor(h / 24) + 'd';
+    }
+    function ageClass(ms) {
+        var s = ms / 1000;
+        if (s < 30) return 'op-age--fresh';
+        if (s < 120) return 'op-age--recent';
+        if (s < 300) return 'op-age--aging';
+        return 'op-age--stale';
+    }
+    function tick() {
+        var $b = $('.op-last-seen');
+        if (!$b.length) return;
+
+        var id = selectedId();
+        if (!id) { $b.text('—').attr('class', 'op-last-seen op-age--unknown').attr('title','No data'); return; }
+
+        var d = app.devices.get(id);
+        if (!d || !d.options) { $b.text('—').attr('class', 'op-last-seen op-age--unknown').attr('title','No data'); return; }
+
+        var opts = d.options;
+
+        // If reported speed > 0, device is actively moving right now
+        var spd = parseInt(opts.speed, 10);
+        if (isFinite(spd) && spd > 0) {
+            $b.text('moving').attr('class', 'op-last-seen op-age--fresh').attr('title','Currently moving at ' + spd + ' kph');
+            return;
+        }
+
+        // Otherwise use stop_duration_sec (accurate, timezone-agnostic)
+        var stopSec = parseInt(opts.stop_duration_sec, 10);
+        if (isFinite(stopSec) && stopSec > 0) {
+            var ms = stopSec * 1000;
+            $b.text(humanAge(ms))
+              .attr('title', 'Stopped for ' + humanAge(ms))
+              .attr('class', 'op-last-seen ' + ageClass(ms));
+            return;
+        }
+
+        // Fallback: use raw timestamp if in the past
+        var tsSec = parseInt(opts.timestamp, 10);
+        if (isFinite(tsSec) && tsSec > 0) {
+            var ageMs = Date.now() - tsSec * 1000;
+            if (ageMs >= 0 && ageMs < 86400000) {
+                $b.text(humanAge(ageMs))
+                  .attr('title', 'Last reported ' + humanAge(ageMs) + ' ago')
+                  .attr('class', 'op-last-seen ' + ageClass(ageMs));
+                return;
+            }
+        }
+
+        $b.text('—').attr('class', 'op-last-seen op-age--unknown').attr('title','No data');
+    }
+    setInterval(tick, 1000);
+    $(document).on('device.selected device.updated click.op-tab', tick);
+    $(document).ready(tick);
 })();

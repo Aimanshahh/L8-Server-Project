@@ -2715,3 +2715,93 @@ html[data-theme="dark"] .op-age--recent  { color: #FBBF24; background: rgba(245,
 html[data-theme="dark"] .op-age--aging   { color: #FB923C; background: rgba(234,88,12,.15); }
 html[data-theme="dark"] .op-age--stale   { color: #F87171; background: rgba(239,68,68,.15); }
 html[data-theme="dark"] .op-age--unknown { color: #64748B; background: #1E293B; }
+
+/* ==========================================================================
+   Marker label above the car — readable in dark mode
+   ========================================================================== */
+
+.leaf-device-marker .name,
+.leaflet-marker-icon .name {
+    display: inline-block !important;
+    background: #FFFFFF !important;
+    color: #111827 !important;
+    padding: 3px 8px !important;
+    border-radius: 6px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.15) !important;
+    white-space: nowrap !important;
+    border: 1px solid #E5E7EB !important;
+}
+
+.leaf-device-marker .name i,
+.leaflet-marker-icon .name i {
+    color: inherit !important;
+    font-style: normal !important;
+}
+
+/* Dark theme */
+html[data-theme="dark"] .leaf-device-marker .name,
+html[data-theme="dark"] .leaflet-marker-icon .name {
+    background: #1E293B !important;
+    color: #F1F5F9 !important;
+    border-color: #334155 !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45) !important;
+}
+
+html[data-theme="dark"] .leaf-device-marker .name i,
+html[data-theme="dark"] .leaflet-marker-icon .name i {
+    color: #F1F5F9 !important;
+}
+
+
+
+/* ==========================================================================
+   Marker label above the car — theme-aware pill
+   Light theme → white pill, dark text
+   Dark theme  → dark pill, light text
+   ========================================================================== */
+
+/* Light theme (and default) */
+html[data-theme="light"] .leaf-device-marker .name,
+html[data-theme="light"] .leaflet-marker-icon .name,
+html[data-theme="light"] .leaf-device-marker .name i,
+html[data-theme="light"] .leaflet-marker-icon .name i,
+body:not([data-theme]) .leaf-device-marker .name,
+body:not([data-theme]) .leaflet-marker-icon .name {
+    background: #FFFFFF !important;
+    color: #111827 !important;
+    border: 1px solid #E5E7EB !important;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.15) !important;
+}
+
+/* Dark theme */
+html[data-theme="dark"] .leaf-device-marker .name,
+html[data-theme="dark"] .leaflet-marker-icon .name,
+html[data-theme="dark"] .leaf-device-marker .name i,
+html[data-theme="dark"] .leaflet-marker-icon .name i {
+    background: #111827 !important;
+    color: #F9FAFB !important;
+    border: 1px solid #1F2937 !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Shared pill styling */
+.leaf-device-marker .name,
+.leaflet-marker-icon .name {
+    padding: 3px 9px !important;
+    border-radius: 6px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
+    white-space: nowrap !important;
+    font-style: normal !important;
+    display: inline-block !important;
+}
+
+.leaf-device-marker .name i,
+.leaflet-marker-icon .name i {
+    font-style: normal !important;
+    color: inherit !important;
+}
