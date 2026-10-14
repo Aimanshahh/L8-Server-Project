@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<title>Vehicle popup card — v3 preview</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/objects-page-overrides.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  /* harness-only scaffolding — nothing here belongs to the app */
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; background: #eef1f5; }
+  html[data-theme="dark"] body { background: #0b1220; }
+  .h-bar { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #fff; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 50; flex-wrap: wrap; }
+  html[data-theme="dark"] .h-bar { background: #111a2b; border-bottom-color: #24344f; color: #e2e8f0; }
+  .h-bar h1 { font-size: 13px; margin: 0 10px 0 0; font-weight: 700; }
+  .h-bar button { font: inherit; font-size: 12px; padding: 6px 11px; border-radius: 8px; border: 1px solid #d1d5db; background: #fff; cursor: pointer; }
+  .h-bar button.on { background: #2563eb; border-color: #2563eb; color: #fff; }
+  .h-wrap { padding: 14px; display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+  .h-cap { font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; font-weight: 700; color: #6b7280; }
+  html[data-theme="dark"] .h-cap { color: #94a3b8; }
+
+  .h-map { width: 100%; max-width: 430px; height: 430px; border-radius: 14px; position: relative; overflow: hidden;
+           background: repeating-linear-gradient(45deg, #e7ecf3 0 18px, #e2e8f0 18px 36px); border: 1px solid #dbe2ea; }
+  html[data-theme="dark"] .h-map { background: repeating-linear-gradient(45deg, #101c30 0 18px, #142138 18px 36px); border-color: #24344f; }
+
+  /* bare-minimum Leaflet popup geometry so the card renders outside Leaflet */
+  .h-poplayer { position: absolute; }
+  .h-leaflet-popup { position: relative; }
+  .h-leaflet-popup .leaflet-popup-content-wrapper { padding: 1px; background: #fff; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,.25); text-align: left; }
+  .h-leaflet-popup .leaflet-popup-content { margin: 0; }
+  .h-leaflet-popup .leaflet-popup-tip-container { position: absolute; left: 50%; bottom: -18px; width: 40px; height: 20px; margin-left: -20px; overflow: hidden; }
+  .h-leaflet-popup .leaflet-popup-tip { width: 16px; height: 16px; margin: -9px auto 0; transform: rotate(45deg); background: #fff; }
+  .h-pin { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); font-size: 24px; }
+  .h-note { font-size: 11.5px; color: #6b7280; max-width: 430px; line-height: 1.55; margin: 0; }
+  html[data-theme="dark"] .h-note { color: #94a3b8; }
+</style>
+</head>
+<body>
+
+<div class="h-bar">
+  <h1>Vehicle popup card v3</h1>
+  <button id="btn-light" class="on">Light</button>
+  <button id="btn-dark">Dark</button>
+  <button id="btn-tabs">Show History tab</button>
+</div>
+
+<div class="h-wrap">
+
+  <div>
+    <span class="h-cap">Popup on the map — wrapper <code>.popup</code> (live dark CSS uses this one)</span>
+    <div class="h-map">
+      <div class="h-poplayer" style="left:22px; top:36px;">
+        <div class="h-leaflet-popup leaflet-popup leaflet-popup-device">
+          <div class="leaflet-popup-content-wrapper">
+            <div class="leaflet-popup-content">
+              <div class="popup">
+                <div class="popup-header">
+                  <ul class="nav nav-tabs nav-default" role="tablist">
+                    <li class="active"><a href="#gps-device-parameters" role="tab"><i class="fa fa-bars"></i></a></li>
+                    <li><a href="javascript:"><i class="fa fa-times"></i></a></li>
+                  </ul>
+                  <div class="popup-title">JY-5035 (REMOVAL REQUIRED)</div>
+                </div>
+                <div class="popup-body">
+                  <table class="table table-condensed">
+                    <tbody>
+                      <tr><th>Address:</th><td>Sindi Industrial Trading Estate, Keamari Town, Keamari District, Sindh, 75020, Pakistan</td></tr>
+                      <tr><th>Time:</th><td>2026-10-14 15:12:20</td></tr>
+                      <tr><th>Stop duration:</th><td>1h 23min 0s</td></tr>
+                      <tr><th>Driver:</th><td>—</td></tr>
+                      <tr><th>Plate:</th><td>JY-5035</td></tr>
+                    </tbody>
+                  </table>
+                  <div class="text-center"><i class="btn icon ico-options-h"></i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="leaflet-popup-tip-container"><div class="leaflet-popup-tip"></div></div>
+        </div>
+      </div>
+      <div class="h-pin">🚙</div>
+    </div>
+  </div>
+
+  <div>
+    <span class="h-cap">Same card with the Overview / History tabs (wrapper <code>.popup-content</code>)</span>
+    <div class="h-map">
+      <div class="h-poplayer" style="left:22px; top:30px;">
+        <div class="h-leaflet-popup leaflet-popup leaflet-popup-device">
+          <div class="leaflet-popup-content-wrapper">
+            <div class="leaflet-popup-content">
+              <div class="popup-content">
+                <div class="popup-header">
+                  <ul class="nav nav-tabs nav-default" role="tablist">
+                    <li class="active"><a href="#gps-device-parameters" role="tab"><i class="fa fa-bars"></i></a></li>
+                    <li><a href="javascript:"><i class="fa fa-times"></i></a></li>
+                  </ul>
+                  <div class="popup-title">JY-5035 (REMOVAL REQUIRED)</div>
+                </div>
+                <ul class="op-tabs">
+                  <li class="op-tab is-active" data-op-tab="overview">Overview</li>
+                  <li class="op-tab" data-op-tab="history">History</li>
+                </ul>
+                <div class="op-tab-panel is-active" data-op-panel="overview">
+                  <div class="popup-body">
+                    <table class="table table-condensed">
+                      <tbody>
+                        <tr><th>Address:</th><td>Sindi Industrial Trading Estate, Keamari Town, Keamari District, Sindh, 75020, Pakistan</td></tr>
+                        <tr><th>Time:</th><td>2026-10-14 15:12:20</td></tr>
+                        <tr><th>Stop duration:</th><td>1h 23min 0s</td></tr>
+                      </tbody>
+                    </table>
+                    <div class="text-center"><i class="btn icon ico-options-h"></i></div>
+                  </div>
+                </div>
+                <div class="op-tab-panel" data-op-panel="history">
+                  <div class="op-history">
+                    <div class="op-history__header">Recent activity · JY-5035 (REMOVAL REQUIRED)</div>
+                    <ul class="op-history__list">
+                      <li class="op-history__row">
+                        <div class="op-history__dot"></div>
+                        <div class="op-history__body">
+                          <div class="op-history__title">Ignition on</div>
+                          <div class="op-history__meta">14:49 · Sindi Industrial Trading Estate, Keamari Town</div>
+                        </div>
+                      </li>
+                      <li class="op-history__row">
+                        <div class="op-history__dot"></div>
+                        <div class="op-history__body">
+                          <div class="op-history__title">Stop of movement</div>
+                          <div class="op-history__meta">13:52 · Maupir Road, Keamari District</div>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="leaflet-popup-tip-container"><div class="leaflet-popup-tip"></div></div>
+        </div>
+      </div>
+      <div class="h-pin">🚙</div>
+    </div>
+  </div>
+
+  <p class="h-note">
+    Scope: only the card anchored above the vehicle (<code>.leaflet-popup-device</code>). The right widgets panel and the
+    left sidebar keep their existing styles. Everything above is painted from
+    <code>assets/css/objects-page-overrides.css</code> — the harness adds no popup overrides of its own.
+    Font Awesome is loaded from the CDN, so its icons may show as boxes while offline.
+  </p>
+
+</div>
+
+<script>
+  document.getElementById('btn-light').onclick = function () {
+    document.documentElement.setAttribute('data-theme', 'light');
+    this.classList.add('on'); document.getElementById('btn-dark').classList.remove('on');
+  };
+  document.getElementById('btn-dark').onclick = function () {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    this.classList.add('on'); document.getElementById('btn-light').classList.remove('on');
+  };
+  document.getElementById('btn-tabs').onclick = function () {
+    var overview = document.querySelector('.op-tab[data-op-tab="overview"]');
+    var history  = document.querySelector('.op-tab[data-op-tab="history"]');
+    var onHistory = history.classList.contains('is-active');
+    overview.classList.toggle('is-active', onHistory);
+    history.classList.toggle('is-active', !onHistory);
+    document.querySelector('.op-tab-panel[data-op-panel="overview"]').classList.toggle('is-active', onHistory);
+    document.querySelector('.op-tab-panel[data-op-panel="history"]').classList.toggle('is-active', !onHistory);
+    this.textContent = onHistory ? 'Show History tab' : 'Show Overview tab';
+  };
+</script>
+</body>
+</html>

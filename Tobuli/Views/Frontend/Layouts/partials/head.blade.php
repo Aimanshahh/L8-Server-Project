@@ -29,7 +29,7 @@
 @if (Appearance::assetFileExists('js'))
     <script src="{{ Appearance::getAssetFileUrl('js') }}" type="text/javascript" defer></script>
 @endif
-<link rel="stylesheet" href="{{ asset_resource('assets/css/objects-page-overrides.css') }}?v=20260930-1">
+<link rel="stylesheet" href="{{ asset_resource('assets/css/objects-page-overrides.css') }}?v=20261014-1">
 <link rel="stylesheet" href="{{ asset_resource('assets/css/events-page-overrides.css') }}?v=20260930-1">
 <link rel="stylesheet" href="{{ asset_resource('assets/css/theme-dark.css') }}?v=20260930-1">
 @include('Frontend.Layouts.partials.theme-script')
