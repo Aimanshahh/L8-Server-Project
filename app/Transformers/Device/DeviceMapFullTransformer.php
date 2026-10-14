@@ -49,7 +49,7 @@ class DeviceMapFullTransformer extends DeviceTransformer  {
             'online' => $entity->getStatus(),
             'lat' => $entity->lat,
             'lng' => $entity->lng,
-            'speed' => $entity->speed,
+            'speed' => $this->hasReallyMoved($entity) ? $entity->speed : 0,
             'course' => $entity->course,
             'altitude' => $entity->altitude,
             'time' => $entity->time,
@@ -80,39 +80,6 @@ class DeviceMapFullTransformer extends DeviceTransformer  {
      * Last fixes (oldest first) with timestamps for frontend marker playback.
      * Cached per latest position id: MySQL is hit only when a device has a new position.
      */
-    public function playbackTrack($entity)
-    {
-        try {
-            $tid = (int) $entity->traccar_device_id;
-            if ( ! $tid)
-                return [];
-
-            $posId = (int) optional($entity->traccar)->positionid;
-            $key   = 'mp_track:' . $tid . ':' . $posId;
-            $ttl   = $posId ? 3600 : 10;
-
-            return Cache::remember($key, $ttl, function () use ($tid) {
-                $rows = DB::connection('traccar_mysql')->table('tc_positions')
-                    ->select('id', 'fixtime', 'latitude', 'longitude')
-                    ->where('deviceid', $tid)
-                    ->orderBy('fixtime', 'desc')
-                    ->orderBy('id', 'desc')
-                    ->limit(6)
-                    ->get();
-
-                $out = [];
-                foreach ($rows->reverse() as $r) {
-                    $t = strtotime($r->fixtime);
-                    if ( ! $t || ! ((float) $r->latitude || (float) $r->longitude))
-                        continue;
-                    $out[] = ['t' => $t * 1000, 'lat' => (float) $r->latitude, 'lng' => (float) $r->longitude];
-                }
-                return $out;
-            });
-        } catch (\Throwable $e) {
-            return [];
-        }
-    }
 
     //tmp
     protected function sensors($entity)
@@ -121,13 +88,43 @@ class DeviceMapFullTransformer extends DeviceTransformer  {
             return null;
 
         $result = [];
+        $other = $entity->other;
 
         foreach ($entity->sensors as $sensor) {
             if (in_array($sensor->type, ['harsh_acceleration', 'harsh_breaking', 'harsh_turning']))
                 continue;
 
             $value = $sensor->getValueCurrent($entity);
-            $icon = $value->getIcon();
+
+            // GPSWOX sensor pipeline drops the odometer and hours attributes
+            // that Traccar stores on every position. Read them straight from
+            // the position bag and override the sensor when it returns blank.
+            $current = $value->getValue();
+            $isBlank = is_null($current) || $current === '-' || $current === 0 || $current === '0';
+
+            if ($isBlank && is_array($other)) {
+                if ($sensor->type === 'odometer' && isset($other['odometer'])) {
+                    $km = (float) $other['odometer'] / 1000;
+                    $value = new class($km, number_format($km, 2) . ' km') {
+                        private $v; private $d;
+                        public function __construct($v, $d) { $this->v = $v; $this->d = $d; }
+                        public function getValue() { return $this->v; }
+                        public function getFormatted() { return $this->d; }
+                        public function getIcon() { return null; }
+                    };
+                } elseif ($sensor->type === 'engine_hours' && isset($other['hours'])) {
+                    $hours = (float) $other['hours'];
+                    $value = new class($hours, number_format($hours, 2) . ' h') {
+                        private $v; private $d;
+                        public function __construct($v, $d) { $this->v = $v; $this->d = $d; }
+                        public function getValue() { return $this->v; }
+                        public function getFormatted() { return $this->d; }
+                        public function getIcon() { return null; }
+                    };
+                }
+            }
+
+            $icon = method_exists($value, 'getIcon') ? $value->getIcon() : null;
 
             $result[] = [
                 'id'            => $sensor->id,

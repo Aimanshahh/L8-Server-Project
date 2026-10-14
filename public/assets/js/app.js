@@ -13754,6 +13754,10 @@ function Device(data) {
 
         options = $.extend({}, options, data);
 
+        // Keep the public reference in sync so DOM consumers (panel,
+        // age badge, left-list speed sync) read live values.
+        _this.options = options;
+
         _this.lat = options.lat;
         _this.lng = options.lng;
 
@@ -14282,6 +14286,9 @@ function Device(data) {
             } else {
                 layer.setLatLng(position);
             }
+        } else if ( window.GpsGlide && window.GpsGlide.isOn() ) {
+            // Alternative glide engine (assets/js/gps-glide.js); off via localStorage gpsGlide=0
+            window.GpsGlide.move(layer, position, { track: options.track || null });
         } else if ( window.GpsSmooth ) {
             // Smooth, pace-matched glide. GpsSmooth owns the animation clock plus
             // the per-device cadence/speed estimates (see assets/js/gps-smooth.js).
@@ -17112,3 +17119,585 @@ function Dashboard()
 }(window));
 /* GPS-SMOOTH-END */
 
+
+/* ============================================================
+   op-panel: relocate map controls into the widget panel header
+   Runs every 1s — cheap check, relocates only once
+   ============================================================ */
+(function () {
+    function opRelocateControls() {
+        var c = document.getElementById('map-controls');
+        var h = document.querySelector('.op-device-header');
+        if (!c || !h) return;
+        if (c.classList.contains('op-map-controls-inline')) return;
+
+        c.classList.add('op-map-controls-inline');
+        h.parentNode.insertBefore(c, h);
+        if (window.console && console.log) {
+            console.log('[op-panel] Map controls relocated into widget panel');
+        }
+    }
+
+    // Run on load, then poll every 1s (safety net for async panel render)
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', opRelocateControls);
+    } else {
+        opRelocateControls();
+    }
+    setInterval(opRelocateControls, 1000);
+})();
+
+/* ============================================================
+   op-tabs wiring — Overview / Tracking / History
+   Bound at the document level so it works regardless of when
+   the panel is rendered.
+   ============================================================ */
+(function () {
+    // Make tabs visibly clickable
+    var style = document.createElement('style');
+    style.textContent = '.op-tab{cursor:pointer;} .op-tabs{user-select:none;}';
+    document.head.appendChild(style);
+
+    $(document).off('click.opTabs').on('click.opTabs', '.op-tab', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var tab = $(this).data('op-tab');
+        if (window.console && console.log) {
+            console.log('[op-tab] clicked:', tab);
+        }
+
+        // Visual active state
+        $('.op-tab').removeClass('is-active');
+        $(this).addClass('is-active');
+        $('.op-tab-panel').removeClass('is-active');
+        $('.op-tab-panel[data-op-panel="' + tab + '"]').addClass('is-active');
+
+        // Wire to real functionality
+        if (tab === 'history') {
+            // Switch to the sidebar History tab (trip history)
+            try {
+                var $h = $('#sidebar .nav-tabs a[href="#history_tab"]');
+                if ($h.length) {
+                    $h.tab('show');
+                } else {
+                    console.warn('[op-tab] history tab link not found');
+                }
+            } catch (err) { console.warn('[op-tab] history failed:', err); }
+
+        } else {
+            // Overview — back to objects tab
+            try {
+                $('#sidebar .nav-tabs a[href="#objects_tab"]').tab('show');
+            } catch (err) {}
+        }
+    });
+})();
+
+/* ============================================================
+   op-history — inline vehicle history inside the panel
+   Shows last 20 events for the SELECTED device only.
+   ============================================================ */
+(function () {
+    function getSelectedDeviceId() {
+        try {
+            if (window.app && app.devices && typeof app.devices.getSelected === 'function') {
+                return app.devices.getSelected();
+            }
+            var sel = $('#widgets').attr('data-device-id');
+            if (sel) return sel;
+        } catch (e) {}
+        return null;
+    }
+
+    function deviceNameFromId(id) {
+        var $el = $('#ajax-items [data-device-id="' + id + '"] [data-device="name"]');
+        return $el.length ? $el.text().trim() : ('Device #' + id);
+    }
+
+    function fmtTime(str) {
+        if (!str) return '';
+        try {
+            var d = new Date(str.replace(' ', 'T'));
+            if (isNaN(d.getTime())) return str;
+            var now = new Date();
+            var sameDay = d.toDateString() === now.toDateString();
+            var hh = ('0' + d.getHours()).slice(-2);
+            var mm = ('0' + d.getMinutes()).slice(-2);
+            if (sameDay) return hh + ':' + mm;
+            var mo = ('0' + (d.getMonth() + 1)).slice(-2);
+            var dd = ('0' + d.getDate()).slice(-2);
+            return mo + '-' + dd + ' ' + hh + ':' + mm;
+        } catch (e) { return str; }
+    }
+
+    function renderHistory(items, deviceName) {
+        var $c = $('[data-op-history]');
+        if (!$c.length) return;
+
+        if (!items || !items.length) {
+            $c.html('<div class="op-history__empty">No recent activity for ' + deviceName + '</div>');
+            return;
+        }
+
+        var html = '<div class="op-history__header">Recent activity · ' + deviceName + '</div>';
+        html += '<ul class="op-history__list">';
+
+        for (var i = 0; i < items.length; i++) {
+            var e = items[i];
+            var title = e.message || e.type || 'Event';
+            var time  = fmtTime(e.time || e.created_at);
+            var addr  = e.address || '';
+            var lat   = e.latitude || '';
+            var lng   = e.longitude || '';
+
+            html += '<li class="op-history__row" data-lat="' + lat + '" data-lng="' + lng + '">';
+            html += '  <div class="op-history__dot"></div>';
+            html += '  <div class="op-history__body">';
+            html += '    <div class="op-history__title">' + title + '</div>';
+            html += '    <div class="op-history__meta">' + time + (addr ? ' · ' + addr : '') + '</div>';
+            html += '  </div>';
+            html += '</li>';
+        }
+        html += '</ul>';
+        $c.html(html);
+    }
+
+    function loadHistory() {
+        var id = getSelectedDeviceId();
+        var $c = $('[data-op-history]');
+        if (!$c.length) return;
+
+        if (!id) {
+            $c.html('<div class="op-history__empty">Select a vehicle to view its activity</div>');
+            return;
+        }
+
+        var deviceName = deviceNameFromId(id);
+        $c.html('<div class="op-history__loading">Loading activity…</div>');
+
+        // /events?ajax=1 returns HTML <tr> rows (not JSON)
+        $.ajax({
+            url: '/events',
+            type: 'GET',
+            data: { ajax: 1, device_id: id, limit: 20 },
+            dataType: 'html',
+            success: function (html) {
+                if (!html || !html.trim()) {
+                    $c.html('<div class="op-history__empty">No recent activity for ' + deviceName + '</div>');
+                    return;
+                }
+
+                // Strip the injected <script>app.events.add(...)</script> tags
+                var cleaned = html.replace(/<script[\s\S]*?<\/script>/gi, '');
+
+                // Wrap in our container
+                var out = '<div class="op-history__header">Recent activity · ' + deviceName + '</div>';
+                out += '<table class="op-history__table"><tbody>' + cleaned + '</tbody></table>';
+                $c.html(out);
+            },
+            error: function (xhr) {
+                console.warn('[op-history] HTTP ' + xhr.status);
+                $c.html('<div class="op-history__empty">Could not load activity (HTTP ' + xhr.status + ')</div>');
+            }
+        });
+    }
+
+    window.opLoadHistory = loadHistory;
+
+    // Auto-reload when a device is selected
+    $(document).on('device.selected device.updated', function () {
+        if ($('.op-tab.is-active').data('op-tab') === 'history') {
+            setTimeout(loadHistory, 100);
+        }
+    });
+
+    // Reload if user clicks the History tab
+    $(document).off('click.opHistory').on('click.opHistory', '.op-tab[data-op-tab="history"]', function () {
+        setTimeout(loadHistory, 50);
+    });
+
+    // Click on a history row → center map on that position
+    $(document).off('click.opHistoryRow').on('click.opHistoryRow', '.op-history__row', function () {
+        var lat = parseFloat($(this).data('lat'));
+        var lng = parseFloat($(this).data('lng'));
+        if (lat && lng && window.app && app.map) {
+            app.map.setView([lat, lng], app.map.getZoom());
+        }
+    });
+})();
+
+/* ============================================================
+   op-follow v3 — map always centers on selected device when follow ON
+   ============================================================ */
+(function () {
+    'use strict';
+    var lastPan = 0;
+
+    function followOn() {
+        var $c = $('#followDevice');
+        if ($c.length) return $c.is(':checked');
+        return window.__mapFollow !== false;
+    }
+
+    function panToSelected() {
+        if (document.hidden) return;
+        if (!followOn()) return;
+
+        var id; try { id = app.devices.getSelected && app.devices.getSelected(); } catch(e){}
+        if (!id) return;
+
+        var d; try { d = app.devices.get(id); } catch(e){}
+        if (!d) return;
+
+        // Skip offline devices (no data, or at 0,0)
+        var status = d.options && d.options.online;
+        if (status === 'offline' || status === 'blocked') return;
+
+        var layer = d.getLayer && d.getLayer();
+        if (!layer || !layer._map) return;
+
+        var pos = layer.getLatLng && layer.getLatLng();
+        if (!pos || !isFinite(pos.lat) || !isFinite(pos.lng)) return;
+        // Skip if position is 0,0 (unset/unavailable)
+        if (Math.abs(pos.lat) < 0.0001 && Math.abs(pos.lng) < 0.0001) return;
+
+        var map = app.map;
+        if (!map || !map.getSize || !map.latLngToContainerPoint) return;
+
+        var size = map.getSize();
+        var px   = map.latLngToContainerPoint(pos);
+        var dx   = px.x - size.x / 2;
+        var dy   = px.y - size.y / 2;
+
+        // Dead zone: 60px (tighter than before)
+        if (dx * dx + dy * dy < 60 * 60) return;
+
+        var now = Date.now();
+        if (now - lastPan < 300) return;
+        lastPan = now;
+
+        try {
+            map.panTo(pos, { animate: true, duration: 0.4, easeLinearity: 0.25 });
+        } catch(e) {}
+    }
+
+    // Pan immediately on device selection
+    $(document).on('device.selected', function () {
+        setTimeout(function () {
+            // Pan once directly to the device, no dead zone
+            var id; try { id = app.devices.getSelected && app.devices.getSelected(); } catch(e){}
+            if (!id) return;
+            var d; try { d = app.devices.get(id); } catch(e){}
+            if (!d) return;
+            var status = d.options && d.options.online;
+            if (status === 'offline' || status === 'blocked') return;
+            var layer = d.getLayer && d.getLayer();
+            if (!layer) return;
+            var pos = layer.getLatLng && layer.getLatLng();
+            if (!pos || (Math.abs(pos.lat) < 0.0001 && Math.abs(pos.lng) < 0.0001)) return;
+            if (pos && app.map) {
+                try { app.map.panTo(pos, { animate: true, duration: 0.5 }); } catch(e) {}
+            }
+        }, 200);
+    });
+
+    // Continuous follow
+    setInterval(panToSelected, 400);
+
+    // Sync checkbox
+    $(document).on('change', '#followDevice', function () {
+        window.__mapFollow = !!this.checked;
+    });
+
+    window.opFollow = {
+        enable:  function () { window.__mapFollow = true;  var $c = $('#followDevice'); if ($c.length) $c.prop('checked', true).trigger('change'); },
+        disable: function () { window.__mapFollow = false; var $c = $('#followDevice'); if ($c.length) $c.prop('checked', false).trigger('change'); },
+        isOn:    followOn
+    };
+
+    window.__mapFollow = true;
+})();
+
+
+/* ============================================================
+   op-follow-v4 — force follow ON by default
+   ============================================================ */
+(function () {
+    'use strict';
+    var lastPan = 0;
+
+    // Force the checkbox to checked state on load if it exists and is unchecked
+    function ensureFollowOn() {
+        var $c = $('#followDevice');
+        if ($c.length && !$c.is(':checked')) {
+            $c.prop('checked', true);
+        }
+        window.__mapFollow = true;
+    }
+
+    function followOn() {
+        return true;   // hard force ON, checkbox is just a UI hint
+    }
+
+    function panToSelected() {
+        if (document.hidden) return;
+        if (!followOn()) return;
+
+        var id; try { id = app.devices.getSelected && app.devices.getSelected(); } catch(e){}
+        if (!id) return;
+
+        var d; try { d = app.devices.get(id); } catch(e){}
+        if (!d) return;
+
+        var layer = d.getLayer && d.getLayer();
+        if (!layer || !layer._map) return;
+
+        var pos = layer.getLatLng && layer.getLatLng();
+        if (!pos || !isFinite(pos.lat) || !isFinite(pos.lng)) return;
+
+        var map = app.map;
+        if (!map || !map.getSize || !map.latLngToContainerPoint) return;
+
+        var size = map.getSize();
+        var px   = map.latLngToContainerPoint(pos);
+        var dx   = px.x - size.x / 2;
+        var dy   = px.y - size.y / 2;
+
+        // Dead zone: 80 px
+        if (dx * dx + dy * dy < 80 * 80) return;
+
+        var now = Date.now();
+        if (now - lastPan < 300) return;
+        lastPan = now;
+
+        try {
+            map.panTo(pos, { animate: true, duration: 0.4, easeLinearity: 0.25 });
+        } catch (e) {}
+    }
+
+    // Direct pan the moment a device is selected
+    $(document).on('device.selected', function () {
+        ensureFollowOn();
+        setTimeout(function () {
+            var id; try { id = app.devices.getSelected && app.devices.getSelected(); } catch(e){}
+            if (!id) return;
+            var d; try { d = app.devices.get(id); } catch(e){}
+            if (!d) return;
+            var layer = d.getLayer && d.getLayer();
+            if (!layer) return;
+            var pos = layer.getLatLng && layer.getLatLng();
+            if (pos && app.map) {
+                try { app.map.panTo(pos, { animate: true, duration: 0.5 }); } catch(e) {}
+            }
+        }, 200);
+    });
+
+    // Continuous follow
+    setInterval(panToSelected, 400);
+    setInterval(ensureFollowOn, 2000);
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', ensureFollowOn);
+    } else {
+        ensureFollowOn();
+    }
+
+    window.opFollow = {
+        enable:  function () { window.__mapFollow = true; var $c = $('#followDevice'); if ($c.length) $c.prop('checked', true); },
+        disable: function () { window.__mapFollow = false; var $c = $('#followDevice'); if ($c.length) $c.prop('checked', false); },
+        isOn:    followOn
+    };
+})();
+
+
+/* op-last-seen — prefer raw unix timestamp, ignore display strings */
+(function () {
+    function selectedId() {
+        try { return app.devices.getSelected && app.devices.getSelected(); } catch (e) { return null; }
+    }
+    function humanAge(ms) {
+        if (ms < 0) ms = 0;
+        var s = Math.floor(ms / 1000);
+        if (s < 5) return 'now';
+        if (s < 60) return s + 's';
+        var m = Math.floor(s / 60);
+        if (m < 60) return m + 'm';
+        var h = Math.floor(m / 60);
+        if (h < 24) return h + 'h';
+        return Math.floor(h / 24) + 'd';
+    }
+    function ageClass(ms) {
+        var s = ms / 1000;
+        if (s < 30) return 'op-age--fresh';
+        if (s < 120) return 'op-age--recent';
+        if (s < 300) return 'op-age--aging';
+        return 'op-age--stale';
+    }
+    function tick() {
+        var $b = $('.op-last-seen');
+        if (!$b.length) return;
+
+        var id = selectedId();
+        if (!id) { $b.text('—').attr('class','op-last-seen op-age--unknown'); return; }
+
+        var d = app.devices.get(id);
+        if (!d || !d.options) { $b.text('—').attr('class','op-last-seen op-age--unknown'); return; }
+
+        // Raw unix timestamp (seconds) — timezone-agnostic
+        var tsSec = parseInt(d.options.timestamp, 10);
+        var ageMs;
+        if (isFinite(tsSec) && tsSec > 0) {
+            ageMs = Date.now() - tsSec * 1000;
+        } else {
+            // Fallback: try acktimestamp
+            var ackSec = parseInt(d.options.acktimestamp, 10);
+            if (isFinite(ackSec) && ackSec > 0) ageMs = Date.now() - ackSec * 1000;
+            else { $b.text('—').attr('class','op-last-seen op-age--unknown'); return; }
+        }
+
+        $b.text(humanAge(ageMs))
+          .attr('title', 'Last reported ' + humanAge(ageMs) + ' ago')
+          .attr('class', 'op-last-seen ' + ageClass(ageMs));
+    }
+    setInterval(tick, 1000);
+    $(document).on('device.selected device.updated click.op-tab', tick);
+    $(document).ready(tick);
+})();
+
+
+/* ============================================================
+   op-speed-sync — force left panel speed DOM to match app state
+   The app's own updateListItem() only fires when previous != current,
+   which means it can stay stale forever after our server-side filter.
+   ============================================================ */
+(function () {
+    'use strict';
+
+    function fmtSpeed(v) {
+        v = parseInt(v, 10);
+        if (!isFinite(v) || v < 0) v = 0;
+        return v + ' kph';
+    }
+
+    function syncSpeeds() {
+        var $list = $('#ajax-items');
+        if (!$list.length) return;
+
+        $list.find('.device-card').each(function () {
+            var id = $(this).attr('data-device-id');
+            if (!id) return;
+
+            var d;
+            try { d = app.devices.get(id); } catch (e) { return; }
+            if (!d || !d.options) return;
+
+            var realSpeed = parseInt(d.options.speed, 10);
+            if (!isFinite(realSpeed)) realSpeed = 0;
+
+            var $el = $(this).find('[data-device="speed"]');
+            if (!$el.length) return;
+
+            var currentText = $el.text().trim();
+            var wantedText  = fmtSpeed(realSpeed);
+
+            // Also strip the "km/h" variant if present
+            var isSame = currentText === wantedText
+                      || currentText === realSpeed + ' km/h'
+                      || currentText === realSpeed + 'kph';
+
+            if (!isSame) {
+                $el.text(wantedText);
+            }
+        });
+    }
+
+    // Run every second (matches the polling cadence of the app)
+    setInterval(syncSpeeds, 1000);
+
+    // Also run on poll events
+    $(document).on('device.updated device.selected', function () {
+        setTimeout(syncSpeeds, 50);
+    });
+
+    // Initial run
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', syncSpeeds);
+    } else {
+        setTimeout(syncSpeeds, 500);
+    }
+})();
+
+
+/* op-last-seen v4 — uses stop_duration_sec (accurate) as primary source */
+(function () {
+    'use strict';
+    function selectedId() {
+        try { return app.devices.getSelected && app.devices.getSelected(); } catch (e) { return null; }
+    }
+    function humanAge(ms) {
+        if (!isFinite(ms) || ms < 0) ms = 0;
+        var s = Math.floor(ms / 1000);
+        if (s < 10) return 'now';
+        if (s < 60) return s + 's';
+        var m = Math.floor(s / 60);
+        if (m < 60) return m + 'm';
+        var h = Math.floor(m / 60);
+        var rh = m % 60;
+        if (h < 24) return h + 'h' + (rh ? ' ' + rh + 'm' : '');
+        return Math.floor(h / 24) + 'd';
+    }
+    function ageClass(ms) {
+        var s = ms / 1000;
+        if (s < 30) return 'op-age--fresh';
+        if (s < 120) return 'op-age--recent';
+        if (s < 300) return 'op-age--aging';
+        return 'op-age--stale';
+    }
+    function tick() {
+        var $b = $('.op-last-seen');
+        if (!$b.length) return;
+
+        var id = selectedId();
+        if (!id) { $b.text('—').attr('class', 'op-last-seen op-age--unknown').attr('title','No data'); return; }
+
+        var d = app.devices.get(id);
+        if (!d || !d.options) { $b.text('—').attr('class', 'op-last-seen op-age--unknown').attr('title','No data'); return; }
+
+        var opts = d.options;
+
+        // If reported speed > 0, device is actively moving right now
+        var spd = parseInt(opts.speed, 10);
+        if (isFinite(spd) && spd > 0) {
+            $b.text('moving').attr('class', 'op-last-seen op-age--fresh').attr('title','Currently moving at ' + spd + ' kph');
+            return;
+        }
+
+        // Otherwise use stop_duration_sec (accurate, timezone-agnostic)
+        var stopSec = parseInt(opts.stop_duration_sec, 10);
+        if (isFinite(stopSec) && stopSec > 0) {
+            var ms = stopSec * 1000;
+            $b.text(humanAge(ms))
+              .attr('title', 'Stopped for ' + humanAge(ms))
+              .attr('class', 'op-last-seen ' + ageClass(ms));
+            return;
+        }
+
+        // Fallback: use raw timestamp if in the past
+        var tsSec = parseInt(opts.timestamp, 10);
+        if (isFinite(tsSec) && tsSec > 0) {
+            var ageMs = Date.now() - tsSec * 1000;
+            if (ageMs >= 0 && ageMs < 86400000) {
+                $b.text(humanAge(ageMs))
+                  .attr('title', 'Last reported ' + humanAge(ageMs) + ' ago')
+                  .attr('class', 'op-last-seen ' + ageClass(ageMs));
+                return;
+            }
+        }
+
+        $b.text('—').attr('class', 'op-last-seen op-age--unknown').attr('title','No data');
+    }
+    setInterval(tick, 1000);
+    $(document).on('device.selected device.updated click.op-tab', tick);
+    $(document).ready(tick);
+})();

@@ -2805,6 +2805,7 @@ html[data-theme="dark"] .leaflet-marker-icon .name i {
     font-style: normal !important;
     color: inherit !important;
 }
+<<<<<<< HEAD
 
 /* ==========================================================================
    VEHICLE POPUP v3 — clean & modern  (2026-10-14)
@@ -3487,3 +3488,5 @@ html[data-theme="dark"] body .leaflet-popup .op-history__table td.cell-actions .
     .leaflet-popup .popup-header .nav > li > a { transition: none !important; }
     .leaflet-popup .op-tab-panel.is-active { animation: none !important; }
 }
+=======
+>>>>>>> 85c88ad66c565718592886286abd2bd2d7b53359

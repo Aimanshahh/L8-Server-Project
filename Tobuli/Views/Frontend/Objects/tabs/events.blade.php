@@ -18,20 +18,16 @@
             </span>
         </div>
     </div>
-    <div class="events-col-head">
-        <span class="events-col-head__time">{{ trans('front.time') }}</span>
-        <span class="events-col-head__object">{{ trans('front.object') }}</span>
-        <span class="events-col-head__event">{{ trans('front.event') }}</span>
-        <span class="events-col-head__actions"></span>
-    </div>
 </div>
 
 <div class="tab-pane-body">
     <table class="table table-condensed events-table">
         <thead>
             <tr>
-                <th></th>
-                <th></th>
+                <th class="th-time">{{ trans('front.time') }}</th>
+                <th class="th-object">{{ trans('front.object') }}</th>
+                <th class="th-event">{{ trans('front.event') }}</th>
+                <th class="th-actions"></th>
             </tr>
         </thead>
 

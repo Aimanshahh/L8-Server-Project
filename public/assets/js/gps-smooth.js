@@ -257,7 +257,7 @@
     }
 
     function addActive(st) {
-        if (active.indexOf(st) < 0) active.push(st);
+        if (st && st.layer && active.indexOf(st) < 0) active.push(st);
         wake();
     }
 
@@ -534,6 +534,7 @@
     }
 
     function step(st, t) {
+        if (!st || !st.layer) return false;
         var layer = st.layer;
         var map = layer._map;
         if (!map) {                       // marker detached (cluster/removed): park it
@@ -701,6 +702,7 @@
         }
 
         for (i = 0; i < active.length; i++) {
+            if (!active[i]) continue;
             if (step(active[i], t)) keep.push(active[i]);
         }
         active = keep;
