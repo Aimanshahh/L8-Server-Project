@@ -2,6 +2,7 @@
 
 @section('header-menu-items')
 <li class="nav__item"><a class="nav__link" href="{!! route('objects.index') !!}" role="button"><span class="icon map"></span><span class="nav__link-txt">{!! trans('admin.map') !!}</span></a></li>
+<li class="nav__item"><a class="nav__link" href="{!! route('robocall.index') !!}" role="button"><span class="icon call_action"></span><span class="nav__link-txt">Robocall</span></a></li>
       @if (isAdmin())
       <li class="nav__item"><a class="nav__link" href="{!!route('admin')!!}" role="button"><span class="icon admin"></span><span class="nav__link-txt">{!!trans('global.admin')!!}</span></a></li>
       @endif

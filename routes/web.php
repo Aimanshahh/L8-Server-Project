@@ -52,6 +52,9 @@ Route::group([], function () {
     # Exceptions to CSRF verification - \App\Http\Middleware\VerifyCsrfToken
     Route::any('payments/{gateway}/webhook', ['as' => 'payments.webhook', 'uses' => 'Frontend\PaymentsController@webhook']);
     Route::any('gpsdata_insert', ['as' => 'gpsdata_insert', 'uses' => 'Frontend\GpsDataController@insert']);
+
+    # Public robocall receiver. No auth: the provider posts here.
+    Route::any('robocall/webhook', ['as' => 'robocall.webhook', 'uses' => 'Frontend\RobocallController@webhook']);
     #####
 
     Route::get('demo', ['as' => 'demo', 'uses' => 'Frontend\LoginController@demo']);
@@ -73,6 +76,12 @@ Route::group(['middleware' => ['auth', 'active_subscription'], 'namespace' => 'F
     Route::get('objects/sidebar/groups', ['as' => 'objects.sidebar.groups', 'uses' => 'DevicesSidebarController@groups']);
     Route::get('objects/sidebar/items', ['as' => 'objects.sidebar.items', 'uses' => 'DevicesSidebarController@items']);
     Route::get('objects/sidebar', ['as' => 'objects.sidebar', 'uses' => 'DevicesSidebarController@index']);
+
+    # Robocall page - shows the webhook URL and everything received on it.
+    Route::get('robocall', ['as' => 'robocall.index', 'uses' => 'RobocallController@index']);
+    Route::get('robocall/data', ['as' => 'robocall.data', 'uses' => 'RobocallController@data']);
+    Route::get('robocall/download', ['as' => 'robocall.download', 'uses' => 'RobocallController@download']);
+    Route::post('robocall/clear', ['as' => 'robocall.clear', 'uses' => 'RobocallController@clear']);
 
     Route::get('objects/items', ['as' => 'objects.items', 'uses' => 'ObjectsController@items']);
     Route::get('objects/itemsSimple', ['as' => 'objects.items_simple', 'uses' => 'ObjectsController@itemsSimple']);
