@@ -137,18 +137,35 @@ class TraccarPosition extends AbstractEntity
     public function getParametersAttribute()
     {
         if (empty($this->attributes['attributes'])) {
-            return [];
+            $params = [];
+        } else {
+            $value = $this->attributes['attributes'];
+            if (is_array($value)) {
+                $params = $value;
+            } else {
+                $decoded = json_decode($value, true);
+                $params = is_array($decoded) ? $decoded : [];
+            }
         }
 
-        $value = $this->attributes['attributes'];
-
-        if (is_array($value)) {
-            return $value;
+        // Inject battery voltage from Redis cache (populated by voltage-watch.py).
+        // This makes it visible to Tag.php-based sensors like POWER.
+        if (!isset($params['power']) && !empty($params['ip'])) {
+            foreach (['process', 'default', 'cache'] as $conn) {
+                try {
+                    $v = \Illuminate\Support\Facades\Redis::connection($conn)
+                        ->get('voltage:ip:' . $params['ip']);
+                    if ($v !== null && $v !== false && $v !== '') {
+                        $params['power'] = (float) $v;
+                        break;
+                    }
+                } catch (\Throwable $e) {
+                    // try next connection
+                }
+            }
         }
 
-        $decoded = json_decode($value, true);
-
-        return is_array($decoded) ? $decoded : [];
+        return $params;
     }
 
     public function setParametersAttribute($value)
@@ -171,7 +188,26 @@ class TraccarPosition extends AbstractEntity
     {
         $parameters = $this->parameters;
 
-        return array_key_exists($key, $parameters) ? $parameters[$key] : $default;
+        if (array_key_exists($key, $parameters)) {
+            return $parameters[$key];
+        }
+
+        // Voltage fallback: read from Redis cache populated by voltage-watch.py
+        if ($key === 'power' && !empty($parameters['ip'])) {
+            foreach (['process', 'default', 'cache'] as $conn) {
+                try {
+                    $voltage = \Illuminate\Support\Facades\Redis::connection($conn)
+                        ->get('voltage:ip:' . $parameters['ip']);
+                    if ($voltage !== null && $voltage !== false && $voltage !== '') {
+                        return (float) $voltage;
+                    }
+                } catch (\Throwable $e) {
+                    // try next connection
+                }
+            }
+        }
+
+        return $default;
     }
 
     public function setParameter($key, $value)
