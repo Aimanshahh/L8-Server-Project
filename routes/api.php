@@ -311,6 +311,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth.api', 'active_subscrip
     Route::put('companies/{id}', ['uses' => 'Admin\CompaniesController@update']);
     Route::delete('companies/{id}', ['uses' => 'Admin\CompaniesController@destroy']);
 
+    
+
     Route::get('devices', ['as' => 'api.admin.devices', 'uses' => 'Api\Admin\DevicesController@index']);
     Route::get('device/{device}', ['as' => 'api.admin.device.get', 'uses' => 'Api\Admin\DevicesController@get']);
     Route::get('device/{device}/users', ['as' => 'api.admin.device.users.get', 'uses' => 'Api\Admin\DeviceUsersController@index']);
@@ -319,6 +321,9 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth.api', 'active_subscrip
     Route::post('device/{device}/status', ['as' => 'api.admin.device.status.store', 'uses' => 'Api\Admin\DevicesController@setStatus']);
     Route::post('device/{device}/expiration', ['as' => 'api.admin.device.expiration.store', 'uses' => 'Api\Admin\DevicesController@expiration']);
 });
+
+   // Mobile App Push Notification Token Route
+   Route::post('/save-device-token', [App\Http\Controllers\Api\DeviceTokenController::class, 'store']);
 
 Route::get('/doc', ['as' => 'testing', 'uses' => function () {
     echo '<iframe style="position:fixed; top:0; left:0; bottom:0; right:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;" src="https://gpswox.api-docs.io"></iframe>';

@@ -71,6 +71,11 @@ Route::group([], function () {
 
 // Authenticated Frontend |active_subscription
 Route::group(['middleware' => ['auth', 'active_subscription'], 'namespace' => 'Frontend'], function () {
+    
+    # Push Notifications (Secured)
+    Route::get('/push-notifications', [App\Http\Controllers\Frontend\PushNotificationController::class, 'index'])->name('push.index');
+    Route::post('/push-notifications/send', [App\Http\Controllers\Frontend\PushNotificationController::class, 'send'])->name('push.send');
+
     Route::delete('objects/destroy/{objects?}', ['as' => 'objects.destroy', 'uses' => 'DevicesController@destroy']);
 
     Route::get('objects/sidebar/groups', ['as' => 'objects.sidebar.groups', 'uses' => 'DevicesSidebarController@groups']);
@@ -971,4 +976,3 @@ Route::get('/testing', ['as' => 'testing', 'uses' => function () {}]);
 Route::get('/icons', ['as' => 'icons', 'uses' => function () {
     return response()->view('icons');
 }]);
-
