@@ -657,7 +657,16 @@ function Device(data) {
             width       = options.icon.width,
             height      = options.icon.height,
             color       = _this.getStatusColor(),
-            position    = new L.LatLng(_this.lat, _this.lng);
+            _lat        = parseFloat(_this.lat),
+            _lng        = parseFloat(_this.lng);
+
+        // A device without a usable fix must never throw here; a single bad
+        // device aborted updateLayers() and hid every vehicle on the map.
+        if ( ! isFinite(_lat) || ! isFinite(_lng) ) {
+            return layer;
+        }
+
+        var position = new L.LatLng(_lat, _lng);
 
         if (options.icon.type === 'arrow') {
             icon   = '<i class="ico ico-object-arrow" style="color:'+color+'"></i>';

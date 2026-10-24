@@ -64,4 +64,10 @@ check($track[0]['sp'] === 10.0, 'raw knots are converted to km/h');
 check($track[0]['co'] === 90.0 && $track[1]['co'] === 90.0, 'course is preserved on its row');
 check($track[0]['a'] === 8.0, 'accuracy is preserved for the marker engine');
 
+$deviceSrc = file_get_contents(__DIR__ . '/../../Tobuli/Entities/TraccarDevice.php');
+check(strpos($deviceSrc, '$position = $this->latestPosition;') !== false,
+    'a device without any valid fix still reports its last packet');
+check(strpos($deviceSrc, '->orderBy(\'fixtime\', \'desc\')') !== false,
+    'live position is selected by fix time, never by packet order');
+
 echo "ALL GPS TRACK CHECKS PASSED ($checks checks)\n";

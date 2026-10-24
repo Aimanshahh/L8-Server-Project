@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>GpsGlide live-engine demo (real Leaflet + marker.rotate)</title>
+<script>
+  // Same engine settings class as production; road matching off because this
+  // demo road is synthetic (OSRM matching itself is covered by unit tests).
+  window.app = { devices: { getSelected: function () { return 1; } } };
+</script>
+<script src="leaflet.1.0.3.js"></script>
+<script>window.L || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.js"><\/script>');</script>
+<script src="marker.rotate.js"></script>
+<script src="gps-glide.js"></script>
+<style>
+  html,body{margin:0;height:100%;font:13px/1.45 system-ui,"Segoe UI",Arial,sans-serif;background:#0f1420;color:#e6edf7}
+  #app{display:flex;height:100%}
+  #map{flex:1 1 auto;min-width:0;background:#0b0f17}
+  #panel{width:400px;flex:0 0 400px;overflow:auto;padding:14px;box-sizing:border-box;background:#121928;border-left:1px solid #263144}
+  h1{font-size:15px;margin:0 0 4px}
+  h2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin:14px 0 6px}
+  .muted{color:#94a3b8}
+  button{background:#1c2434;color:#e6edf7;border:1px solid #263144;border-radius:6px;padding:8px 11px;cursor:pointer;font-size:12px}
+  button.primary{background:#2563eb;border-color:#2563eb}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  td{padding:3px 4px;border-bottom:1px solid #1f2937;vertical-align:top}
+  td.k{color:#94a3b8;width:52%}
+  #log{font:11px/1.4 ui-monospace,Consolas,monospace;background:#0f1420;border:1px solid #263144;border-radius:6px;padding:6px;height:140px;overflow:auto;white-space:pre-wrap}
+  .pass{color:#34d399;font-weight:600}
+  .fail{color:#f87171;font-weight:600}
+  .name{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:11px;background:#121928cc;padding:1px 5px;border-radius:4px}
+  .leaf-device-marker{position:relative}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="map"></div>
+  <div id="panel">
+    <h1>GpsGlide v3 &mdash; real-engine demo <span class="muted">(the exact file the live map loads)</span></h1>
+    <div class="muted">Feeds real fix packets through <code>assets/js/gps-glide.js</code> on a real Leaflet map with the app's
+      rotation plugin: straight leg &rarr; right turn &rarr; <b>late/out-of-order packet</b> &rarr; <b>stop (duplicate
+      fixes)</b> &rarr; resume.</div>
+    <p><button class="primary" id="run">Run demo</button></p>
+
+    <h2>Telemetry</h2>
+    <table>
+      <tr><td class="k">state</td><td id="tState">idle</td></tr>
+      <tr><td class="k">marker lat, lng</td><td id="tPos">-</td></tr>
+      <tr><td class="k">heading (deg)</td><td id="tHead">-</td></tr>
+      <tr><td class="k">animation</td><td id="tAnim">-</td></tr>
+      <tr><td class="k">active animations</td><td id="tActive">-</td></tr>
+      <tr><td class="k">max deviation from road</td><td id="tDev">-</td></tr>
+      <tr><td class="k">engine events</td><td id="tEvents">-</td></tr>
+    </table>
+
+    <h2>Self-checks</h2>
+    <table id="checks"><tr><td class="muted">run the demo…</td></tr></table>
+
+    <h2>Engine log</h2>
+    <div id="log"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---- geometry helpers -------------------------------------------------
+  var R = 6371008.8, DEG = Math.PI / 180;
+  var ORIGIN = { lat: 24.96210, lng: 67.19840 };
+
+  function toLL(x, y) {           // metres east / north of ORIGIN
+    return {
+      lat: ORIGIN.lat + (y / R) / DEG,
+      lng: ORIGIN.lng + (x / (R * Math.cos(ORIGIN.lat * DEG))) / DEG
+    };
+  }
+  function distM(a, b) {
+    var dx = (b.lng - a.lng) * DEG * R * Math.cos(a.lat * DEG);
+    var dy = (b.lat - a.lat) * DEG * R;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+  function densify(ctrl, step) {
+    var out = [], i, j, a, b, n, t;
+    for (i = 0; i < ctrl.length - 1; i++) {
+      a = ctrl[i]; b = ctrl[i + 1];
+      n = Math.max(1, Math.round(distM(toLL(a[0], a[1]), toLL(b[0], b[1])) / step));
+      for (j = 0; j < n; j++) {
+        t = j / n;
+        out.push(toLL(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t));
+      }
+    }
+    out.push(toLL(ctrl[ctrl.length - 1][0], ctrl[ctrl.length - 1][1]));
+    return out;
+  }
+  var ROAD = densify([           // synthetic "road": north, rounded right turn, east
+    [0, 0], [0, 80], [0, 110], [12, 124], [40, 130], [140, 130]
+  ], 3);
+
+  var cum = [0], k;
+  for (k = 1; k < ROAD.length; k++) cum.push(cum[k - 1] + distM(ROAD[k - 1], ROAD[k]));
+  var TOTAL = cum[cum.length - 1];
+
+  function atDist(d) {
+    if (d <= 0) return ROAD[0];
+    if (d >= TOTAL) return ROAD[ROAD.length - 1];
+    var i = 1;
+    while (i < cum.length && cum[i] < d) i++;
+    var seg = cum[i] - cum[i - 1] || 1, t = (d - cum[i - 1]) / seg;
+    return {
+      lat: ROAD[i - 1].lat + (ROAD[i].lat - ROAD[i - 1].lat) * t,
+      lng: ROAD[i - 1].lng + (ROAD[i].lng - ROAD[i - 1].lng) * t
+    };
+  }
+  function roadDeviation(p) {     // metres from point to the road polyline
+    var best = 1e9, i;
+    for (i = 1; i < ROAD.length; i++) best = Math.min(best, segDist(p, ROAD[i - 1], ROAD[i]));
+    return best;
+  }
+  function segDist(p, a, b) {
+    var ax = 0, ay = 0;
+    var px = (p.lng - a.lng) * DEG * R * Math.cos(a.lat * DEG), py = (p.lat - a.lat) * DEG * R;
+    var bx = (b.lng - a.lng) * DEG * R * Math.cos(a.lat * DEG), by = (b.lat - a.lat) * DEG * R;
+    var L2 = bx * bx + by * by, t = L2 ? Math.max(0, Math.min(1, (px * bx + py * by) / L2)) : 0;
+    var dx = px - t * bx, dy = py - t * by;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+  function bearingOf(a, b) {
+    var y = Math.sin((b.lng - a.lng) * DEG) * Math.cos(b.lat * DEG);
+    var x = Math.cos(a.lat * DEG) * Math.sin(b.lat * DEG) -
+            Math.sin(a.lat * DEG) * Math.cos(b.lat * DEG) * Math.cos((b.lng - a.lng) * DEG);
+    return (Math.atan2(y, x) / DEG + 360) % 360;
+  }
+  function jitter(p, m) {
+    return { lat: p.lat + (Math.random() - 0.5) * 2 * m / 111320,
+             lng: p.lng + (Math.random() - 0.5) * 2 * m / (111320 * Math.cos(p.lat * DEG)) };
+  }
+
+  // ---- map --------------------------------------------------------------
+  var map = L.map('map', { zoomControl: true });
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(map);
+  L.polyline(ROAD, { color: '#ffffff', weight: 9, opacity: 0.35 }).addTo(map);   // road casing
+  L.polyline(ROAD, { color: '#64748b', weight: 6, opacity: 0.95 }).addTo(map);   // road surface
+  map.fitBounds(L.latLngBounds(ROAD).pad(0.25));
+
+  var ARROW = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='34'%3E" +
+      "%3Cpath d='M13 2 L23 32 L13 25 L3 32 Z' fill='%233b82f6' stroke='%23ffffff' stroke-width='1.5'/%3E%3C/svg%3E";
+
+  var marker = L.marker(ROAD[0], {
+    icon: L.divIcon({
+      html: '<span class="name" id="vlabel">DEMO (0 km/h)</span><img src="' + ARROW + '" width="26" height="34">',
+      className: 'leaf-device-marker',
+      iconSize: [26, 34],
+      iconAnchor: [13, 17],
+      popupAnchor: [0, -17]
+    }),
+    iconAngle: 0,
+    device_id: 1
+  }).addTo(map);
+  marker._map = map;   // Leaflet 1.0 keeps _map itself; harmless if already set
+
+  if (window.GpsGlide) { GpsGlide.setRoadEnabled(false); GpsGlide.log.length = 0; }
+
+  // ---- feed -------------------------------------------------------------
+  var $ = function (id) { return document.getElementById(id); };
+  var fixes = [], posId = 0, feedT = 0, maxDev = 0, worst = null;
+  var done = null;
+
+  function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+  function feed(dist, speed, opts) {
+    opts = opts || {};
+    var here = opts.at || jitter(atDist(dist), 1.0);
+    var prev = fixes.length ? fixes[fixes.length - 1] : null;
+    posId += 1;
+    var fix = {
+      id: posId,
+      t: opts.ts || (feedT = feedT ? feedT + 1100 : Date.now()),   // real epoch ms, like fix_timestamp
+      lat: here.lat, lng: here.lng,
+      sp: speed,
+      co: opts.course != null ? opts.course :
+          (prev ? bearingOf(prev, here) : 0),
+      v: 1
+    };
+    if (!opts.ts) fixes.push(fix);
+    else fixes.push(fix);   // stale rows are also kept in history, like the real API
+
+    GpsGlide.move(marker, { lat: fix.lat, lng: fix.lng }, {
+      ts: fix.t,
+      positionId: fix.id,
+      track: fixes.slice(-30),
+      speed: fix.sp,
+      course: fix.co,
+      accuracy: 5,
+      rotate: true
+    });
+
+    var kmh = Math.round(fix.sp || 0);
+    var lbl = document.getElementById('vlabel');
+    if (lbl) lbl.textContent = 'DEMO (' + kmh + ' km/h)';
+    return fix;
+  }
+
+  function telemetry(state) {
+    var ll = marker.getLatLng();
+    var d = GpsGlide.diagnostics(marker) || {};
+    $('tState').textContent = state || $('tState').textContent;
+    $('tPos').textContent = ll.lat.toFixed(6) + ', ' + ll.lng.toFixed(6);
+    $('tHead').textContent = d.heading != null ? d.heading + '°' : '-';
+    $('tAnim').textContent = d.playing ? ('playing, ' + d.pathKind + ', ' + d.len + ' m / ' + d.dur + ' ms')
+                                       : 'idle (no projection past last fix)';
+    $('tActive').textContent = GpsGlide.activeCount();
+    $('tDev').textContent = maxDev.toFixed(1) + ' m';
+    $('tEvents').textContent = GpsGlide.log.length;
+    $('log').textContent = GpsGlide.log.slice(-40).map(function (r) {
+      return '#' + r.action + ' ' + JSON.stringify(r.extra || {});
+    }).join('\n');
+    $('log').scrollTop = 1e6;
+  }
+
+  function hasEvent(action) {
+    return GpsGlide.log.some(function (r) { return r.action.indexOf(action) === 0; });
+  }
+  function check(list, ok, name, detail) {
+    list.push({ ok: !!ok, name: name, detail: detail || '' });
+  }
+  function renderChecks(list) {
+    $('checks').innerHTML = list.map(function (c) {
+      return '<tr><td class="' + (c.ok ? 'pass' : 'fail') + '">' + (c.ok ? 'PASS' : 'FAIL') +
+             '</td><td>' + c.name + (c.detail ? ' <span class="muted">' + c.detail + '</span>' : '') + '</td></tr>';
+    }).join('');
+  }
+
+  // ---- scenario ---------------------------------------------------------
+  var running = false;
+  async function run() {
+    if (!window.GpsGlide) { $('tState').textContent = 'gps-glide.js failed to load'; return; }
+    if (running) return;
+    running = true;
+    fixes = []; posId = 0; feedT = 0; maxDev = 0;
+    GpsGlide.log.length = 0;
+    GpsGlide.forget(marker);
+    marker.setLatLng(ROAD[0]);
+    marker.setIconAngle(0);
+    renderChecks([]);
+    $('tDev').textContent = '0.0 m';
+
+    var sampler = setInterval(function () {
+      var dnow = roadDeviation(marker.getLatLng());
+      if (dnow > maxDev) {
+        maxDev = dnow;
+        worst = { dev: +dnow.toFixed(2), lat: +marker.getLatLng().lat.toFixed(6),
+                  lng: +marker.getLatLng().lng.toFixed(6),
+                  state: document.getElementById('tState').textContent };
+      }
+      telemetry();
+    }, 80);
+
+    try {
+      telemetry('1/6 straight leg north (5 fixes)');
+      feed(20, 30);            await sleep(420);
+      feed(45, 32);            await sleep(420);
+      feed(70, 33);            await sleep(420);
+      feed(95, 33);            await sleep(420);
+      feed(112, 32);           await sleep(420);
+
+      telemetry('2/6 right turn through the corner');
+      feed(132, 28);           await sleep(420);
+      feed(150, 26, { course: 90 });  await sleep(420);
+
+      // --- late / out-of-order packet: an older fix re-delivered -------
+      var before = marker.getLatLng();
+      var stale = feed(45, 32, { ts: fixes[1].t, at: atDist(45) });
+      await sleep(600);
+      var after = marker.getLatLng();
+      var staleOk = distM(before, after) < 0.5;
+      telemetry('3/6 stale packet injected (fixtime ' + new Date(stale.t).toISOString().slice(11,23) + ', older than live)');
+
+      // --- stop: duplicates at the same spot, speed 0 -------------------
+      while (GpsGlide.activeCount() > 0) await sleep(120);   // let approach finish first
+      var stopA = marker.getLatLng(), stopHead = (GpsGlide.diagnostics(marker) || {}).heading;
+      for (var i = 0; i < 4; i++) { feed(150, 0, { at: atDist(150), course: 90 }); await sleep(420); }
+      await sleep(900);
+      var stopB = marker.getLatLng(), stopHead2 = (GpsGlide.diagnostics(marker) || {}).heading;
+      var stopOk = distM(stopA, stopB) < 0.5 && Math.abs(((stopHead2 - stopHead + 540) % 360) - 180) > 178;
+      telemetry('4/6 stopped (4 duplicate fixes, speed 0)');
+
+      // --- resume driving east ----------------------------------------
+      telemetry('5/6 resume');
+      feed(172, 25, { course: 90 });  await sleep(420);
+      feed(196, 30, { course: 90 });  await sleep(420);
+      feed(220, 33, { course: 90 });  await sleep(420);
+      feed(244, 34, { course: 90 });  await sleep(420);
+
+      telemetry('6/6 waiting for animation to finish on the real last fix');
+      await sleep(2200);
+
+      clearInterval(sampler);
+      maxDev = Math.max(maxDev, roadDeviation(marker.getLatLng()));
+
+      var last = fixes[fixes.length - 1];
+      var endLL = marker.getLatLng();
+      var d = GpsGlide.diagnostics(marker) || {};
+      var headErr = Math.abs(((d.heading - 90) + 540) % 360 - 180);
+
+      var list = [];
+      check(list, hasEvent('stale'), 'late/out-of-order packet rejected by the engine', '(log: stale)');
+      check(list, staleOk, 'stale packet did not move the marker backwards',
+            'moved ' + distM(before, after).toFixed(2) + ' m');
+      check(list, stopOk, 'stopped vehicle kept its position and heading',
+            'moved ' + distM(stopA, stopB).toFixed(2) + ' m');
+      check(list, distM(endLL, last) < 1.5, 'marker finished exactly on the newest real fix',
+            'off by ' + distM(endLL, last).toFixed(2) + ' m');
+      check(list, headErr <= 8, 'heading points along the direction of travel (east ≈ 90°)',
+            'actual ' + Math.round(d.heading) + '°');
+      check(list, maxDev < 5, 'marker never left the road',
+            'max deviation ' + maxDev.toFixed(1) + ' m');
+      check(list, GpsGlide.activeCount() === 0, 'no animation continues past the last fix',
+            GpsGlide.activeCount() + ' active');
+      check(list, !d.playing, 'engine idle (no dead reckoning)');
+      renderChecks(list);
+
+      telemetry(list.every(function (c) { return c.ok; }) ? 'DONE — all checks passed' : 'DONE — see failures');
+      done = { pass: list.every(function (c) { return c.ok; }), checks: list,
+               maxDev: +maxDev.toFixed(2), worst: worst, heading: d.heading,
+               log: GpsGlide.log.map(function (r) { return r.action; }) };
+    } catch (e) {
+      clearInterval(sampler);
+      telemetry('ERROR: ' + e.message);
+      done = { pass: false, error: e.message };
+    }
+    running = false;
+  }
+
+  window.__demo = { run: run, result: function () { return done; }, map: map, marker: marker,
+                    roadDeviation: roadDeviation, atDist: atDist, ROAD: ROAD };
+  $('run').addEventListener('click', run);
+  telemetry('ready');
+})();
+</script>
+</body>
+</html>

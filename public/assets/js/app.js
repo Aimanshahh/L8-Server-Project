@@ -8977,20 +8977,31 @@ function Devices() {
         data = data || {};
 
         if ( typeof data === 'string' ) {
-            data = JSON.parse(data);
+            try {
+                data = JSON.parse(data);
+            } catch (e) {
+                if (window.dd) dd('devices.add: malformed payload', e);
+                return;
+            }
         }
 
         if ( !data ) {
             return;
         }
 
-        if (typeof items[ data.id ] === 'undefined' ) {
-            items[ data.id ] = new Device(data);
-        } else {
-            items[ data.id ].update(data);
-        }
+        // One device with bad data must never abort the batch: this loop is
+        // also what fills the objects list, status counters and the map.
+        try {
+            if (typeof items[ data.id ] === 'undefined' ) {
+                items[ data.id ] = new Device(data);
+            } else {
+                items[ data.id ].update(data);
+            }
 
-        items[ data.id ].setCheckOffline(app.checkTimestamp, app.offlineTimeout);
+            items[ data.id ].setCheckOffline(app.checkTimestamp, app.offlineTimeout);
+        } catch (e) {
+            if (window.dd) dd('devices.add/update failed for id ' + data.id, e);
+        }
     };
 
     _this.addMulti = function(all, onlyNew) {
@@ -9282,13 +9293,21 @@ function Devices() {
         if ( _this.single !== null ) {
             var _item = _this.get( _this.single );
 
-            if ( _item && _item.isLayerVisible() )
-                _bounds = [ _item.getLatLng() ];
+            if ( _item && _item.isLayerVisible() ) {
+                var _ll = _item.getLatLng();
+
+                if ( _ll )
+                    _bounds = [ _ll ];
+            }
         }
 
         if ( ! _bounds.length ) {
             $.each( _this.getVisibleItems(), function( index, _item ) {
-                _bounds.push( _item.getLatLng() )
+                var _itemLL = _item.getLatLng();
+
+                // Devices with no valid position have no layer yet.
+                if ( _itemLL )
+                    _bounds.push( _itemLL );
             } );
         }
 
@@ -9323,7 +9342,16 @@ function Devices() {
                 if (!device.isLayerVisible())
                     return;
 
-                _layers.push(device.updateLayer());
+                // One failing device must never abort the loop: that is what
+                // emptied the object screen after the position fix deployed.
+                try {
+                    var _layer = device.updateLayer();
+
+                    if (_layer)
+                        _layers.push(_layer);
+                } catch (e) {
+                    if (window.dd) dd('updateLayer failed for device ' + id, e);
+                }
             });
         }
 
@@ -14229,7 +14257,17 @@ function Device(data) {
             width       = options.icon.width,
             height      = options.icon.height,
             color       = _this.getStatusColor(),
-            position    = new L.LatLng(_this.lat, _this.lng);
+            _lat        = parseFloat(_this.lat),
+            _lng        = parseFloat(_this.lng);
+
+        // A device without a usable fix (null/NaN coordinates) must never
+        // throw here. L.LatLng(null, null) throws, and a single bad device
+        // aborted updateLayers(), hiding EVERY vehicle on the object screen.
+        if ( ! isFinite(_lat) || ! isFinite(_lng) ) {
+            return layer;   // keep the last known marker, or none at all
+        }
+
+        var position = new L.LatLng(_lat, _lng);
 
         if (options.icon.type === 'arrow') {
             icon   = '<i class="ico ico-object-arrow" style="color:'+color+'"></i>';

@@ -174,20 +174,31 @@ function Devices() {
         data = data || {};
 
         if ( typeof data === 'string' ) {
-            data = JSON.parse(data);
+            try {
+                data = JSON.parse(data);
+            } catch (e) {
+                if (window.dd) dd('devices.add: malformed payload', e);
+                return;
+            }
         }
 
         if ( !data ) {
             return;
         }
 
-        if (typeof items[ data.id ] === 'undefined' ) {
-            items[ data.id ] = new Device(data);
-        } else {
-            items[ data.id ].update(data);
-        }
+        // One device with bad data must never abort the batch: this loop is
+        // also what fills the objects list, status counters and the map.
+        try {
+            if (typeof items[ data.id ] === 'undefined' ) {
+                items[ data.id ] = new Device(data);
+            } else {
+                items[ data.id ].update(data);
+            }
 
-        items[ data.id ].setCheckOffline(app.checkTimestamp, app.offlineTimeout);
+            items[ data.id ].setCheckOffline(app.checkTimestamp, app.offlineTimeout);
+        } catch (e) {
+            if (window.dd) dd('devices.add/update failed for id ' + data.id, e);
+        }
     };
 
     _this.addMulti = function(all, onlyNew) {
@@ -522,7 +533,15 @@ function Devices() {
                 if (!device.isLayerVisible())
                     return;
 
-                _layers.push(device.updateLayer());
+                // One failing device must never abort the loop.
+                try {
+                    var _layer = device.updateLayer();
+
+                    if (_layer)
+                        _layers.push(_layer);
+                } catch (e) {
+                    if (window.dd) dd('updateLayer failed for device ' + id, e);
+                }
             });
         }
 

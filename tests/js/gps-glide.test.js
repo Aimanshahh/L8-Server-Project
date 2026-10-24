@@ -301,5 +301,10 @@ ok(app.indexOf('op-follow') < 0, 'duplicate follow loops were removed');
 ok(engine.indexOf('projMax') < 0 && engine.indexOf('projecting') < 0, 'unbounded projection code was removed');
 ok(engine.indexOf('setHeading(st, b, false)') >= 0, 'per-frame heading is derived from the path');
 ok(engine.indexOf('plausibleFixSequence') >= 0, 'implausible jumps are rejected before animation');
+ok(app.indexOf('isFinite(_lat)') >= 0 && app.indexOf('isFinite(_lng)') >= 0,
+    'unusable coordinates are rejected before L.LatLng can throw');
+ok(app.indexOf('updateLayer failed for device') >= 0,
+    'one failing device cannot abort the whole object screen');
+ok(app.indexOf('_bounds.push( _itemLL )') >= 0, 'fitBounds skips devices without a layer');
 
 console.log('\nALL GPS-GLIDE CHECKS PASSED (' + checks + ' checks)');

@@ -88,6 +88,14 @@ class TraccarDevice extends AbstractEntity
             ->orderBy('id', 'desc')
             ->first();
 
+        if ( ! $position) {
+            // A device that has only invalid/0,0 packets must still report
+            // its last row. Returning null here gives the map a null lat/lng
+            // and removes the vehicle from the object screen; the marker
+            // engine already refuses to animate unusable coordinates.
+            $position = $this->latestPosition;
+        }
+
         $this->smartPositionLoaded = true;
 
         return $this->smartPosition = $position;
