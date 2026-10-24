@@ -31,6 +31,7 @@ class DeviceMapTransformer extends DeviceTransformer  {
             : null;
 
         $status = $entity->getStatus();
+        $live   = $this->livePositionMeta($entity);
 
         return [
             'id'    => (int)$entity->id,
@@ -49,6 +50,10 @@ class DeviceMapTransformer extends DeviceTransformer  {
             'altitude' => $entity->altitude,
             'time' => $entity->time,
             'timestamp' => (int)$entity->timestamp,
+            'fix_timestamp' => $live['fix_timestamp'],
+            'position_id' => $live['position_id'],
+            'valid' => $live['valid'],
+            'accuracy' => $live['accuracy'],
             'acktimestamp' => (int)$entity->acktimestamp,
             'engine_status' => $entity->getEngineStatus(),
             'inaccuracy' => is_null($inaccuracy) ? null : intval($inaccuracy),

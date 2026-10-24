@@ -13752,6 +13752,28 @@ function Device(data) {
         var previous = options,
             isFull = typeof data.sensors !== "undefined";
 
+        // A late packet can arrive with a newer database id but an older fix
+        // time. Keep the live fields on the newest fix so the map marker,
+        // popup and side panel cannot regress while the engine also ignores it.
+        var _prevFix = parseInt(previous.fix_timestamp || 0, 10);
+        var _newFix = parseInt(data.fix_timestamp || 0, 10);
+
+        if (_prevFix && _newFix && _newFix < _prevFix) {
+            data = $.extend({}, data, {
+                lat: previous.lat,
+                lng: previous.lng,
+                speed: previous.speed,
+                course: previous.course,
+                fix_timestamp: previous.fix_timestamp,
+                position_id: previous.position_id,
+                timestamp: previous.timestamp,
+                time: previous.time,
+                track: previous.track,
+                accuracy: previous.accuracy,
+                valid: previous.valid
+            });
+        }
+
         options = $.extend({}, options, data);
 
         // Keep the public reference in sync so DOM consumers (panel,
@@ -14261,10 +14283,25 @@ function Device(data) {
                 layer.options.device_id = _this.id();
             }
         } else {
-            layer
-                .setIcon( divIcon )
-                .setIconAngle( course );
+            layer.setIcon( divIcon );
+
+            // GpsGlide owns the live heading. Setting the raw GPS course here
+            // on every poll overwrote the heading derived from the actual path
+            // and made the car point sideways while stationary/turning.
+            if ( ! (window.GpsGlide && window.GpsGlide.isOn()) ) {
+                layer.setIconAngle( course );
+            }
         }
+
+        var _hint = {
+            track: options.track || null,
+            ts: options.fix_timestamp || options.timestamp,
+            positionId: options.position_id,
+            course: options.course,
+            speed: options.speed,
+            accuracy: options.accuracy,
+            rotate: options.icon.type !== 'icon'
+        };
 
                 var _animate = app.settings.animateDeviceMove;
 
@@ -14279,7 +14316,9 @@ function Device(data) {
         _animate = _animate && app.map.hasLayer(layer);
 
         if ( ! _animate) {
-            if ( window.GpsSmooth ) {
+            if ( window.GpsGlide && window.GpsGlide.isOn() ) {
+                window.GpsGlide.place(layer, position, _hint);
+            } else if ( window.GpsSmooth ) {
                 // Instant snap: animation disabled in settings, or the marker
                 // lives inside the cluster group and is not individually drawn.
                 window.GpsSmooth.place(layer, position);
@@ -14287,14 +14326,14 @@ function Device(data) {
                 layer.setLatLng(position);
             }
         } else if ( window.GpsGlide && window.GpsGlide.isOn() ) {
-            // Alternative glide engine (assets/js/gps-glide.js); off via localStorage gpsGlide=0
-            window.GpsGlide.move(layer, position, { track: options.track || null });
+            // Live playback of real GPS fixes. Off via localStorage gpsGlide=0.
+            window.GpsGlide.move(layer, position, _hint);
         } else if ( window.GpsSmooth ) {
             // Smooth, pace-matched glide. GpsSmooth owns the animation clock plus
             // the per-device cadence/speed estimates (see assets/js/gps-smooth.js).
             window.GpsSmooth.move(layer, position, {
                 animate: true,
-                ts: options.timestamp,
+                ts: options.fix_timestamp || options.timestamp,
                 speed: options.speed
             });
         } else {
@@ -14664,6 +14703,9 @@ function Device(data) {
 
         if ( window.GpsSmooth )
             window.GpsSmooth.forget(layer);
+
+        if ( window.GpsGlide )
+            window.GpsGlide.forget(layer);
     };
 
     _this.updateTimestampOffset = function() {
@@ -17326,190 +17368,6 @@ function Dashboard()
         }
     });
 })();
-
-/* ============================================================
-   op-follow v3 — map always centers on selected device when follow ON
-   ============================================================ */
-(function () {
-    'use strict';
-    var lastPan = 0;
-
-    function followOn() {
-        var $c = $('#followDevice');
-        if ($c.length) return $c.is(':checked');
-        return window.__mapFollow !== false;
-    }
-
-    function panToSelected() {
-        if (document.hidden) return;
-        if (!followOn()) return;
-
-        var id; try { id = app.devices.getSelected && app.devices.getSelected(); } catch(e){}
-        if (!id) return;
-
-        var d; try { d = app.devices.get(id); } catch(e){}
-        if (!d) return;
-
-        // Skip offline devices (no data, or at 0,0)
-        var status = d.options && d.options.online;
-        if (status === 'offline' || status === 'blocked') return;
-
-        var layer = d.getLayer && d.getLayer();
-        if (!layer || !layer._map) return;
-
-        var pos = layer.getLatLng && layer.getLatLng();
-        if (!pos || !isFinite(pos.lat) || !isFinite(pos.lng)) return;
-        // Skip if position is 0,0 (unset/unavailable)
-        if (Math.abs(pos.lat) < 0.0001 && Math.abs(pos.lng) < 0.0001) return;
-
-        var map = app.map;
-        if (!map || !map.getSize || !map.latLngToContainerPoint) return;
-
-        var size = map.getSize();
-        var px   = map.latLngToContainerPoint(pos);
-        var dx   = px.x - size.x / 2;
-        var dy   = px.y - size.y / 2;
-
-        // Dead zone: 60px (tighter than before)
-        if (dx * dx + dy * dy < 60 * 60) return;
-
-        var now = Date.now();
-        if (now - lastPan < 300) return;
-        lastPan = now;
-
-        try {
-            map.panTo(pos, { animate: true, duration: 0.4, easeLinearity: 0.25 });
-        } catch(e) {}
-    }
-
-    // Pan immediately on device selection
-    $(document).on('device.selected', function () {
-        setTimeout(function () {
-            // Pan once directly to the device, no dead zone
-            var id; try { id = app.devices.getSelected && app.devices.getSelected(); } catch(e){}
-            if (!id) return;
-            var d; try { d = app.devices.get(id); } catch(e){}
-            if (!d) return;
-            var status = d.options && d.options.online;
-            if (status === 'offline' || status === 'blocked') return;
-            var layer = d.getLayer && d.getLayer();
-            if (!layer) return;
-            var pos = layer.getLatLng && layer.getLatLng();
-            if (!pos || (Math.abs(pos.lat) < 0.0001 && Math.abs(pos.lng) < 0.0001)) return;
-            if (pos && app.map) {
-                try { app.map.panTo(pos, { animate: true, duration: 0.5 }); } catch(e) {}
-            }
-        }, 200);
-    });
-
-    // Continuous follow
-    setInterval(panToSelected, 400);
-
-    // Sync checkbox
-    $(document).on('change', '#followDevice', function () {
-        window.__mapFollow = !!this.checked;
-    });
-
-    window.opFollow = {
-        enable:  function () { window.__mapFollow = true;  var $c = $('#followDevice'); if ($c.length) $c.prop('checked', true).trigger('change'); },
-        disable: function () { window.__mapFollow = false; var $c = $('#followDevice'); if ($c.length) $c.prop('checked', false).trigger('change'); },
-        isOn:    followOn
-    };
-
-    window.__mapFollow = true;
-})();
-
-
-/* ============================================================
-   op-follow-v4 — force follow ON by default
-   ============================================================ */
-(function () {
-    'use strict';
-    var lastPan = 0;
-
-    // Force the checkbox to checked state on load if it exists and is unchecked
-    function ensureFollowOn() {
-        var $c = $('#followDevice');
-        if ($c.length && !$c.is(':checked')) {
-            $c.prop('checked', true);
-        }
-        window.__mapFollow = true;
-    }
-
-    function followOn() {
-        return true;   // hard force ON, checkbox is just a UI hint
-    }
-
-    function panToSelected() {
-        if (document.hidden) return;
-        if (!followOn()) return;
-
-        var id; try { id = app.devices.getSelected && app.devices.getSelected(); } catch(e){}
-        if (!id) return;
-
-        var d; try { d = app.devices.get(id); } catch(e){}
-        if (!d) return;
-
-        var layer = d.getLayer && d.getLayer();
-        if (!layer || !layer._map) return;
-
-        var pos = layer.getLatLng && layer.getLatLng();
-        if (!pos || !isFinite(pos.lat) || !isFinite(pos.lng)) return;
-
-        var map = app.map;
-        if (!map || !map.getSize || !map.latLngToContainerPoint) return;
-
-        var size = map.getSize();
-        var px   = map.latLngToContainerPoint(pos);
-        var dx   = px.x - size.x / 2;
-        var dy   = px.y - size.y / 2;
-
-        // Dead zone: 80 px
-        if (dx * dx + dy * dy < 80 * 80) return;
-
-        var now = Date.now();
-        if (now - lastPan < 300) return;
-        lastPan = now;
-
-        try {
-            map.panTo(pos, { animate: true, duration: 0.4, easeLinearity: 0.25 });
-        } catch (e) {}
-    }
-
-    // Direct pan the moment a device is selected
-    $(document).on('device.selected', function () {
-        ensureFollowOn();
-        setTimeout(function () {
-            var id; try { id = app.devices.getSelected && app.devices.getSelected(); } catch(e){}
-            if (!id) return;
-            var d; try { d = app.devices.get(id); } catch(e){}
-            if (!d) return;
-            var layer = d.getLayer && d.getLayer();
-            if (!layer) return;
-            var pos = layer.getLatLng && layer.getLatLng();
-            if (pos && app.map) {
-                try { app.map.panTo(pos, { animate: true, duration: 0.5 }); } catch(e) {}
-            }
-        }, 200);
-    });
-
-    // Continuous follow
-    setInterval(panToSelected, 400);
-    setInterval(ensureFollowOn, 2000);
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', ensureFollowOn);
-    } else {
-        ensureFollowOn();
-    }
-
-    window.opFollow = {
-        enable:  function () { window.__mapFollow = true; var $c = $('#followDevice'); if ($c.length) $c.prop('checked', true); },
-        disable: function () { window.__mapFollow = false; var $c = $('#followDevice'); if ($c.length) $c.prop('checked', false); },
-        isOn:    followOn
-    };
-})();
-
 
 /* op-last-seen — prefer raw unix timestamp, ignore display strings */
 (function () {

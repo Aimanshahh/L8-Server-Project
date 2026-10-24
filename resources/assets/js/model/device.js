@@ -711,10 +711,23 @@ function Device(data) {
                 layer.options.device_id = _this.id();
             }
         } else {
-            layer
-                .setIcon( divIcon )
-                .setIconAngle( course );
+            layer.setIcon( divIcon );
+
+            // GpsGlide owns the live heading once it is active.
+            if ( ! (window.GpsGlide && window.GpsGlide.isOn()) ) {
+                layer.setIconAngle( course );
+            }
         }
+
+        var _hint = {
+            track: options.track || null,
+            ts: options.fix_timestamp || options.timestamp,
+            positionId: options.position_id,
+            course: options.course,
+            speed: options.speed,
+            accuracy: options.accuracy,
+            rotate: options.icon.type !== 'icon'
+        };
 
         var _animate = app.settings.animateDeviceMove;
 
@@ -722,26 +735,26 @@ function Device(data) {
         //_animate = _animate && layer.distanceTo(position) < 500;
 
         if ( ! _animate) {
-            if ( window.GpsSmooth ) {
+            if ( window.GpsGlide && window.GpsGlide.isOn() ) {
+                window.GpsGlide.place(layer, position, _hint);
+            } else if ( window.GpsSmooth ) {
                 // Instant snap: animation disabled, or the marker lives inside
                 // the cluster group and is not individually drawn.
                 window.GpsSmooth.place(layer, position);
             } else {
                 layer.setLatLng(position);
             }
+        } else if ( window.GpsGlide && window.GpsGlide.isOn() ) {
+            window.GpsGlide.move(layer, position, _hint);
+        } else if ( window.GpsSmooth ) {
+            // Smooth, pace-matched glide (assets/js/gps-smooth.js).
+            window.GpsSmooth.move(layer, position, {
+                animate: true,
+                ts: options.fix_timestamp || options.timestamp,
+                speed: options.speed
+            });
         } else {
-            setTimeout(function () {
-                if ( window.GpsSmooth ) {
-                    // Smooth, pace-matched glide (assets/js/gps-smooth.js).
-                    window.GpsSmooth.move(layer, position, {
-                        animate: true,
-                        ts: options.timestamp,
-                        speed: options.speed
-                    });
-                } else {
-                    layer.slideTo(position, {duration: app.checkFrequency * 1000});
-                }
-            }, 150);
+            layer.slideTo(position, {duration: app.checkFrequency * 1000});
         }
 
         return layer;
@@ -1088,6 +1101,9 @@ function Device(data) {
 
         if ( window.GpsSmooth )
             window.GpsSmooth.forget(layer);
+
+        if ( window.GpsGlide )
+            window.GpsGlide.forget(layer);
     };
 
     _this.updateTimestampOffset = function() {

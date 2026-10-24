@@ -619,14 +619,12 @@ class Device extends AbstractEntity implements DisplayInterface, FcmTokenableInt
             }
         }
 
-        // Prefer the real latest position speed over Traccar's sticky value.
-        if (is_null($position) && $this->traccar_device_id) {
-            $latest = \Tobuli\Entities\TraccarPosition::where('deviceid', $this->traccar_device_id)
-                ->orderBy('id', 'desc')
-                ->first(['speed']);
+        // Prefer the real newest valid fix over Traccar's sticky value.
+        if (is_null($position) && $this->traccar) {
+            $latest = $this->traccar->smartLatestPosition();
             if ($latest && $latest->speed !== null) {
-                $knots = (float) $latest->speed;
-                return $knots * \Tobuli\Entities\TraccarPosition::KNOTS_TO_KMH;
+                // TraccarPosition already converts knots to km/h in its accessor.
+                return (float) $latest->speed;
             }
         }
 
