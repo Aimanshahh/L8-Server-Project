@@ -10,7 +10,15 @@
     <ul class="nav__list navigation-accordion">
         
       <li class="nav__item"><a class="nav__link" href="{{ route('dashboard') }}" title="Dashboard"><span class="icon dashboard"></span><span class="nav__link-txt">Dashboard</span></a></li>
+
       <li class="nav__item"><a class="nav__link" href="{{ route('robocall.index') }}" title="Robocall"><span class="icon call_action"></span><span class="nav__link-txt">Robocall</span></a></li>
+    <li class="nav__item">
+        <a class="nav__link" href="{!! route('push.index') !!}" role="button">
+            <span class="icon alerts"></span>
+            <span class="nav__link-txt">Push Notifications</span>
+        </a>
+    </li>
+
       <li class="nav__item">
          <a class="nav__link sub-btn" title="Tools"><span class="icon tool"></span><span class="nav__link-txt">Tools</span><i class="fas fa-angle-right dropdown"></i></a>
             <div class="sub-menu" data-title="Tools">
