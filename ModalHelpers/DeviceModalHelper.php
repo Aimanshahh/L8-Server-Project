@@ -648,4 +648,277 @@ class DeviceModalHelper extends ModalHelper
             'speed'        => $speed,
         ];
     }
+
+
+    /**
+     * Global Robocall master switch (robo_call_settings.enabled).
+     * Fails closed: a missing row or any DB error means OFF.
+     */
+    private function roboCallGloballyEnabled()
+    {
+        try {
+            return (int) DB::table('hypegps_web.robo_call_settings')->where('id', 1)->value('enabled') === 1;
+        } catch (\Throwable $e) {
+            \Log::error('Robo-call global switch unreadable, treating as OFF: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function checkAndTriggerRoboCall($events, $fallback = null)
+    {
+        if (!$this->roboCallGloballyEnabled()) {
+            return false;
+        }
+
+        foreach ($events as $event) {
+            $event = is_object($event) ? (array) $event : $event;
+            $roboConfig = $event['alert']['notifications']['robo_call'] ?? null;
+
+            if (!is_array($roboConfig) || empty($roboConfig['active'])) {
+                continue;
+            }
+
+            $eventId = (int) ($event['id'] ?? 0);
+            $deviceId = (int) ($event['device_id'] ?? 0);
+            $alertId = (int) ($event['alert_id'] ?? 0);
+
+            if (!$eventId || !$deviceId || !$alertId) {
+                continue;
+            }
+
+            $voiceId = isset($roboConfig['input']) ? (int) $roboConfig['input'] : null;
+            if (!$voiceId) continue;
+
+            $text2 = $roboConfig['text2'] ?? null;
+            $text3 = $roboConfig['text3'] ?? null;
+            $text4 = $roboConfig['text4'] ?? null;
+            $text5 = $roboConfig['text5'] ?? null;
+
+            $newtext2 = $text2;
+            if ($voiceId == 35) {
+                $newtext2 = null;
+            } elseif ($voiceId == 34) {
+                $newtext2 = Carbon::parse($event['created_at'])->format('M d Y');
+            } elseif ($voiceId == 32) {
+                $newtext2 = $event['additional']['geofence'] ?? 'Exit Unknown';
+            }
+
+            $userIds = DB::table('hypegps_web.user_device_pivot')->where('device_id', $deviceId)->get()->pluck('user_id')->values()->toArray();
+            if (empty($userIds)) continue;
+
+            $users = DB::table('hypegps_web.users')->where('is_call_enabled', 1)->whereIn('id', $userIds)->get();
+            $dialedNumbers = [];
+
+            foreach ($users as $user) {
+                // Fallback pass: only the one user the fallback was scheduled for.
+                if ($fallback && (int) $user->id !== (int) $fallback['user_id']) continue;
+
+                $numbers = \App\Services\Robocall\RobocallNumbers::forUser($user);
+                $callerId = $fallback ? $fallback['number'] : ($numbers[0] ?? null);
+
+                if (empty($callerId)) {
+                    \Log::warning('Robo-call skipped: no valid phone number.', ['event_id' => $eventId, 'user_id' => $user->id]);
+                    continue;
+                }
+
+                // The fallback pass may only dial the user's configured secondary number.
+                if ($fallback && !in_array($callerId, array_slice($numbers, 1), true)) {
+                    continue;
+                }
+
+                if (isset($dialedNumbers[$callerId])) {
+                    \Log::info('Robo-call skipped: duplicate phone in same event.', ['event_id' => $eventId, 'caller_id' => $callerId]);
+                    continue;
+                }
+
+                $lockKey = 'rc_' . md5($eventId . '|' . $callerId);
+                $lockResult = DB::select('SELECT GET_LOCK(?, 3) AS acquired', [$lockKey]);
+                $lockAcquired = !empty($lockResult) && isset($lockResult[0]->acquired) && (int) $lockResult[0]->acquired === 1;
+
+                if (!$lockAcquired) {
+                    \Log::info('Robo-call skipped: event lock already owned.', ['event_id' => $eventId, 'caller_id' => $callerId]);
+                    continue;
+                }
+
+                try {
+                    $alreadySent = DB::table('hypegps_web.robo_calls')->where('event_id', $eventId)->where('call_to', $callerId)->where('is_call_send', 1)->exists();
+                    if ($alreadySent) {
+                        \Log::info('Robo-call skipped: exact event already sent.', ['event_id' => $eventId, 'caller_id' => $callerId]);
+                        continue;
+                    }
+
+                    $cooldownCfg = \App\Services\Robocall\RobocallSettings::get(); $cooldownAt = Carbon::now()->subHours(($voiceId == 32) ? (int) $cooldownCfg['geofence_cooldown_hours'] : (int) $cooldownCfg['cooldown_hours']);
+                    $recentSameAlert = DB::table('hypegps_web.robo_calls')->where('device_id', $deviceId)->where('alert_id', $alertId)->where('call_to', $callerId)->where('is_call_send', 1)->where('created_at', '>=', $cooldownAt)->exists();
+
+                    if ($recentSameAlert) {
+                        \Log::info('Robo-call skipped: alert cooldown active.', ['event_id' => $eventId, 'device_id' => $deviceId, 'alert_id' => $alertId, 'caller_id' => $callerId]);
+                        continue;
+                    }
+
+                    $dialedNumbers[$callerId] = true;
+                    $alert = DB::table('hypegps_web.alerts')->where('id', $alertId)->first();
+                    if (!$alert) continue;
+
+                    $api = DB::table('hypegps_web.robo_call_api_url')->find(1);
+                    if (!$api || empty($api->link)) {
+                        \Log::error('Robo-call API URL not configured.');
+                        continue;
+                    }
+
+                    $apiKey = \App\Services\Robocall\RobocallSettings::apiKey();
+                    if (empty($apiKey)) {
+                        \Log::error('Robo-call API key is missing from VOICE_API_KEY.', ['event_id' => $eventId, 'caller_id' => $callerId]);
+                        continue;
+                    }
+
+                    $queryParams = [
+                        'api_key'   => $apiKey, 'caller_id' => $callerId, 'amount'    => (int) \App\Services\Robocall\RobocallSettings::get()['amount'],
+                        'voice_id'  => $voiceId, 'key1'      => $alert->id, 'key2'      => $alert->id,
+                        'text1'     => $event['device_name'] ?? '', 'text2'     => $newtext2,
+                        'text3'     => $text3, 'text4'     => $text4, 'text5'     => $text5,
+                    ];
+
+                    $client = new \GuzzleHttp\Client(['connect_timeout' => 10, 'timeout' => 25, 'http_errors' => false]);
+                    \Log::info('Robo-call API request started.', ['event_id' => $eventId, 'user_id' => $user->id, 'caller_id' => $callerId, 'voice_id' => $voiceId]);
+                    
+                    $response = $client->get($api->link, ['query' => $queryParams]);
+                    $responseBody = $response->getBody()->getContents();
+                    $decoded = json_decode($responseBody, true);
+
+                    if (json_last_error() !== JSON_ERROR_NONE) {
+                        $this->insertRoboCall($user, $event, $alert, 'failed', $responseBody, $callerId, (string) $response->getStatusCode(), 'Invalid JSON response', null, $voiceId, 0, null, $responseBody);
+                        continue;
+                    }
+
+                    $responseStatus = $decoded['status'] ?? $response->getStatusCode();
+                    $message = $decoded['message'] ?? null;
+                    $robocallId = $decoded['data']['call_id'] ?? null;
+                    $responseVoiceId = $decoded['data']['voice_id'] ?? $voiceId;
+                    $accepted = in_array($response->getStatusCode(), [200, 201], true) && !empty($decoded['data']);
+
+                    $this->insertRoboCall($user, $event, $alert, $accepted ? 'ringing' : 'failed', $responseBody, $callerId, (string) $responseStatus, $message, null, $responseVoiceId, $accepted ? 1 : 0, $robocallId, json_encode($decoded));
+                    \Log::info('Robo-call API request completed.', ['event_id' => $eventId, 'user_id' => $user->id, 'caller_id' => $callerId, 'accepted' => $accepted, 'call_id' => $robocallId]);
+
+                } catch (\Exception $e) {
+                    \Log::error('Robo-call exception.', ['event_id' => $eventId, 'caller_id' => $callerId, 'message' => $e->getMessage()]);
+                } finally {
+                    DB::select('SELECT RELEASE_LOCK(?)', [$lockKey]);
+                }
+            }
+        }
+        return false;
+    }
+
+    public function feedbackCalling()
+    {
+        $feedbacks = DB::table('hypegps_web.robo_call_queue')
+            ->leftJoin('hypegps_web.alerts', 'hypegps_web.robo_call_queue.alert_id', '=', 'hypegps_web.alerts.id')
+            ->where('hypegps_web.robo_call_queue.status', 'pending')
+            ->select(['hypegps_web.robo_call_queue.*', 'hypegps_web.alerts.user_id', 'hypegps_web.alerts.notifications', 'hypegps_web.alerts.created_at as alert_created_at'])->get();
+
+        $currentDate = Carbon::now()->toDateString();
+        $currentTime = Carbon::now()->format('H:i');
+
+        foreach ($feedbacks as $feedback) {
+            $schedule = json_decode($feedback->schedule, true);
+            if (is_string($schedule)) { $schedule = json_decode($schedule, true); }
+            if (!is_array($schedule)) { \Log::error("Invalid JSON: " . $feedback->schedule); continue; }
+            
+            $createdAt = Carbon::parse($feedback->created_at);
+            foreach ($schedule as $day => $timeSlots) {
+                $scheduleDate = Carbon::parse($createdAt)->modify("next $day")->toDateString();
+                $startTime    = reset($timeSlots);
+                $endTime      = end($timeSlots);
+
+                if ($scheduleDate == $currentDate && $currentTime >= $startTime && $currentTime <= $endTime) {
+                    \Log::info("API calling started for Feedback ID: " . $feedback->id . " call on " . $feedback->phone_number);
+                    $this->callApiFeedback($feedback);
+                    DB::table('hypegps_web.robo_call_queue')->where('id', $feedback->id)->update(['status' => 'processing']);
+                }
+            }
+        }
+    }
+
+    public function callApiFeedback($feedback)
+    {
+        \Log::info("feedback inserting in Database.", (array) $feedback);
+        $apiKey   = \App\Services\Robocall\RobocallSettings::apiKey();
+        $callerId = $this->formatPhoneNumber($feedback->phone_number);
+        $api      = DB::table('hypegps_web.robo_call_api_url')->find(1);
+
+        if (!$api) { \Log::error("API URL Not Found in Database"); return false; }
+
+        $queryParams = ['api_key' => $apiKey, 'caller_id' => $callerId, 'amount' => (int) \App\Services\Robocall\RobocallSettings::get()['amount'], 'voice_id' => 35, 'text1' => "Thank You"];
+        $client = new \GuzzleHttp\Client();
+
+        try {
+            $response     = $client->get($api->link . '?' . http_build_query($queryParams));
+            $responseBody = $response->getBody()->getContents();
+
+            if (in_array($response->getStatusCode(), [200, 201])) {
+                $callId = json_decode($responseBody, true)['data']['call_id'];
+                $this->insertRoboCallFeedback($feedback->user_id, $feedback->device_customer_name, $feedback->alert_id, 'ringing', $responseBody, $callId);
+            } else {
+                $responseData = json_decode($responseBody, true);
+                $this->insertRoboCallFeedback($feedback->user_id, $feedback->device_customer_name, $feedback->alert_id, 'failed', $responseBody, null, $responseData['error_code'] ?? 'Unknown', $responseData['error_message'] ?? 'No message');
+            }
+        } catch (\Exception $e) {
+            $this->insertRoboCallFeedback($feedback->user_id, $feedback->device_customer_name, $feedback->alert_id, 'failed', 'No Response Body', null, null, $e->getMessage());
+        }
+    }
+
+    private function formatPhoneNumber($phoneNumber, $index = 0)
+    {
+        if (empty($phoneNumber)) return 'phone number not found';
+        $cleanedPhoneNumber = str_replace(['-', ' '], '', $phoneNumber);
+        $cleanedPhoneNumber = str_replace(['/', '_', '=', ','], '|', $cleanedPhoneNumber);
+        $numbers     = explode('|', $cleanedPhoneNumber);
+        $phoneNumber = trim($numbers[$index] ?? $numbers[0] ?? $cleanedPhoneNumber);
+        $phoneNumber = preg_replace('/\D/', '', $phoneNumber);
+
+        if (preg_match('/^92(\d{10})$/', $phoneNumber, $matches)) { return '0' . $matches[1]; } 
+        elseif (preg_match('/^\+92(\d{10})$/', $phoneNumber, $matches)) { return '0' . $matches[1]; } 
+        elseif (preg_match('/^3(\d{9})$/', $phoneNumber, $matches)) { return '0' . $phoneNumber; } 
+        elseif (preg_match('/^03\d{9}$/', $phoneNumber)) { return $phoneNumber; }
+        return "$phoneNumber wrong number";
+    }
+
+
+
+
+private function insertRoboCallFeedback($user, $event, $alert, $status, $responseBody, $callId = null, $errorCode = null, $errorMessage = null)
+    {
+        DB::table('hypegps_web.robo_calls')->insertGetId([
+            'user_id' => $user, 'alert_id' => $alert, 'alert_name' => "FeedBack Call", 'call_to' => $callId,
+            'status' => $status, 'device_name' => $event, 'is_call_send' => ($status === 'ringing') ? 1 : 0,
+            'rc_id' => $callId, 'rc_voice_id' => 35, 'error_code' => $errorCode, 'error_message' => $errorMessage,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+    }
+
+    private function insertRoboCall($user, $event, $alert, $status, $responseBody, $callerId = null, $errorCode = null, $errorMessage = null, $timeAgo = null, $voiceId = null, $is_call_send = 0, $robocallId = null, $decoded = null)
+    {
+        $signature = md5(($event['device_id'] ?? '') . ($event['alert_id'] ?? '') . ($event['name'] ?? 'Alert' ?? ''));
+        try {
+            DB::transaction(function () use ($user, $event, $alert, $status, $callerId, $errorCode, $errorMessage, $timeAgo, $voiceId, $is_call_send, $robocallId, $decoded, $signature) {
+                DB::table('hypegps_web.robo_calls')->insert([
+                    'alert_signature'  => $signature, 'user_id'          => $user->id,
+                    'device_id'        => $event['device_id'], 'event_id'         => $event['id'],
+                    'device_name'      => $event['device_name'], 'alert_id'         => $alert->id,
+                    'alert_name'       => $alert->name, 'type'             => $event['type'] ?? 'unknown',
+                    'time'             => $event['time'] ?? now(), 'call_to'          => $callerId,
+                    'status'           => $status, 'name'             => $event['name'] ?? 'Alert',
+                    'detail'           => $event['detail'] ?? '', 'is_call_send'     => $is_call_send,
+                    'rc_id'            => $robocallId, 'rc_voice_id'      => $voiceId,
+                    'error_code'       => $errorCode, 'error_message'    => $errorMessage,
+                    'decoded_response' => $decoded, 'retry_time'       => $timeAgo,
+                    'created_at'       => now(), 'updated_at' => now(),
+                ]);
+            });
+        } catch (\Exception $e) {
+            echo "
+❌ DB INSERT FAILED: " . $e->getMessage() . "
+"; \Log::error("DB Transaction failed: " . $e->getMessage());
+        }
+    }
 }

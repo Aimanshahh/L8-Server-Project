@@ -45,7 +45,7 @@
         <li class="nav__item"><a class="nav__link" href="javascript:" data-url="{{ route('subscriptions.index') }}" data-modal="subscriptions_edit"><span class="icon account"></span><span class="nav__link-txt">Profile</span></a></li>
         <li class="nav__item"><a class="nav__link" href="javascript:" data-url="{{ route('languages.index') }}" data-modal="language-selection"><span class="icon language"></span><span class="nav__link-txt">Language</span></a></li>
         @include('Frontend.Layouts.partials.theme-toggle')
-        <li class="nav__item"><a class="nav__link" href="{!!route('logout')!!}" ><span class="icon logout"></span><span class="nav__link-txt">Logout</span></a></li>
+        <li class="nav__item"><a class="nav__link" href="{!!route('logout')!!}" title="Logout" onclick="return confirm('Are you sure you want to log out?');"><span class="icon logout"></span><span class="nav__link-txt">Logout</span></a></li>
         </ul>
             </ul>
   </nav>

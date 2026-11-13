@@ -149,11 +149,57 @@ abstract class Sensor implements SensorInterface
         return $this->unit;
     }
 
+    protected static $recentOthers = [];
+
     public function getPositionValue($position)
     {
         $value = $this->getDataValue($position->other);
 
+        if (is_null($value))
+            $value = $this->getCarriedForwardValue($position);
+
         return $value ?? $this->getPositionStoredValue($position);
+    }
+
+    /**
+     * Traccar splits data across packet types (status vs location), so a
+     * sensor's tag may be missing from the newest packet. Use the most recent
+     * recent packet that has it.
+     */
+    protected function getCarriedForwardValue($position)
+    {
+        try {
+            $deviceId = $position->deviceid ?? null;
+            $posId    = $position->id ?? null;
+
+            if (!$deviceId || !$posId)
+                return null;
+
+            $key = $deviceId . ':' . $posId;
+
+            if (!isset(self::$recentOthers[$key])) {
+                if (count(self::$recentOthers) > 200)
+                    self::$recentOthers = [];
+
+                self::$recentOthers[$key] = \Tobuli\Entities\TraccarPosition::where('deviceid', $deviceId)
+                    ->where('id', '<', $posId)
+                    ->orderBy('id', 'desc')
+                    ->limit(60)
+                    ->pluck('attributes')
+                    ->all();
+            }
+
+            foreach (self::$recentOthers[$key] as $other) {
+                $value = $this->getDataValue($other);
+
+                if (!is_null($value))
+                    return $value;
+            }
+        } catch (\Throwable $e) {
+            // fall through to stored value
+        }
+
+        return null;
     }
 
     public function getPositionStoredValue($position)

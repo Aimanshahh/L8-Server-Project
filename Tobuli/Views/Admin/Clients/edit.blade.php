@@ -19,6 +19,9 @@
         @if (settings('plugins.object_listview.status'))
             <li><a href="#client-edit-form-listview" role="tab" data-toggle="tab">{{ trans('front.object_listview') }}</a></li>
         @endif
+        @if (Auth::user()->isAdmin())
+            <li><a href="#client-edit-form-robocall" role="tab" data-toggle="tab" data-url="{{ route('admin.clients.robocall', $item->id) }}">Robocall</a></li>
+        @endif
 
         @if (Auth::user()->can('edit', $item, 'forwards'))
             <li><a href="#client-edit-form-forwards" role="tab" data-toggle="tab" data-url="{{ route('admin.clients.forwards', $item->id) }}">{{ trans('admin.forwards') }}</a></li>
@@ -352,6 +355,7 @@
         <div id="client-edit-form-forwards" class="tab-pane"></div>
         <div id="client-edit-form-login-periods" class="tab-pane"></div>
         <div id="client-edit-form-report-types" class="tab-pane"></div>
+        <div id="client-edit-form-robocall" class="tab-pane"></div>
     </div>
 
     {!! Form::close() !!}

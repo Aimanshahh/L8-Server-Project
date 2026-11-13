@@ -99,6 +99,18 @@ class DeviceMapFullTransformer extends DeviceTransformer  {
 
             $value = $sensor->getValueCurrent($entity);
 
+            // Ignition/ACC: offline or not moving -> OFF; moving -> newest packet that has the key.
+            // (A missing key must never render as "On".)
+            if (in_array($sensor->type, ['acc', 'ignition'], true)) {
+                $ign = (bool) $entity->getLiveIgnition();
+                try {
+                    $s     = $sensor->getSensor();
+                    $value = new \Tobuli\Sensors\Value($ign, $s->getValueFormatted($ign), $s->getValueIcon($ign));
+                } catch (\Throwable $e) {
+                    $value = new \Tobuli\Sensors\Value($ign, $ign ? 'On' : 'Off', null);
+                }
+            }
+
             // GPSWOX sensor pipeline drops the odometer and hours attributes
             // that Traccar stores on every position. Read them straight from
             // the position bag and override the sensor when it returns blank.

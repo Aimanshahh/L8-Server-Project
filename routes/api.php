@@ -80,6 +80,10 @@ Route::group(['middleware' => [], 'namespace' => 'Api'], function () {
 
         Route::any('address/autocomplete', ['as' => 'api.address.autocomplete', 'uses' => 'ApiController@AddressController#autocomplete']);
         Route::any('get_devices', ['as' => 'api.get_devices', 'uses' => 'ApiController@getDevices']);
+        Route::get('fuel-prices', [
+    'as' => 'api.fuel_prices',
+    'uses' => 'ApiController@getFuelPrices'
+]);
         Route::any('get_devices_latest', ['as' => 'api.get_devices_json', 'uses' => 'ApiController@getDevicesJson']);
 
         Route::any('add_device_data', ['as' => 'api.add_device_data', 'uses' => 'ApiController@DevicesController#create']);

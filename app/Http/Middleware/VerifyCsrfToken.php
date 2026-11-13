@@ -14,6 +14,8 @@ class VerifyCsrfToken extends BaseVerifier
     protected $addHttpCookie = true;
 
     protected $except = [
+        'objects/destroy',
+        'objects/destroy/*',
         'payments/*/webhook',
         'gpsdata_insert',
         'robocall/webhook',

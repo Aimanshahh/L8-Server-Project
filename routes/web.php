@@ -596,6 +596,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'auth.manager', 'act
         Route::delete('users/clients/{id}/login_token', ['as' => 'clients.unset_login_token', 'uses' => 'ClientsController@unsetLoginToken']);
         Route::get('users/clients/{id?}/login_periods', ['as' => 'clients.login_periods', 'uses' => 'ClientLoginPeriodsController@get']);
         Route::get('users/clients/{id?}/report_types', ['as' => 'clients.report_types', 'uses' => 'ClientReportTypesController@get']);
+        Route::get('users/clients/{id?}/robocall', ['as' => 'clients.robocall', 'uses' => 'ClientRobocallController@get']);
         Route::get('users/clients/{id}/forwards', ['as' => 'clients.forwards', 'uses' => 'ClientForwardsController@get']);
         Route::resource('clients', 'ClientsController', ['except' => ['index', 'destroy', 'update']]);
         Route::get('client/devices', ['as' => 'client.devices.index', 'uses' => 'ClientDevicesController@index']);
@@ -622,7 +623,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'auth.manager', 'act
         Route::get('objects/bulk_delete', ['as' => 'objects.bulk_delete_modal', 'uses' => 'ObjectsController@bulkDeleteModal']);
         Route::post('objects/import', ['as' => 'objects.import_set', 'uses' => 'ObjectsController@importSet']);
         Route::get('objects/do_destroy', ['as' => 'objects.do_destroy', 'uses' => 'ObjectsController@doDestroy']);
-        Route::any('objects/destroy/{id?}', ['as' => 'objects.destroy', 'uses' => 'ObjectsController@destroy']);
+        Route::any('objects/destroy/{id?}', ['as' => 'objects.destroy', 'uses' => 'DevicesController@destroy']);
         Route::post('objects/active/{active}', ['as' => 'objects.set_active', 'uses' => 'ObjectsController@setActiveMulti']);
         Route::resource('objects', 'ObjectsController', ['except' => ['index', 'destroy']]);
         Route::get('objects/positions_backups/{id}', ['as' => 'objects.positions_backups.index', 'uses' => 'DevicesPositionsBackupsController@index']);
@@ -731,6 +732,11 @@ Route::group(['as' => 'admin.', 'prefix' => 'admin', 'middleware' => ['auth','au
     # Sms gateway
     Route::get('sms_gateway/index', ['as' => 'sms_gateway.index', 'uses' => 'SmsGatewayController@index']);
     Route::post('sms_gateway/store', ['as' => 'sms_gateway.store', 'uses' => 'SmsGatewayController@store']);
+
+    # Robocall settings
+    Route::get('robocall_settings/index', ['as' => 'robocall_settings.index', 'uses' => 'RobocallSettingsController@index']);
+    Route::post('robocall_settings/store', ['as' => 'robocall_settings.store', 'uses' => 'RobocallSettingsController@store']);
+    Route::post('robocall_settings/test_call', ['as' => 'robocall_settings.test_call', 'uses' => 'RobocallSettingsController@testCall']);
 
     # Map icons
     Route::any('map_icons/index', ['as' => 'map_icons.index', 'uses' => 'MapIconsController@index']);

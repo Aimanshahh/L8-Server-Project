@@ -337,6 +337,14 @@ function getNavigation($adminOnly = false) {
             'childs' => ''
         ];
 
+        if (isAdmin()) {
+            $items['setup']['childs'][] = [
+                'title' =>  '<span class="icon message"></span>' . '<span class="nav__link-txt">Robocall settings</span>',
+                'route' => 'admin.robocall_settings.index',
+                'childs' => ''
+            ];
+        }
+
         $items['setup']['childs'][] = [
             'title' => '<span class="icon device-plan"></span>' . '<span class="nav__link-txt">' .  trans('admin.device_plans') . '</span>',
             'route' => 'admin.device_plan.index',

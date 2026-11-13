@@ -119,7 +119,6 @@ class Kernel extends ConsoleKernel {
             ->withoutOverlapping();
 
         /**
-         * NEW: alerts:check runs every minute.
          *
          * Old architecture: alerts were generated inside PositionsWriter
          * when Laravel wrote each GPS position.
@@ -128,7 +127,6 @@ class Kernel extends ConsoleKernel {
          * Laravel must poll alerts on a schedule.
          */
         $schedule
-            ->command('alerts:check')
             ->everyMinute()
             ->withoutOverlapping();
     }
@@ -138,10 +136,10 @@ class Kernel extends ConsoleKernel {
      *
      * @return void
      */
-    // protected function commands()
-    // {
-    //     $this->load(__DIR__.'/Commands');
+    protected function commands()
+    {
+        $this->load(__DIR__.'/Commands');
 
-    //     require base_path('routes/console.php');
-    // }
+        require base_path('routes/console.php');
+    }
 }

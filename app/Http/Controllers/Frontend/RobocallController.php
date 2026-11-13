@@ -68,6 +68,24 @@ class RobocallController extends Controller
             return response()->json(['status' => 'error', 'stored' => false], 500);
         }
 
+        // Mirror the result onto robo_calls for calls this server placed
+        // (rc_id = provider call_id). Must never affect the webhook response.
+        try {
+            if (!empty($record['call_id'])) {
+                $callStatus = strtolower(trim((string) ($record['event'] ?? '')));
+
+                \Illuminate\Support\Facades\DB::table('hypegps_web.robo_calls')
+                    ->where('rc_id', (string) $record['call_id'])
+                    ->update([
+                        'call_status' => $callStatus !== '' ? $callStatus : null,
+                        'dtmf'        => $record['dtmf'],
+                        'updated_at'  => now(),
+                    ]);
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('Robocall webhook: robo_calls status update failed: ' . $e->getMessage());
+        }
+
         return response()->json(['status' => 'ok', 'received_at' => $record['received_at'], 'stored' => true]);
     }
 

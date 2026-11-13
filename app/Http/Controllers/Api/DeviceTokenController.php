@@ -20,13 +20,8 @@ class DeviceTokenController extends Controller
         // 2. Save or update the token
         DB::table('device_tokens')->updateOrInsert(
             ['user_id' => $request->user_id],
-            [
-                'token' => $request->token,
-                'platform' => $request->platform ?? 'android',
-                'updated_at' => now()
-            ]
+            ['token' => $request->token, 'platform' => $request->platform, 'updated_at' => now()]
         );
-
         // 3. Return response
         return response()->json([
             'status' => 'success',

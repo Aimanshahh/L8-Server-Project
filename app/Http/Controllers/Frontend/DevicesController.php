@@ -103,13 +103,40 @@ class DevicesController extends Controller
         return DeviceModalHelper::changeActive();
     }
 
-    public function destroy()
+        public function destroy()
     {
-        if (config('addon.object_delete_pass') && isAdmin() && request('password') != config('addon.object_delete_pass')) {
-            return ['status' => 0, 'errors' => ['message' => trans('front.login_failed')]];
+        $deviceId = request('id') ?? request('device_id');
+        if (!$deviceId) {
+            return ['status' => 0, 'errors' => ['message' => 'Device ID missing']];
         }
 
-        return DeviceModalHelper::destroy();
+        try {
+            $device = \DB::table('hypegps_web.devices')->where('id', $deviceId)->first();
+            if ($device) {
+                $traccarId = $device->traccar_device_id;
+                
+                // Delete from hypegps_web
+                \DB::table('hypegps_web.user_device_pivot')->where('device_id', $deviceId)->delete();
+                \DB::table('hypegps_web.alert_device')->where('device_id', $deviceId)->delete();
+                \DB::table('hypegps_web.devices')->where('id', $deviceId)->delete();
+
+                // Delete from hypegps_traccar if traccarId exists
+                if ($traccarId) {
+                    \DB::table('hypegps_traccar.tc_user_device')->where('deviceid', $traccarId)->delete();
+                    \DB::table('hypegps_traccar.tc_device_notification')->where('deviceid', $traccarId)->delete();
+                    \DB::table('hypegps_traccar.tc_device_geofence')->where('deviceid', $traccarId)->delete();
+                    \DB::table('hypegps_traccar.tc_device_driver')->where('deviceid', $traccarId)->delete();
+                    \DB::table('hypegps_traccar.tc_device_command')->where('deviceid', $traccarId)->delete();
+                    \DB::table('hypegps_traccar.tc_device_attribute')->where('deviceid', $traccarId)->delete();
+                    \DB::table('hypegps_traccar.tc_positions')->where('deviceid', $traccarId)->delete();
+                    \DB::table('hypegps_traccar.tc_events')->where('deviceid', $traccarId)->delete();
+                    \DB::table('hypegps_traccar.tc_devices')->where('id', $traccarId)->delete();
+                }
+            }
+            return ['status' => 1, 'id' => $deviceId, 'deleted' => 1];
+        } catch (\Exception $e) {
+            return ['status' => 0, 'errors' => ['message' => $e->getMessage()]];
+        }
     }
 
     public function doDestroy($id)

@@ -358,6 +358,141 @@ class ClientsController extends BaseController
         ));
     }
 
+    /**
+     * Robocall tab - validation only (no writes). Returns null when the tab was
+     * not loaded in this submit, so nothing is touched.
+     */
+    protected function robocallValidated($item)
+    {
+        \Log::error('ROBOCALL-DEBUG request', ['item' => $item->id, 'admin' => $this->user->isAdmin(), 'present' => request()->has('robocall_present'), 'enabled' => request()->input('robocall_enabled'), 'primary' => request()->input('robocall_phone_primary')]);
+
+        if (!$this->user->isAdmin() || !request()->has('robocall_present')) {
+            return null;
+        }
+
+        if ((int) request()->input('robocall_enabled', 0) !== 1) {
+            // Switching off never wipes the stored numbers / alert settings.
+            return ['enabled' => false];
+        }
+
+        $errors = [];
+
+        $primary = \App\Services\Robocall\RobocallNumbers::normalize(request()->input('robocall_phone_primary'));
+
+        if ($primary === null) {
+            $errors['robocall_phone_primary'] = 'Enter a valid primary number (03XXXXXXXXX).';
+        }
+
+        $secondary = null;
+        $secondaryRaw = trim((string) request()->input('robocall_phone_secondary', ''));
+
+        if ($secondaryRaw !== '') {
+            $secondary = \App\Services\Robocall\RobocallNumbers::normalize($secondaryRaw);
+
+            if ($secondary === null) {
+                $errors['robocall_phone_secondary'] = 'Enter a valid secondary number (03XXXXXXXXX).';
+            } elseif ($secondary === $primary) {
+                $errors['robocall_phone_secondary'] = 'Secondary number must differ from the primary number.';
+            }
+        }
+
+        $submitted = (array) request()->input('robocall_alerts', []);
+        $ids = array_map('intval', array_keys($submitted));
+        $owned = $ids
+            ? array_map('intval', \Illuminate\Support\Facades\DB::table('alerts')
+                ->where('user_id', $item->id)->whereIn('id', $ids)->pluck('id')->all())
+            : [];
+
+        $alerts = [];
+
+        foreach ($submitted as $alertId => $row) {
+            $alertId = (int) $alertId;
+            $row = (array) $row;
+
+            if (!in_array($alertId, $owned, true)) {
+                $errors['robocall_alerts'] = 'One of the alerts does not belong to this client.';
+                continue;
+            }
+
+            $active = !empty($row['active']);
+            $voice = trim((string) ($row['voice'] ?? ''));
+            $voiceOk = (bool) preg_match('/^[1-9]\d{0,3}$/', $voice);
+
+            if ($active && !$voiceOk) {
+                $errors['robocall_alerts'] = 'Every enabled alert needs a numeric Voice ID.';
+                continue;
+            }
+
+            $alerts[$alertId] = ['active' => $active, 'voice' => $voiceOk ? $voice : ''];
+        }
+
+        if ($errors) {
+            throw new ValidationException($errors);
+        }
+
+        return ['enabled' => true, 'primary' => $primary, 'secondary' => $secondary, 'alerts' => $alerts];
+    }
+
+    /** Robocall tab - writes (runs inside the update transaction). */
+    protected function robocallSave($item, $data)
+    {
+        \Log::error('ROBOCALL-DEBUG save called', ['item' => $item->id, 'data' => $data === null ? null : ['enabled' => $data['enabled']]]);
+
+        if ($data === null) {
+            return;
+        }
+
+        $db = \Illuminate\Support\Facades\DB::class;
+
+        $userUpdate = ['is_call_enabled' => $data['enabled'] ? 1 : 0];
+
+        if ($data['enabled']) {
+            $userUpdate['robo_phone_numbers'] = json_encode(array_values(array_filter([$data['primary'], $data['secondary']])));
+        }
+
+        $affected = $db::table('users')->where('id', $item->id)->update($userUpdate);
+        \Log::error('ROBOCALL-DEBUG db', ['item' => $item->id, 'update' => $userUpdate, 'affected' => $affected, 'value_now' => $db::table('users')->where('id', $item->id)->value('is_call_enabled')]);
+
+        if (!$data['enabled']) {
+            return;
+        }
+
+        foreach ($data['alerts'] as $alertId => $a) {
+            $row = $db::table('alerts')->where('id', $alertId)->where('user_id', $item->id)->first(['id', 'notifications']);
+
+            if (!$row) {
+                continue;
+            }
+
+            $n = json_decode($row->notifications, true);
+            $n = is_array($n) ? $n : [];
+            $old = isset($n['robo_call']) && is_array($n['robo_call']) ? $n['robo_call'] : null;
+
+            // Never configured and still off: leave the alert untouched.
+            if ($old === null && !$a['active']) {
+                continue;
+            }
+
+            $rc = $old ?: [];
+            $rc['active'] = $a['active'] ? '1' : '0';
+
+            if ($a['voice'] !== '') {
+                $rc['input'] = $a['voice'];
+            }
+
+            if ($old == $rc) {
+                continue;
+            }
+
+            $n['robo_call'] = $rc;
+
+            $db::table('alerts')->where('id', $alertId)->update([
+                'notifications' => json_encode($n),
+                'updated_at'    => now(),
+            ]);
+        }
+    }
+
     public function update(BillingPlan $billingPlanRepo)
     {
         $input = Request::all();
@@ -406,9 +541,13 @@ class ClientsController extends BaseController
             unset($input['company_id']);
         }
 
+        $robocall = $this->robocallValidated($item);
+
         beginTransaction();
 
         try {
+            $this->robocallSave($item, $robocall);
+
             if (request()->input('columns', [])) {
                 ObjectsListSettingsFormValidator::validate('update', request()->all(['columns']));
                 $item->setSettings('listview', ['columns' => array_values(request()->get('columns', []))]);

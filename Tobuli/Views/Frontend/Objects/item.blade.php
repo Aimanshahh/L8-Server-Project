@@ -230,7 +230,7 @@
               title="{{ trans("global.*".$item->getStatus()) }}">
         </span>
 
-        <span data-device="ignition" class="icon ignitionn {{ $item->getIgnitionSensor() ? 'on' : 'off' }}"></span>
+        <span data-device="ignition" class="icon ignitionn {{ $item->getLiveIgnition() ? 'on' : 'off' }}"></span>
 
         @if ( ! is_null($item->getEngineStatus()))
             <span data-device="detect_engine" class="icon detect_engine {{ $item->getEngineStatus() ? 'on' : 'off' }}"></span>

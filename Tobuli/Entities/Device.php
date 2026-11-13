@@ -867,6 +867,35 @@ class Device extends AbstractEntity implements DisplayInterface, FcmTokenableInt
         return $this->getSensorByType('ignition');
     }
 
+    public function getLiveIgnition()
+    {
+        // Only a MOVING vehicle (STATUS_ONLINE) can show ignition ON.
+        // Offline / no data, blocked, stopped (ack) and idle (engine) return OFF
+        // immediately, without looking at packet history.
+        if ($this->getStatus() !== self::STATUS_ONLINE) {
+            return false;
+        }
+
+        // Online and moving: newest packet that actually carries the 'ignition' key (Type 19).
+        try {
+            $rows = $this->positions()
+                ->orderBy('id', 'desc')
+                ->limit(50)
+                ->pluck('attributes');
+
+            foreach ($rows as $attrs) {
+                $data = is_string($attrs) ? json_decode($attrs, true) : (array) $attrs;
+                if (is_array($data) && array_key_exists('ignition', $data)) {
+                    return filter_var($data['ignition'], FILTER_VALIDATE_BOOLEAN);
+                }
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('getLiveIgnition: ' . $e->getMessage());
+        }
+
+        return false;
+    }
+
     public function getSpeedSensor()
     {
         $detect_speed = $this->detect_speed ?? null;
@@ -1376,6 +1405,18 @@ class Device extends AbstractEntity implements DisplayInterface, FcmTokenableInt
                 continue;
 
             $value = $sensor->getValueCurrent($this);
+
+            // Ignition/ACC: offline or not moving -> OFF; moving -> newest packet that has the key.
+            // A missing key must never be reported as "On".
+            if (in_array($sensor->type, ['acc', 'ignition'], true)) {
+                $ign = (bool) $this->getLiveIgnition();
+                try {
+                    $s     = $sensor->getSensor();
+                    $value = new \Tobuli\Sensors\Value($ign, $s->getValueFormatted($ign), $s->getValueIcon($ign));
+                } catch (\Throwable $e) {
+                    $value = new \Tobuli\Sensors\Value($ign, $ign ? 'On' : 'Off', null);
+                }
+            }
 
             $result[] = [
                 'id'            => $sensor->id,

@@ -170,6 +170,30 @@ class ApiController extends Controller
         return $data;
     }
 
+public function getFuelPrices()
+{
+    $prices = \DB::table('fuel_prices')
+        ->orderBy('id', 'DESC')
+        ->first();
+
+    if (!$prices) {
+        return response()->json([
+            'status' => 0,
+            'message' => 'Fuel prices not found'
+        ]);
+    }
+
+    return response()->json([
+        'status' => 1,
+        'petrol' => (float) $prices->petrol,
+        'diesel' => (float) $prices->diesel,
+        'lpg' => (float) $prices->lpg,
+        'cng' => (float) $prices->cng,
+        'source' => $prices->source,
+        'updated_at' => $prices->updated_at
+    ]);
+}
+
     public function getUserData()
     {
         $dStart = new \DateTime(date('Y-m-d H:i:s'));

@@ -940,7 +940,7 @@ return array(
     'alert_active' => 'Active',
     'alert_name' => 'Name',
     'alert_devices_count' => 'Devices',
-    'unplugged' => 'Unplugged',
+    'unplugged' => 'Battery Disconnected',
     'battery_external' => 'Battery external',
     'plugged' => 'Plugged',
     'last_event_title' => 'Last event title',
